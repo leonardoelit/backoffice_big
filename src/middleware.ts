@@ -30,7 +30,7 @@ export function middleware(request: NextRequest) {
   }
 
   // Admin route protection
-  if (pathname.startsWith('/admin') && user.role !== 'admin') {
+  if (pathname.startsWith('/admin') && user.role !== 'Admin') {
     return NextResponse.redirect(new URL('/', request.url));
   }
 

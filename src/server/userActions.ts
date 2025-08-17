@@ -2,16 +2,16 @@
 
 import { redirect } from "next/navigation";
 
-export async function authenticateUser(username: string, password: string) {
+export async function authenticateUser(email: string, password: string) {
   try {
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/api/affiliate/login`,
+      `${process.env.NEXT_PUBLIC_API_URL}/api/client/login`,
       {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ username, password }),
+        body: JSON.stringify({ email, password }),
         cache: 'no-store',
       }
     );

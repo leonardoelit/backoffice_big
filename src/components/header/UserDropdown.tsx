@@ -24,11 +24,10 @@ function toggleDropdown(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
         className="flex items-center text-gray-700 dark:text-gray-400 dropdown-toggle"
       >
         <span className="mr-3 overflow-hidden rounded-full h-11 w-11 bg-blue-600 flex items-center justify-center">
-          <p className="text-white text-sm font-normal">{`${userInfo.fullName ? userInfo.fullName.charAt(0) : ''}${userInfo.lastName ? userInfo.lastName.charAt(0) : ''}`}</p>
+          <p className="text-white text-sm font-normal">{`${userInfo.fullname ? userInfo.fullname.charAt(0) : ''}${userInfo.lastName ? userInfo.lastName.charAt(0) : ''}`}</p>
         </span>
         <div className="flex flex-col items-start justify-start">
-          <span className="block mr-1 font-medium text-theme-sm">{`${userInfo.fullName} ${userInfo.lastName}`}</span>
-          <span className="block mr-1 font-light text-xs text-start">{userInfo.balance} TL</span>
+          <span className="block mr-1 font-medium text-theme-sm">{`${userInfo.fullname} ${userInfo.lastname}`}</span>
         </div>
 
         <svg

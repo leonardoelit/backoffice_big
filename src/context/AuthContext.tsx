@@ -27,13 +27,14 @@ import {
 import { deleteCookie } from 'cookies-next';
 import { useRouter } from 'next/navigation';
 import { showToast } from '@/utils/toastUtil';
+import { AuthResponse, JwtPayload, User } from '@/components/constants/types';
 
 interface AuthContextType {
   isAuthenticated: boolean;
   isAdmin: boolean;
   token: string | null;
   isLoadingSignIn: boolean;
-  userInfo: UserInfo;
+  userInfo: User;
   allAffiliatesList: ClientKpi[];
   allPlayerData: Player[];
   affiliatesListInSelectedTime: EnrichedClientData[];
@@ -320,23 +321,6 @@ export interface Withdrawal {
   updatedAt: string; 
 }
 
-export interface User {
-  id: number;
-  username: string;
-  fullname: string;
-  lastname: string;
-  email: string;
-  btag: string;
-  telegramLink: string;
-  role: 'admin' | 'user';
-  balance: number;
-  pct: number;
-  approved: boolean;
-  isTwoFAOn: boolean;
-  createdAt: string; 
-  updatedAt: string; 
-}
-
 export interface EnrichedClientData {
   ClientId: number;
   Login: string;
@@ -350,6 +334,8 @@ export interface EnrichedClientData {
 }
 
 
+
+
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
@@ -358,19 +344,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [isLoadingSignIn, setIsLoadingSignIn] = useState(false);
 
-  const [userInfo, setUserInfo] = useState<UserInfo>({
-    username: '',
-    fullName: '',
-    lastName: '',
-    role: '',
-    btag: '',
-    telegramLink: '',
-    balance: 0.0,
-    TMTDeposit: 0.00,
-    TMTWithdrawal: 0.00,
-    userCount: 0,
-    pct: 0,
-    approved: false,
+  const [userInfo, setUserInfo] = useState<User>({
+    id: '',
+    email: '',
+    fullname: '',
+    lastname: '',
+    role: "User",
   });
 
   const [allAffiliatesList, setAllAffiliateList] = useState<ClientKpi[]>([]);
@@ -395,29 +374,26 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const storedToken = localStorage.getItem('authToken');
     if (!storedToken) return;
 
+    const userDetail:JwtPayload = parseJwt(storedToken) 
+
     // Fetch User Info
     startTransition(async () => {
-      const info = await getUserInfo(storedToken);
-      if (info.isSuccess) {
+      const nameParts = userDetail.name.trim().split(/\s+/);
+      const firstname = nameParts[0] || '';
+      const lastname = nameParts.slice(1).join(' ') || '';
+      console.log(firstname, " ", lastname)
+      if (userDetail) {
         setUserInfo({
-          username: info.userInfo.username,
-          fullName: info.userInfo.fullname,
-          lastName: info.userInfo.lastname,
-          role: info.userInfo.role,
-          btag: info.userInfo.btag,
-          telegramLink: info.userInfo.telegramLink,
-          balance: info.userInfo.balance,
-          TMTDeposit: info.userInfo.TMTDeposit,
-          TMTWithdrawal: info.userInfo.TMTWithdrawal,
-          userCount: info.userInfo.userCount,
-          pct: info.userInfo.pct,
-          approved: info.userInfo.approved,
-        });
-        const parsed = parseJwt(storedToken);
-        if (parsed.role === 'user') getAllAffiliates(storedToken);
+          id: userDetail.nameid,
+          fullname: firstname,
+          lastname: lastname,
+          email: userDetail.email,
+          role: userDetail.role
+        })
+        //if (userDetail.role === 'User') getAllAffiliates(storedToken);
         setIsAuthenticated(true);
         setToken(storedToken);
-        setIsAdmin(parsed.role === 'admin');
+        setIsAdmin(userDetail.role === 'Admin');
       }else{
         logout()
         router.push('/signin')
@@ -532,39 +508,44 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     [token]
   );
 
-const login = useCallback((response: LoginResponse) => {
-  // Example: prevent login if token is missing or username is clearly fake
-  if (!response?.token || response.username === 'dummy') {
+const login = useCallback((response: AuthResponse) => {
+  if (!response.isSuccess) {
     console.warn('Invalid credentials — login blocked.');
     setIsAuthenticated(false);
     return;
   }
 
-  setIsLoadingSignIn(true);
-  localStorage.setItem('authToken', response.token);
+  const userDetail:JwtPayload = parseJwt(response.token!)
 
-  setToken(response.token);
-  setIsAuthenticated(true);
-  setIsAdmin(response.role === 'admin');
+  if(userDetail === null){
+    logout();
+    return;
+  }
 
-  const parsed = parseJwt(response.token);
+  const nameParts = userDetail.name.trim().split(/\s+/);
+  const firstname = nameParts[0] || '';
+  const lastname = nameParts.slice(1).join(' ') || '';
+
   setUserInfo({
-    username: response.username,
-    fullName: response.fullname,
-    lastName: response.lastname,
-    role: parsed.role,
-    btag: parsed.btag,
-    telegramLink: response.telegramLink,
-    balance: response.balance,
-    TMTDeposit: response.TMTDeposit,
-    TMTWithdrawal: response.TMTWithdrawal,
-    userCount: response.userCount,
-    pct: response.pct,
-    approved: response.approved
-  });
+    id: userDetail.nameid,
+    fullname: firstname,
+    lastname: lastname,
+    email: userDetail.email,
+    role: userDetail.role
+  })
 
-  if (response.role === 'user') getAllAffiliates(response.token);
-}, [getAllAffiliates]);
+  setIsLoadingSignIn(true);
+  localStorage.setItem('authToken', response.token!);
+
+  setToken(response.token!);
+  setIsAuthenticated(true);
+  setIsAdmin(userDetail.role === 'Admin');
+  //setIsAdmin(response.role === 'admin');
+
+  //const parsed = parseJwt(response.token);
+
+
+}, []);
 
   const logout = useCallback(() => {
     localStorage.removeItem('authToken');
@@ -574,18 +555,11 @@ const login = useCallback((response: LoginResponse) => {
     setIsAdmin(false);
 
     setUserInfo({
-      username: '',
-      fullName: '',
-      lastName: '',
+      id: '',
+      fullname: '',
+      lastname: '',
       role: '',
-      btag: '',
-      telegramLink: '',
-      balance: 0,
-      TMTDeposit: 0.00,
-      TMTWithdrawal: 0.00,
-      userCount: 0,
-      pct: 0,
-      approved: false
+      email: ''
     });
 
     setPlayerBalanceData({ playerCount: 0, balanceList: [] });

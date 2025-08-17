@@ -13,7 +13,7 @@ import { setCookie } from "cookies-next";
 export default function SignInForm() {
   const [loading, setLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false);
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('')
   const { login, isLoadingSignIn } = useAuth();
@@ -24,7 +24,7 @@ export default function SignInForm() {
     setError('');
 
     startTransition(async () => {
-      const response = await authenticateUser(username, password);
+      const response = await authenticateUser(email, password);
 
       if (response.isSuccess) {
         setCookie('authToken', response.token, { 
@@ -35,11 +35,7 @@ export default function SignInForm() {
         login(response);
         setPassword('');
         setLoading(false);
-        if(response.role === 'admin'){
-            router.push('/admin')
-          }else{
-            window.location.href = '/';
-          }
+        router.push('/')
       } else {
         setError(response.message);
         setLoading(false);
@@ -70,9 +66,9 @@ export default function SignInForm() {
               <div className="space-y-6">
                 <div>
                   <Label>
-                    Kullanıcı adı <span className="text-error-500">*</span>{" "}
+                    E-Mail <span className="text-error-500">*</span>{" "}
                   </Label>
-                  <Input placeholder="Kullanıcı adı" type="text" onChange={(e) => setUsername(e.target.value)} />
+                  <Input placeholder="partner@tozgaming.com" type="email" onChange={(e) => setEmail(e.target.value)} />
                 </div>
                 <div>
                   <Label>
@@ -127,16 +123,7 @@ export default function SignInForm() {
               </div>
             </form>
 
-            <div className="mt-5">
-              <p className="text-sm font-normal text-center text-gray-700 dark:text-gray-400 sm:text-start">
-                Hesabınız mı yok ? {""}
-                <Link
-                  href="/signup"
-                  className="text-brand-500 hover:text-brand-600 dark:text-brand-400"
-                >
-                  Hesap Oluştur
-                </Link>
-              </p>
+            <div className="mt-2">
             </div>
           </div>
         </div>
