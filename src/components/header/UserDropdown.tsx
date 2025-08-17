@@ -24,7 +24,7 @@ function toggleDropdown(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
         className="flex items-center text-gray-700 dark:text-gray-400 dropdown-toggle"
       >
         <span className="mr-3 overflow-hidden rounded-full h-11 w-11 bg-blue-600 flex items-center justify-center">
-          <p className="text-white text-sm font-normal">{`${userInfo.fullname ? userInfo.fullname.charAt(0) : ''}${userInfo.lastName ? userInfo.lastName.charAt(0) : ''}`}</p>
+          <p className="text-white text-sm font-normal">{`${userInfo.fullname ? userInfo.fullname.charAt(0) : ''}${userInfo.lastname ? userInfo.lastname.charAt(0) : ''}`}</p>
         </span>
         <div className="flex flex-col items-start justify-start">
           <span className="block mr-1 font-medium text-theme-sm">{`${userInfo.fullname} ${userInfo.lastname}`}</span>
@@ -57,10 +57,10 @@ function toggleDropdown(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
       >
         <div>
           <span className="block font-medium text-gray-700 text-theme-sm dark:text-gray-400">
-            {`${userInfo.fullName} ${userInfo.lastName}`}
+            {`${userInfo.fullname} ${userInfo.lastname}`}
           </span>
           <span className="mt-0.5 block text-theme-xs text-gray-500 dark:text-gray-400">
-            {userInfo.username}
+            {userInfo.email}
           </span>
         </div>
 
@@ -69,7 +69,7 @@ function toggleDropdown(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
             <DropdownItem
               onItemClick={closeDropdown}
               tag="a"
-              href={`${userInfo && userInfo.role === 'admin' ? '/admin/profile' : '/profile'}`}
+              href={`${userInfo && userInfo.role === 'Admin' ? '/admin/profile' : '/profile'}`}
               className="flex items-center gap-3 px-3 py-2 font-medium text-gray-700 rounded-lg group text-theme-sm hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
             >
               <svg
