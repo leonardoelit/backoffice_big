@@ -201,3 +201,10 @@ export interface GetAllFinancialTransactionsResponse{
   totalPages: number;
   totalCount: number;
 }
+
+export interface PaymentResponse{
+  hasError: boolean;
+  data: string;
+  description: string;
+  id: number;
+}

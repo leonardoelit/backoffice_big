@@ -433,7 +433,7 @@ const BasicTableWithdrawals = () => {
                   ))}
                 </>
               ) : (
-                financialTransactions.map((t) => (
+                financialTransactions.filter((t) => t.status !== 'Pending').map((t) => (
                   <TableRow key={t.id}>
                     <TableCell className="px-5 py-4 sm:px-6 text-start">
                       <div>
@@ -472,7 +472,7 @@ const BasicTableWithdrawals = () => {
                         )}
                       </div>
                     </TableCell>
-                    <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                    <TableCell className={`px-4 py-3 ${t.status === 'Pending' ? 'text-yellow-600' : t.status === 'Success' ? 'text-success-600' : t.status === 'Fail' || t.status === 'Cancel' || t.status === "Rejected" ? 'text-red-600' : 'text-gray-500 dark:text-gray-400'} text-start text-theme-sm`}>
                       {t.status}
                     </TableCell>
                     <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">

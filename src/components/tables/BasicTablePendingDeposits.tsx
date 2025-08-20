@@ -5,8 +5,11 @@ import { PlayerFinancialFilter } from '../constants/types';
 import { Table, TableBody, TableCell, TableHeader, TableRow } from '../ui/table';
 import { formatDateToDDMMYYYYHHMMSS } from '@/utils/utils';
 import DateRangePickerWithTime from '../player-profile/DateRangePickerWithTime';
+import { managePendingFinancialRequest } from '../lib/api';
+import { showToast } from '@/utils/toastUtil';
+import ConfirmationModal from './ConfirmationModal';
 
-const BasicTableDeposits = () => {
+const BasicTablePendingDeposits = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const [rowsPerPage, setRowsPerPage] = useState(25);
 
@@ -17,11 +20,25 @@ const BasicTableDeposits = () => {
     const [playerId, setPlayerId] = useState<string | undefined>(undefined)
     const [amountFrom, setAmountFrom] = useState<string | undefined>(undefined)
     const [amountTo, setAmountTo] = useState<string | undefined>(undefined)
-    const [status, setStatus] = useState<string | undefined>(undefined)
+    const [status, setStatus] = useState<string>("Pending")
     const [paymentName, setPaymentName] = useState<string | undefined>(undefined)
     const [accountNumber, setAccountNumber] = useState<string | undefined>(undefined)
     const [cryptoType, setCryptoType] = useState<string | undefined>(undefined)
     const [playerUsername, setPlayerUsername] = useState<string | undefined>(undefined)
+
+    const [modalState, setModalState] = useState<{
+    isOpen: boolean;
+    id: number | null;
+    playerId: string | null;
+    action: 'accept' | 'reject' | null;
+  }>({
+    isOpen: false,
+    id: null,
+    playerId: null,
+    action: null
+  });
+
+    const [isSendingResponse, setIsSendingResponse] = useState(false);
 
 
     const [isFilterOn, setIsFilterOn] = useState(false);
@@ -30,7 +47,8 @@ const BasicTableDeposits = () => {
         {
           pageNumber: currentPage,
           pageSize: rowsPerPage,
-          typeName: 'deposit'
+          typeName: 'deposit',
+          status: 'Pending'
         }
       );
 
@@ -87,7 +105,7 @@ const BasicTableDeposits = () => {
         paymentName: paymentName || undefined,
         playerFullName: playerFullName || undefined,
         playerUsername: playerUsername || undefined,
-        status: status || undefined
+        status: 'Pending'
       };
     
       // Only include dates that were modified
@@ -120,7 +138,6 @@ const BasicTableDeposits = () => {
       setPlayerFullName('')
       setAmountFrom('')
       setAmountTo('')
-      setStatus('')
       setPaymentName('')
       setCryptoType('')
       setAccountNumber('')
@@ -135,13 +152,48 @@ const BasicTableDeposits = () => {
       const defaultFilter = {
         pageNumber: 1,
         pageSize: rowsPerPage,
-        typeName: 'deposit'
+        typeName: 'deposit',
+        status: 'Pending'
       };
       
       // Apply the default filter
       setFilter(defaultFilter);
       setIsFilterOn(false);
     };
+
+    // Modify manageRequest to open confirmation modal
+  const handleActionClick = (id: number, playerId: string, action: 'accept' | 'reject') => {
+    setModalState({
+      isOpen: true,
+      id,
+      playerId,
+      action
+    });
+  };
+
+  // Create function to handle confirmed action
+  const handleConfirmedAction = async () => {
+    if (modalState.id && modalState.playerId && modalState.action) {
+      setIsSendingResponse(true);
+      const result = await managePendingFinancialRequest(
+        modalState.id, 
+        modalState.playerId, 
+        'deposit', 
+        modalState.action === 'accept'
+      );
+      
+      if (result.hasError) {
+        showToast(result.description, "error");
+      } else {
+        showToast(result.description, "success");
+        handleRefetch();
+      }
+      
+      setIsSendingResponse(false);
+      setModalState({ isOpen: false, id: null, playerId: null, action: null });
+    }
+  };
+
     const SkeletonRow = ({ columns }: { columns: number }) => (
       <TableRow>
         {Array.from({ length: columns }).map((_, index) => (
@@ -158,6 +210,12 @@ const BasicTableDeposits = () => {
   }
   return (
     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">
+          <ConfirmationModal
+        isOpen={modalState.isOpen}
+        onClose={() => setModalState({ isOpen: false, id: null, playerId: null, action: null })}
+        onConfirm={handleConfirmedAction}
+        action={modalState.action || 'accept'}
+      />
           <div className="relative" ref={dropdownRef}>
           {/* Toggle button */}
           <button
@@ -172,128 +230,113 @@ const BasicTableDeposits = () => {
     
           {/* Dropdown panel */}
           {/* Dropdown panel */}
-{open && (
-  <div
-    className="absolute mt-2 w-full md:w-[80vw] max-w-4xl right-0 
-               bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 
-               rounded-lg shadow-lg z-50 p-4"
-  >
-    {/* Filter row 1 */}
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-      {/* Player ID */}
-      <input
-        type="text"
-        value={playerId || ""}
-        onChange={(e) => setPlayerId(e.target.value)}
-        placeholder="Player ID"
-        className="w-full rounded-md border border-gray-300 dark:border-gray-600 
-                   bg-white dark:bg-gray-700 text-sm text-gray-700 dark:text-gray-200 
-                   px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-      />
+        {open && (
+        <div
+            className="absolute mt-2 w-full md:w-[80vw] max-w-4xl right-0 
+                    bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 
+                    rounded-lg shadow-lg z-50 p-4"
+        >
+            {/* Filter row 1 */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+            {/* Player ID */}
+            <input
+                type="text"
+                value={playerId || ""}
+                onChange={(e) => setPlayerId(e.target.value)}
+                placeholder="Player ID"
+                className="w-full rounded-md border border-gray-300 dark:border-gray-600 
+                        bg-white dark:bg-gray-700 text-sm text-gray-700 dark:text-gray-200 
+                        px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
 
-      {/* Username */}
-      <input
-        type="text"
-        value={playerUsername || ""}
-        onChange={(e) => setPlayerUsername(e.target.value)}
-        placeholder="Username"
-        className="w-full rounded-md border border-gray-300 dark:border-gray-600 
-                   bg-white dark:bg-gray-700 text-sm text-gray-700 dark:text-gray-200 
-                   px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-      />
+            {/* Username */}
+            <input
+                type="text"
+                value={playerUsername || ""}
+                onChange={(e) => setPlayerUsername(e.target.value)}
+                placeholder="Username"
+                className="w-full rounded-md border border-gray-300 dark:border-gray-600 
+                        bg-white dark:bg-gray-700 text-sm text-gray-700 dark:text-gray-200 
+                        px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
 
-      {/* Fullname */}
-      <input
-        type="text"
-        value={playerFullName || ""}
-        onChange={(e) => setPlayerFullName(e.target.value)}
-        placeholder="Full Name"
-        className="w-full rounded-md border border-gray-300 dark:border-gray-600 
-                   bg-white dark:bg-gray-700 text-sm text-gray-700 dark:text-gray-200 
-                   px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-      />
-    </div>
+            {/* Fullname */}
+            <input
+                type="text"
+                value={playerFullName || ""}
+                onChange={(e) => setPlayerFullName(e.target.value)}
+                placeholder="Full Name"
+                className="w-full rounded-md border border-gray-300 dark:border-gray-600 
+                        bg-white dark:bg-gray-700 text-sm text-gray-700 dark:text-gray-200 
+                        px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            </div>
 
-    {/* Filter row 2 */}
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-      {/* Amount From */}
-      <input
-        type="number"
-        value={amountFrom || ""}
-        onChange={(e) => setAmountFrom(e.target.value)}
-        placeholder="Amount From"
-        className="w-full rounded-md border border-gray-300 dark:border-gray-600 
-                   bg-white dark:bg-gray-700 text-sm text-gray-700 dark:text-gray-200 
-                   px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-      />
+            {/* Filter row 2 */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+            {/* Amount From */}
+            <input
+                type="number"
+                value={amountFrom || ""}
+                onChange={(e) => setAmountFrom(e.target.value)}
+                placeholder="Amount From"
+                className="w-full rounded-md border border-gray-300 dark:border-gray-600 
+                        bg-white dark:bg-gray-700 text-sm text-gray-700 dark:text-gray-200 
+                        px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
 
-      {/* Amount To */}
-      <input
-        type="number"
-        value={amountTo || ""}
-        onChange={(e) => setAmountTo(e.target.value)}
-        placeholder="Amount To"
-        className="w-full rounded-md border border-gray-300 dark:border-gray-600 
-                   bg-white dark:bg-gray-700 text-sm text-gray-700 dark:text-gray-200 
-                   px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-      />
+            {/* Amount To */}
+            <input
+                type="number"
+                value={amountTo || ""}
+                onChange={(e) => setAmountTo(e.target.value)}
+                placeholder="Amount To"
+                className="w-full rounded-md border border-gray-300 dark:border-gray-600 
+                        bg-white dark:bg-gray-700 text-sm text-gray-700 dark:text-gray-200 
+                        px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
 
-      {/* Account Number */}
-      <input
-        type="text"
-        value={accountNumber || ""}
-        onChange={(e) => setAccountNumber(e.target.value)}
-        placeholder="Account Number"
-        className="w-full rounded-md border border-gray-300 dark:border-gray-600 
-                   bg-white dark:bg-gray-700 text-sm text-gray-700 dark:text-gray-200 
-                   px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-      />
-    </div>
+            {/* Account Number */}
+            <input
+                type="text"
+                value={accountNumber || ""}
+                onChange={(e) => setAccountNumber(e.target.value)}
+                placeholder="Account Number"
+                className="w-full rounded-md border border-gray-300 dark:border-gray-600 
+                        bg-white dark:bg-gray-700 text-sm text-gray-700 dark:text-gray-200 
+                        px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            </div>
 
-    {/* Filter row 3 */}
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-      {/* Crypto Type */}
-      <select
-        value={status || ""}
-        onChange={(e) => setStatus(e.target.value)}
-        className="w-full rounded-md border border-gray-300 dark:border-gray-600 
-                   bg-white dark:bg-gray-700 text-sm text-gray-700 dark:text-gray-200 
-                   px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-      >
-        <option value="">Select Crypto Type</option>
-        <option value="BTC">BTC</option>
-        <option value="TRC20">TRC20</option>
-      </select>
+            {/* Filter row 3 */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+            {/* Crypto Type */}
+            <select
+                value={status || ""}
+                onChange={(e) => setCryptoType(e.target.value)}
+                className="w-full rounded-md border border-gray-300 dark:border-gray-600 
+                        bg-white dark:bg-gray-700 text-sm text-gray-700 dark:text-gray-200 
+                        px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+                <option value="">Select Crypto Type</option>
+                <option value="BTC">BTC</option>
+                <option value="TRC20">TRC20</option>
+            </select>
 
-      {/* Status */}
-      <select
-        value={status || ""}
-        onChange={(e) => setStatus(e.target.value)}
-        className="w-full rounded-md border border-gray-300 dark:border-gray-600 
-                   bg-white dark:bg-gray-700 text-sm text-gray-700 dark:text-gray-200 
-                   px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-      >
-        <option value="">Select Status</option>
-        <option value="Pending">Pending</option>
-        <option value="Success">Success</option>
-        <option value="Failed">Failed</option>
-        <option value="Cancelled">Cancelled</option>
-      </select>
-
-      {/* Date Picker */}
-      <div className="w-full">
-  <div className="rounded-md border border-gray-300 dark:border-gray-600 
-                  px-2 py-1 bg-white dark:bg-gray-700">
-    <DateRangePickerWithTime
-      onChange={({ MinCreatedLocal, MaxCreatedLocal }) => {
-        setDateFrom(MinCreatedLocal)
-        setDateTo(MaxCreatedLocal)
-      }}
-      onModifiedChange={(modified) => setIsDateModified(modified)}
-      isChanged={isDateModified}
-    />
-  </div>
-</div>
+            {/* Date Picker */}
+            <div className="w-full">
+        <div className="rounded-md border border-gray-300 dark:border-gray-600 
+                        px-2 py-1 bg-white dark:bg-gray-700">
+            <DateRangePickerWithTime
+            onChange={({ MinCreatedLocal, MaxCreatedLocal }) => {
+                setDateFrom(MinCreatedLocal)
+                setDateTo(MaxCreatedLocal)
+            }}
+            onModifiedChange={(modified) => setIsDateModified(modified)}
+            isChanged={isDateModified}
+            />
+        </div>
+        </div>
     </div>
 
     {/* Existing Payment + Event selectors can stay above or below as you want */}
@@ -321,12 +364,11 @@ const BasicTableDeposits = () => {
       </button>
     </div>
   </div>
-)}
-
+        )}
         </div>
           <div className="flex justify-between items-center px-4 py-2 bg-gray-50 dark:bg-white/[0.02]">
         <div className="text-sm text-gray-700 dark:text-gray-300">
-          Showing {financialTransactions.length} of {pagination.totalCount} deposit transactions
+          Showing {financialTransactions.length} of {pagination.totalCount} deposit requests
         </div>
         <div className="flex items-center gap-2">
           <label htmlFor="rowsPerPage" className="text-sm text-gray-700 dark:text-gray-300">
@@ -345,7 +387,7 @@ const BasicTableDeposits = () => {
         </div>
       </div>
       <div className="w-full overflow-x-auto">
-        <div className="min-w-[1102px] min-h-[600px]">
+        <div className="min-w-[1102px] min-h-[200px] h-auto">
           <Table>
             <TableHeader className="border-b border-gray-100 dark:border-white/[0.05]">
               <TableRow>
@@ -403,6 +445,13 @@ const BasicTableDeposits = () => {
                   >
                     Time
                   </TableCell>
+                  <TableCell 
+                    isHeader 
+                    className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400 cursor-pointer" 
+                    onClick={() => handleSort("timestamp")}
+                  >
+                    Actions
+                  </TableCell>
               </TableRow>
             </TableHeader>
 
@@ -410,11 +459,11 @@ const BasicTableDeposits = () => {
               {loading ? (
                 <>
                   {Array.from({ length: rowsPerPage }).map((_, i) => (
-                    <SkeletonRow key={i} columns={10} />
+                    <SkeletonRow key={i} columns={11} />
                   ))}
                 </>
               ) : (
-                financialTransactions.filter((t) => t.status !== 'Pending').map((t) => (
+                financialTransactions.map((t) => (
                   <TableRow key={t.id}>
                     <TableCell className="px-5 py-4 sm:px-6 text-start">
                       <div>
@@ -459,6 +508,16 @@ const BasicTableDeposits = () => {
                     <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
                         {formatDateToDDMMYYYYHHMMSS(t.createdAt)}
                     </TableCell>
+                    <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                        <div className='flex flex-row items-start justify-start gap-2'>
+                            <button disabled={isSendingResponse} onClick={() => handleActionClick(t.id, t.playerID, 'accept')} className='px-2 py-1 text-green-600 border-[1px] border-green-600 bg-white hover:green-700 hover:bg-gray-200 hover:test-semibold disabled:bg-gray-400 rounded-md'>
+                                Accept
+                            </button>
+                            <button disabled={isSendingResponse} onClick={() => handleActionClick(t.id, t.playerID, 'reject')} className='px-2 py-1 text-red-600 border-[1px] border-red-600 bg-white hover:green-700 hover:bg-gray-200 hover:test-semibold disabled:bg-gray-400 rounded-md'>
+                                Reject
+                            </button>
+                        </div>
+                    </TableCell>
                   </TableRow>
                 ))
               )}
@@ -491,4 +550,4 @@ const BasicTableDeposits = () => {
   )
 }
 
-export default BasicTableDeposits
+export default BasicTablePendingDeposits

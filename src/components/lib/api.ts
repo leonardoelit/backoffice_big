@@ -1,4 +1,4 @@
-import { GetAllFinancialTransactionsResponse, GetAllPlayersResponse, GetPlayersDataWithIdResponse, GetPlayersTransactionHistoryResponse, PlayerFilter, PlayerFinancialFilter, PlayerTransactionFilter } from "../constants/types";
+import { GetAllFinancialTransactionsResponse, GetAllPlayersResponse, GetPlayersDataWithIdResponse, GetPlayersTransactionHistoryResponse, PaymentResponse, PlayerFilter, PlayerFinancialFilter, PlayerTransactionFilter } from "../constants/types";
 
 
 export async function getPlayers(
@@ -208,6 +208,43 @@ export async function getFinancialTransactions(
       currentPage: 1,
       totalPages: 1,
       totalCount: 0
+    };
+  }
+}
+
+export async function managePendingFinancialRequest(id:number, playerId:string, type:string, res:boolean): Promise<PaymentResponse>{
+  try{
+    const token = localStorage.getItem("authToken");
+    const urlEnding = type === 'deposit' ? 'manageDeposit' : 'manageWithdrawal'
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/api/Client/${urlEnding}`,
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          id: id,
+          playerId: playerId,
+          result: res,
+        }),
+        cache: 'no-store'
+      }
+    );
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching players:', error);
+    return {
+      hasError: false,
+      description: error instanceof Error ? error.message : 'Failed to fetch players',
+      data: "",
+      id: 900,
     };
   }
 }
