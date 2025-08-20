@@ -25,12 +25,6 @@ export interface JwtPayload {
   role: 'Admin' | 'User' | '';
 }
 
-enum Gender {
-  Male = "Male",
-  Female = "Female",
-  Other = "Other"
-}
-
 enum PlayerCategory {
   Regular = "Regular",
   VIP = "VIP",
@@ -163,4 +157,47 @@ export interface PlayerTransactionFilter{
   type?: string;
   timeStampFrom?: string;
   timeStampTo?: string;
+}
+
+export interface PlayerFinancialFilter{
+  pageNumber?: number;
+  pageSize?: number;
+  playerId?: string;
+  playerUsername?: string;
+  playerFullName?: string;
+  amountFrom?: string;
+  amountTo?: string;
+  typeName: string;
+  status?: string;
+  paymentName?: string;
+  timeStampFrom?: string;
+  timeStampTo?: string;
+  accountNumber?: string;
+  cryptoType?: string;
+}
+
+export interface FinancialTransaction {
+  id: number;
+  playerID: string;
+  playerUsername: string;
+  playerFullName: string;
+  amount: number;
+  type: string;
+  typeName: string;
+  status: string;
+  paymentName: string;
+  accountNumber?: string;
+  bankID?: string;
+  cryptoType?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface GetAllFinancialTransactionsResponse{
+  isSuccess: boolean;
+  message: string;
+  financialTransactions: FinancialTransaction[];
+  currentPage: number;
+  totalPages: number;
+  totalCount: number;
 }

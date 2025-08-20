@@ -1,4 +1,4 @@
-import { GetAllPlayersResponse, GetPlayersDataWithIdResponse, GetPlayersTransactionHistoryResponse, PlayerFilter, PlayerTransactionFilter } from "../constants/types";
+import { GetAllFinancialTransactionsResponse, GetAllPlayersResponse, GetPlayersDataWithIdResponse, GetPlayersTransactionHistoryResponse, PlayerFilter, PlayerFinancialFilter, PlayerTransactionFilter } from "../constants/types";
 
 
 export async function getPlayers(
@@ -146,6 +146,65 @@ export async function getPlayerTransactions(
       isSuccess: false,
       message: error instanceof Error ? error.message : 'Failed to fetch players transactions',
       transactions: [],
+      currentPage: 1,
+      totalPages: 1,
+      totalCount: 0
+    };
+  }
+}
+
+export async function getFinancialTransactions(
+  filter: PlayerFinancialFilter
+): Promise<GetAllFinancialTransactionsResponse> {
+  try {
+    const token = localStorage.getItem("authToken");
+    
+    // Convert filter to query params
+    const queryParams = new URLSearchParams();
+    
+    if (filter.pageNumber) queryParams.set('pageNumber', filter.pageNumber.toString());
+    if (filter.pageSize) queryParams.set('pageSize', filter.pageSize.toString());
+    if (filter.playerId) queryParams.set('playerId', filter.playerId.toString());
+    if (filter.playerUsername) queryParams.set('playerUsername', filter.playerUsername);
+
+
+    // New filters
+    if (filter.amountFrom) queryParams.set('amountFrom', filter.amountFrom);
+    if (filter.amountTo) queryParams.set('amountTo', filter.amountTo);
+    if (filter.timeStampFrom) queryParams.set('timeStampFrom', filter.timeStampFrom);
+    if (filter.timeStampTo) queryParams.set('timeStampTo', filter.timeStampTo);
+
+    if (filter.accountNumber) queryParams.set('accountNumber', filter.accountNumber);
+    if (filter.cryptoType) queryParams.set('cryptoType', filter.cryptoType);
+    if (filter.paymentName) queryParams.set('paymentName', filter.paymentName);
+    if (filter.playerFullName) queryParams.set('playerFullName', filter.playerFullName);
+
+    if (filter.status) queryParams.set('status', filter.status);
+    if (filter.typeName) queryParams.set('typeName', filter.typeName);
+
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/api/Client/getPlayersFinancialTransactions?${queryParams.toString()}`,
+      {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        cache: 'no-store'
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching players:', error);
+    return {
+      isSuccess: false,
+      message: error instanceof Error ? error.message : 'Failed to fetch players',
+      financialTransactions: [],
       currentPage: 1,
       totalPages: 1,
       totalCount: 0

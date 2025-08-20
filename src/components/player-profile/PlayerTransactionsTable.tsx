@@ -4,7 +4,7 @@ import { usePlayerTransactions } from '../hooks/usePlayerTransactions';
 import { PlayerTransactionFilter } from '../constants/types';
 import { Table, TableBody, TableCell, TableHeader, TableRow } from '../ui/table';
 import { formatDateToDDMMYYYYHHMMSS } from '@/utils/utils';
-import DateRangePickerWithTime from './DAteRangePickerWithTime';
+import DateRangePickerWithTime from './DateRangePickerWithTime';
 
 const PlayerTransactionsTable = ({ playerId }: { playerId:string }) => {
     const [currentPage, setCurrentPage] = useState(1);
