@@ -1,12 +1,12 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import { ClientKpi, Player, useAuth } from "@/context/AuthContext";
-import { startTransition, useEffect, useState } from "react";
-import { EcommerceMetrics } from "@/components/ecommerce/EcommerceMetrics";
-import { getPlayerHistory } from "@/server/userActions";
+import { useEffect, useState } from "react";
 import Statistic from "@/components/player-profile/Statistics";
 import PlayerInfoCards from "@/components/player-profile/PlayerInfoCards";
+import { Player } from "@/components/constants/types";
+import { getPlayerDataId } from "@/components/lib/api";
+import PlayerTransactionsTable from "@/components/player-profile/PlayerTransactionsTable";
 
 
 export interface BonusTransaction {
@@ -17,96 +17,40 @@ export interface BonusTransaction {
 }
 
 export default function PlayerProfile() {
-  const { allAffiliatesList, allPlayerData } = useAuth();
   const [playerData, setPlayerData] = useState<Player>();
-  const [playerAffiliate, setPlayerAffiliate] = useState<ClientKpi>();
-  const [playerHistory, setPlayerHistory] = useState<BonusTransaction[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isLoadingHistory, setisLoadingHistory] = useState(true);
-  const [playerNotFound, setPlayerNotFound] = useState(false);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const [activeTab, setActiveTab] = useState("overview");
 
   const params = useParams();
   const id = params.id as string;
 
   useEffect(() => {
-    if (allAffiliatesList.length && allPlayerData.length) {
-      getPlayer();
-    }
-  }, [allAffiliatesList.length, allPlayerData.length]);
-
-  useEffect(() => {
-    if (playerHistory.length) {
-      setisLoadingHistory(false);
-    }
-  }, [playerHistory]);
-
-  const getPlayer = async () => {
-    setIsLoading(true);
-    const token = localStorage.getItem("authToken");
-
-    if (!token || !allAffiliatesList.length) {
-      setIsLoading(false);
-      setPlayerNotFound(true);
-      return;
-    }
-
-    const affiliateWithPlayerId = allAffiliatesList.find(
-      (affiliate) => affiliate.ClientId === Number(id)
-    );
-
-    if (!affiliateWithPlayerId) {
-      setPlayerNotFound(true);
-      setIsLoading(false);
-      return;
-    }
-
-    const playerDataResult = allPlayerData.find(
-      (player) => player.Login === affiliateWithPlayerId.Login
-    );
-    setPlayerAffiliate(affiliateWithPlayerId);
-    setPlayerData(playerDataResult);
-
-    try {
-      const historyResponse = await getPlayerHistory(token, id);
-      if (historyResponse.isSuccess) {
-        startTransition(() => {
-          setPlayerHistory(historyResponse.playerHistory);
-        });
+    const getPlayerData = async () => {
+      setIsLoading(true)
+      const res = await getPlayerDataId(id)
+      if(res.isSuccess){
+        setPlayerData(res.playerData)
       }
-    } catch (err) {
-      console.error("❌ Error fetching history", err);
+      setIsLoading(false);
     }
-    setIsLoading(false);
-  };
-
-  const reverseString = (string: string) => {
-    return string.split(" ").reverse().join(" ");
-  };
-
-  const calculateProfitLossPercentage = (): string => {
-    const totalDeposit = playerAffiliate?.TotalDeposit ?? 0;
-    const totalWithdrawal = playerAffiliate?.TotalWithdrawal ?? 0;
-    if (totalWithdrawal === 0) return "0%";
-    const percentage =
-      ((totalDeposit - totalWithdrawal) / totalWithdrawal) * 100;
-    return `${percentage.toFixed(2)}%`;
-  };
-
+    if(id !== null){
+      getPlayerData();
+    }
+  }, [id]);
 const renderTabContent = () => {
   switch (activeTab) {
     case "overview":
-      return  <PlayerInfoCards />; 
+      return  <PlayerInfoCards playerData={playerData} isLoadingData={isLoading} />; 
         case "istatistik":
-          return <Statistic />;
+          return <Statistic playerData={playerData} isLoadingData={isLoading} />;
         case "bonuslar":
           return (
             <div className="text-center p-10 text-gray-500 dark:text-gray-400">
               Bonuslar sekmesi içeriği yakında eklenecek.
             </div>
           );
-        case "İşlemler":
-          return  <PlayerInfoCards />;
+        case "işlemler":
+          return  <PlayerTransactionsTable playerId={id} />;
           case "Ayarlar":
             return (
               <div className="text-center p-10 text-gray-500 dark:text-gray-400">

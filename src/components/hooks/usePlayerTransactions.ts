@@ -1,0 +1,67 @@
+// hooks/usePlayers.ts
+"use client"
+
+import { useEffect, useState } from "react";
+import { GetPlayersTransactionHistoryResponse, PlayerTransactionFilter } from "../constants/types";
+import { showToast } from "@/utils/toastUtil";
+import { getPlayerTransactions } from "../lib/api";
+
+export function usePlayerTransactions(initialFilter: PlayerTransactionFilter) {
+  const [data, setData] = useState<GetPlayersTransactionHistoryResponse | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Merge initialFilter with defaults for pagination
+  const [filter, setFilter] = useState<PlayerTransactionFilter>({
+    pageNumber: 1,
+    pageSize: 25,
+    eventType: undefined,
+    timeStampFrom: undefined,
+    timeStampTo: undefined,
+    type: undefined,
+    ...initialFilter,
+  });
+
+  const fetchPlayerTransactions = async (customFilter?: Partial<PlayerTransactionFilter>) => {
+    const effectiveFilter = { ...filter, ...customFilter };
+    setLoading(true);
+    setError(null);
+
+    try {
+      const result = await getPlayerTransactions(effectiveFilter);
+      
+      if (!result.isSuccess) {
+        throw new Error(result.message || 'Failed to fetch players');
+      }
+
+      setData(result);
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch players';
+      setError(errorMessage);
+      showToast(errorMessage, 'error');
+      setData(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchPlayerTransactions();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filter]);
+
+  return {
+    transactions: data?.transactions || [],
+    pagination: {
+      currentPage: data?.currentPage || 1,
+      totalPages: data?.totalPages || 1,
+      totalCount: data?.totalCount || 0,
+      pageSize: filter.pageSize || 25,
+    },
+    loading,
+    error,
+    filter,
+    setFilter,
+    refetch: fetchPlayerTransactions,
+  };
+}

@@ -1,116 +1,95 @@
 'use client'
 
 import React, { useEffect, useRef, useState } from 'react'
-import { format, startOfMonth, endOfMonth, subDays, subMonths } from 'date-fns'
 import { DateRange } from 'react-date-range'
-
-type Option =
-  | 'Today'
-  | 'Yesterday'
-  | 'Last 7 Days'
-  | 'Last 30 Days'
-  | 'This Month'
-  | 'Last Month'
-  | 'All Time'
-  | 'Custom Date'
+import { subDays, format } from 'date-fns'
 
 interface DateRangeResult {
   MinCreatedLocal: string
   MaxCreatedLocal: string
 }
 
-const formatDate = (date: Date) => format(date, 'dd-MM-yy')
+interface DateRangePickerProps {
+  onChange: (range: DateRangeResult) => void
+  onModifiedChange?: (modified: boolean) => void
+  initialStartDate?: Date
+  initialEndDate?: Date
+  isChanged: boolean;
+}
 
 export default function DateRangePicker({
   onChange,
-}: {
-  onChange: (range: DateRangeResult) => void
-}) {
-  const [selectedLabel, setSelectedLabel] = useState<Option>('Today')
+  onModifiedChange,
+  initialStartDate = subDays(new Date(), 3),
+  initialEndDate = new Date(),
+  isChanged
+}: DateRangePickerProps) {
   const [dropdownOpen, setDropdownOpen] = useState(false)
-  const [customRange, setCustomRange] = useState<{ startDate: Date; endDate: Date }>({
-    startDate: subDays(new Date(), 3),
-    endDate: new Date(),
+  const [customRange, setCustomRange] = useState<{ startDate: Date | null; endDate: Date | null }>({
+    startDate: null,
+    endDate: null
   })
-  const [appliedCustomRange, setAppliedCustomRange] = useState<{ startDate: Date; endDate: Date }>({
-    startDate: subDays(new Date(), 3),
-    endDate: new Date(),
-  })
+  const [isUpdated, setIsUpdated] = useState(false)
 
   const dropdownRef = useRef<HTMLDivElement>(null)
 
-  const calculateRange = (option: Option): DateRangeResult => {
-    const now = new Date()
-    let from = now
-    let to = from
+  useEffect(() => {
+    setIsUpdated(isChanged)
+  }, [isChanged])
+  
 
-    switch (option) {
-      case 'Today':
-        from = now
-        to = from
-        break
-      case 'Yesterday':
-        from = subDays(now, 1)
-        to = from
-        break
-      case 'Last 7 Days':
-        from = subDays(now, 7)
-        break
-      case 'Last 30 Days':
-        from = subDays(now, 30)
-        break
-      case 'This Month':
-        from = startOfMonth(now)
-        to = endOfMonth(now)
-        break
-      case 'Last Month': {
-        const lastMonth = subMonths(now, 1)
-        from = startOfMonth(lastMonth)
-        to = endOfMonth(lastMonth)
-        break
-      }
-       case 'All Time': {
-        from = new Date(2000, 0, 1) // Jan 1, 2000
-        to = now
-        break
-      }
-      case 'Custom Date':
-        from = appliedCustomRange.startDate
-        to = appliedCustomRange.endDate
-        break
-    }
-
-    return {
-      MinCreatedLocal: formatDate(from),
-      MaxCreatedLocal: formatDate(to),
-    }
+  const startOfDayISO = (date: Date) => {
+    const d = new Date(date)
+    d.setHours(0, 0, 0, 0)
+    return d.toISOString()
   }
 
-  const handleSelect = (option: Option) => {
-    setSelectedLabel(option)
-    if (option !== 'Custom Date') {
-      const range = calculateRange(option)
-      onChange(range)
-      setDropdownOpen(false)
-    }
+  const endOfDayISO = (date: Date) => {
+    const d = new Date(date)
+    d.setHours(23, 59, 59, 999)
+    return d.toISOString()
+  }
+
+  const formatDisplayDate = (date: Date | null) => {
+    return date ? format(date, 'dd.MM.yyyy') : '00.00.00'
   }
 
   const handleCustomRangeChange = (ranges: any) => {
     const { startDate, endDate } = ranges.selection
     setCustomRange({ startDate, endDate })
+    if (onModifiedChange) onModifiedChange(true)
   }
 
   const handleApply = () => {
-    setAppliedCustomRange({ ...customRange })
-    const formatted = {
-      MinCreatedLocal: formatDate(customRange.startDate),
-      MaxCreatedLocal: formatDate(customRange.endDate),
+    if (customRange.startDate && customRange.endDate) {
+      onChange({
+        MinCreatedLocal: startOfDayISO(customRange.startDate),
+        MaxCreatedLocal: endOfDayISO(customRange.endDate)
+      })
+    } else {
+      // Clear the dates if none selected
+      onChange({
+        MinCreatedLocal: '',
+        MaxCreatedLocal: ''
+      })
     }
-    onChange(formatted)
     setDropdownOpen(false)
   }
 
-  const { MinCreatedLocal, MaxCreatedLocal } = calculateRange(selectedLabel)
+  const handleClear = () => {
+    setCustomRange({ startDate: null, endDate: null })
+    if (onModifiedChange) onModifiedChange(true)
+  }
+
+  useEffect(() => {
+    // Initialize with default dates if not set
+    if (!customRange.startDate && !customRange.endDate) {
+      setCustomRange({
+        startDate: initialStartDate,
+        endDate: initialEndDate
+      })
+    }
+  }, [initialStartDate, initialEndDate])
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -127,73 +106,37 @@ export default function DateRangePicker({
       <button
         onClick={() => setDropdownOpen(!dropdownOpen)}
         className="border border-gray-300 bg-white rounded-md px-4 py-2 text-sm flex items-center gap-2 hover:bg-gray-50 w-[190px] justify-between"
-        >
-        <svg
-          className="w-4 h-4 text-gray-500"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-          />
-        </svg>
-        {`${MinCreatedLocal.replace(/-/g, '.')} - ${MaxCreatedLocal.replace(/-/g, '.')}`}
+      >
+        {isUpdated ? `${formatDisplayDate(customRange.startDate)} - ${formatDisplayDate(customRange.endDate)}` : '00.00.00 - 00.00.00'}
       </button>
 
       {dropdownOpen && (
-        <div className="absolute mt-2 w-72 bg-white border border-gray-200 rounded-md shadow-md z-10 p-2">
-          {(
-            [
-              'Today',
-              'Yesterday',
-              'Last 7 Days',
-              'Last 30 Days',
-              'This Month',
-              'Last Month',
-              'All Time',
-              'Custom Date',
-            ] as Option[]
-          ).map((option) => (
+        <div className="absolute top-0 right-full mr-2 w-auto bg-white border border-gray-200 rounded-md shadow-md z-10 p-2">
+          <DateRange
+            ranges={[{
+              startDate: customRange.startDate || initialStartDate,
+              endDate: customRange.endDate || initialEndDate,
+              key: 'selection'
+            }]}
+            onChange={handleCustomRangeChange}
+            maxDate={new Date()}
+            rangeColors={['#3b82f6']}
+          />
+
+          <div className="flex justify-between px-3 pb-3">
             <button
-              key={option}
-              onClick={() => handleSelect(option)}
-              className={`w-full text-left px-3 py-2 text-sm rounded hover:bg-gray-100 ${
-                selectedLabel === option ? 'bg-gray-100 font-medium' : ''
-              }`}
+              onClick={handleClear}
+              className="mt-2 px-4 py-1 text-sm text-gray-700 border border-gray-300 rounded hover:bg-gray-100"
             >
-              {option}
+              Clear
             </button>
-          ))}
-
-          {selectedLabel === 'Custom Date' && (
-            <div className="absolute top-0 right-full mr-2 z-20 bg-white border border-gray-200 rounded-md shadow-lg">
-              <DateRange
-                ranges={[
-                  {
-                    startDate: customRange.startDate,
-                    endDate: customRange.endDate,
-                    key: 'selection',
-                  },
-                ]}
-                onChange={handleCustomRangeChange}
-                maxDate={new Date()}
-                rangeColors={['#3b82f6']}
-              />
-
-              <div className="flex justify-end px-3 pb-3">
-                <button
-                  onClick={handleApply}
-                  className="mt-2 px-4 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700"
-                >
-                  Apply
-                </button>
-              </div>
-            </div>
-          )}
+            <button
+              onClick={handleApply}
+              className="mt-2 px-4 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700"
+            >
+              Apply
+            </button>
+          </div>
         </div>
       )}
     </div>
