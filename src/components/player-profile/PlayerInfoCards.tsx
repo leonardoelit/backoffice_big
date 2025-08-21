@@ -39,6 +39,50 @@ const InfoSection = ({
   </div>
 );
 
+const InfoSection2 = ({
+  title,
+  data,
+  isLoading,
+  cols = 1
+}: {
+  title: string;
+  data: { label: string; value?: string | boolean }[];
+  isLoading: boolean;
+  cols?: 1 | 2;
+}) => (
+  <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-5">
+    <h3 className="text-md font-semibold text-blue-600 dark:text-blue-400 mb-4 pb-2 border-b border-gray-100 dark:border-gray-700">
+      {title}
+    </h3>
+    <div className={`grid grid-cols-1 ${cols === 2 ? 'md:grid-cols-2' : ''} gap-4 text-sm text-gray-700 dark:text-gray-300`}>
+      {data.map((item, idx) => (
+        <div key={idx} className="flex flex-col">
+          <span className="text-gray-500 dark:text-gray-400 font-medium mb-1 text-xs uppercase tracking-wide">
+            {item.label}
+          </span>
+          <span className="font-medium break-words min-h-[1.5rem]">
+            {isLoading ? (
+              <Skeleton width="w-28" />
+            ) : typeof item.value === "boolean" ? (
+              <div className="w-5 h-5 rounded border border-gray-300 dark:border-gray-600 flex items-center justify-center">
+                <input 
+                  type="checkbox" 
+                  checked={item.value} 
+                  readOnly 
+                  className="accent-blue-500 scale-125" 
+                />
+              </div>
+            ) : (
+              item.value || "-"
+            )}
+          </span>
+        </div>
+      ))}
+    </div>
+  </div>
+);
+
+
 interface PlayerInfoCardsProps {
   playerData?: Player;
   isLoadingData: boolean;
@@ -70,13 +114,13 @@ const PlayerInfoCards: React.FC<PlayerInfoCardsProps> = ({ playerData, isLoading
         isLoading={isLoadingData}
           title="Personal Info"
           data={[
-            { label: "İsim", value: isLoadingData ? "Loading..." : playerData.firstName },
-            { label: "İkinci İsim", value: isLoadingData ? "Loading..." : playerData.middleName },
-            { label: "Soyisim", value: isLoadingData ? "Loading..." : playerData.lastName },
+            { label: "İsim", value: isLoadingData ? "Loading..." : playerData?.firstName },
+            { label: "İkinci İsim", value: isLoadingData ? "Loading..." : playerData?.middleName },
+            { label: "Soyisim", value: isLoadingData ? "Loading..." : playerData?.lastName },
             { label: "Doğum Günü", value: isLoadingData ? "Loading..." : formatDateToDDMMYYYY(playerData.birthday) },
-            { label: "Şehir", value: isLoadingData ? "Loading..." : playerData.city },
-            { label: "Cinsiyer", value: isLoadingData ? "Loading..." : playerData.gender },
-            { label: "TCID", value: isLoadingData ? "Loading..." : playerData.documentNumber },
+            { label: "Şehir", value: isLoadingData ? "Loading..." : playerData?.city },
+            { label: "Cinsiyer", value: isLoadingData ? "Loading..." : playerData?.gender },
+            { label: "TCID", value: isLoadingData ? "Loading..." : playerData?.documentNumber },
             { label: "Personal ID", value: isLoadingData ? "Loading..." : "" },
             { label: "Document Expiration Date", value: isLoadingData ? "Loading..." : "" },
             { label: "Document Issue Date", value: isLoadingData ? "Loading..." : "" },
@@ -85,15 +129,16 @@ const PlayerInfoCards: React.FC<PlayerInfoCardsProps> = ({ playerData, isLoading
           ]}
         />
 
-        <InfoSection
-        isLoading={isLoadingData}
+        <InfoSection2
+          isLoading={isLoadingData}
           title="Contact Info"
+          cols={1}
           data={[
-            { label: "Ülke", value: isLoadingData ? "Loading..." : playerData.country },
-            { label: "Email", value: isLoadingData ? "Loading..." : playerData.email },
-            { label: "Şehir", value: isLoadingData ? "Loading..." : playerData.city },
-            { label: "Tel No", value: isLoadingData ? "Loading..." : playerData.mobileNumber },
-            { label: "Adres", value: isLoadingData ? "Loading..." : playerData.address }
+            { label: "Ülke", value: isLoadingData ? "Loading..." : playerData?.country },
+            { label: "Email", value: isLoadingData ? "Loading..." : playerData?.email },
+            { label: "Şehir", value: isLoadingData ? "Loading..." : playerData?.city },
+            { label: "Tel No", value: isLoadingData ? "Loading..." : playerData?.mobileNumber },
+            { label: "Adres", value: isLoadingData ? "Loading..." : playerData?.address }
           ]}
         />
 
@@ -113,22 +158,22 @@ const PlayerInfoCards: React.FC<PlayerInfoCardsProps> = ({ playerData, isLoading
         isLoading={isLoadingData}
           title="Account Info"
           data={[
-            { label: "Player ID", value: isLoadingData ? "Loading..." : playerData.playerId.toString() },
-            { label: "Username", value: isLoadingData ? "Loading..." : playerData.username },
+            { label: "Player ID", value: isLoadingData ? "Loading..." : playerData?.playerId.toString() },
+            { label: "Username", value: isLoadingData ? "Loading..." : playerData?.username },
             { label: "Hesap Durumu", value: isLoadingData ? "Loading..." : "" },
-            { label: "Verified", value: isLoadingData ? "Loading..." : playerData.verificationStatus },
+            { label: "Verified", value: isLoadingData ? "Loading..." : playerData?.verificationStatus },
             { label: "Kayıt Tarihi", value: isLoadingData ? "Loading..." : formatDateToDDMMYYYY(playerData.registrationDateTime) },
-            { label: "Bakiye (TRY)", value: isLoadingData ? "Loading..." : `₺${playerData.balance.toLocaleString()}` },
+            { label: "Bakiye (TRY)", value: isLoadingData ? "Loading..." : `₺${playerData?.balance.toLocaleString()}` },
             { label: "Affiliate Id", value: isLoadingData ? "Loading..." : "" },
             { label: "Is Casino Blocked", value: isLoadingData ? "Loading..." : false },
             { label: "Is Sport Blocked", value: isLoadingData ? "Loading..." : false },
             { label: "Is RMT Blocked", value: isLoadingData ? "Loading..." : false },
             { label: "Durum", value: isLoadingData ? "Loading..." : "Temporary not real" },
             { label: "Statü", value: isLoadingData ? "Loading..." : "Online not real" },
-            { label: "Oyuncu Kategorisi", value: isLoadingData ? "Loading..." : playerData.playerCategory },
+            { label: "Oyuncu Kategorisi", value: isLoadingData ? "Loading..." : playerData?.playerCategory },
             { label: "Casino Profili", value: isLoadingData ? "Loading..." : "" },
             { label: "Dil", value: isLoadingData ? "Loading..." : "Türkçe" },
-            { label: "BTag", value: isLoadingData ? "Loading..." : playerData.promoCode },
+            { label: "BTag", value: isLoadingData ? "Loading..." : playerData?.promoCode },
             { label: "Promo Code", value: isLoadingData ? "Loading..." : "" },
             { label: "Custom Player Category", value: isLoadingData ? "Loading..." : "" },
             { label: "QR code is applied", value: isLoadingData ? "Loading..." : "Sonra halledicem" },
@@ -143,9 +188,10 @@ const PlayerInfoCards: React.FC<PlayerInfoCardsProps> = ({ playerData, isLoading
           ]}
         />
 
-        <InfoSection
+        <InfoSection2
         isLoading={isLoadingData}
           title="Financial Info"
+          cols={1}
           data={[
             { label: "Bank Name", value: isLoadingData ? "Loading..." : "" },
             { label: "IBAN", value: isLoadingData ? "Loading..." : "" },
@@ -154,9 +200,10 @@ const PlayerInfoCards: React.FC<PlayerInfoCardsProps> = ({ playerData, isLoading
           ]}
         />
 
-        <InfoSection
+        <InfoSection2
         isLoading={isLoadingData}
           title="Social Preferences"
+          cols={1}
           data={[
             { label: "Subscribed To Email", value: isLoadingData ? "Loading..." : true },
             { label: "Subscribed To SMS", value: isLoadingData ? "Loading..." : true },
