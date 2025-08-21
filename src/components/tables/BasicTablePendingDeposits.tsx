@@ -8,6 +8,7 @@ import DateRangePickerWithTime from '../player-profile/DateRangePickerWithTime';
 import { managePendingFinancialRequest } from '../lib/api';
 import { showToast } from '@/utils/toastUtil';
 import ConfirmationModal from './ConfirmationModal';
+import Link from 'next/link';
 
 const BasicTablePendingDeposits = () => {
     const [currentPage, setCurrentPage] = useState(1);
@@ -473,7 +474,11 @@ const BasicTablePendingDeposits = () => {
                       </div>
                     </TableCell>
                     <TableCell className="px-4 py-3 text-gray-900 text-start text-theme-sm dark:text-gray-400">
-                      {t.playerID}
+                      <Link href={`/player/${t.playerID}`}>
+                        <span className="cursor-pointer block font-medium text-gray-800 text-theme-sm dark:text-white/90">
+                          {t.playerID}
+                        </span>
+                      </Link>
                     </TableCell>
                     <TableCell className="px-4 py-3 text-gray-900 text-start text-theme-sm dark:text-gray-400">
                       {t.playerUsername}
