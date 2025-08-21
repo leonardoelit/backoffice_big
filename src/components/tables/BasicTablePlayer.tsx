@@ -483,7 +483,7 @@ const removeFilter = () => {
                     <TableCell className="px-5 py-4 sm:px-6 text-start">
                       <div>
                         <Link href={`/player/${player.playerId}`}>
-                          <span className="cursor-pointer block font-medium text-gray-800 text-theme-sm dark:text-white/90">
+                          <span className="cursor-pointer block font-medium text-blue-900 hover:underline text-theme-sm dark:text-white/90">
                             {player.playerId}
                           </span>
                         </Link>

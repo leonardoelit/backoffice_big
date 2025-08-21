@@ -426,7 +426,7 @@ const BasicTableDeposits = () => {
                     </TableCell>
                     <TableCell className="px-4 py-3 text-gray-900 text-start text-theme-sm dark:text-gray-400">
                       <Link href={`/player/${t.playerID}`}>
-                        <span className="cursor-pointer block font-medium text-gray-800 text-theme-sm dark:text-white/90">
+                        <span className="cursor-pointer block font-medium text-blue-900 hover:underline text-theme-sm dark:text-white/90">
                           {t.playerID}
                         </span>
                       </Link>
