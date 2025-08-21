@@ -262,10 +262,10 @@ const PlayerTransactionsTable = ({ playerId }: { playerId:string }) => {
                   ID
                 </TableCell>
                 <TableCell isHeader className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400">
-                  Type
+                  Tür
                 </TableCell>
                 <TableCell isHeader className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400">
-                  Event Type
+                  İşlem Tipi
                 </TableCell>
                 <TableCell 
                   isHeader 
@@ -277,9 +277,16 @@ const PlayerTransactionsTable = ({ playerId }: { playerId:string }) => {
                 <TableCell 
                   isHeader 
                   className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400 cursor-pointer" 
+                  onClick={() => handleSort("amount")}
+                >
+                  Yeni Bakiye
+                </TableCell>
+                <TableCell 
+                  isHeader 
+                  className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400 cursor-pointer" 
                   onClick={() => handleSort("status")}
                 >
-                  Status
+                  Durum
                 </TableCell>
                   <TableCell 
                     isHeader 
@@ -295,7 +302,7 @@ const PlayerTransactionsTable = ({ playerId }: { playerId:string }) => {
               {loading ? (
                 <>
                   {Array.from({ length: rowsPerPage }).map((_, i) => (
-                    <SkeletonRow key={i} columns={6} />
+                    <SkeletonRow key={i} columns={7} />
                   ))}
                 </>
               ) : (
@@ -303,7 +310,7 @@ const PlayerTransactionsTable = ({ playerId }: { playerId:string }) => {
                   <TableRow key={t.transactionId}>
                     <TableCell className="px-5 py-4 sm:px-6 text-start">
                       <div>
-                          <span className="cursor-pointer block font-medium text-gray-800 text-theme-sm dark:text-white/90">
+                          <span className="block font-medium text-gray-800 text-theme-sm dark:text-white/90">
                             {t.transactionId}
                           </span>
                       </div>
@@ -316,6 +323,9 @@ const PlayerTransactionsTable = ({ playerId }: { playerId:string }) => {
                     </TableCell>
                     <TableCell className="px-4 py-3 text-gray-900 text-start text-theme-sm dark:text-gray-400">
                         ₺{t.amount.toLocaleString()}
+                    </TableCell>
+                    <TableCell className="px-4 py-3 text-gray-900 text-start text-theme-sm dark:text-gray-400">
+                        ₺{t.balanceAfter.toLocaleString()}
                     </TableCell>
                     <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
                       {t.status}

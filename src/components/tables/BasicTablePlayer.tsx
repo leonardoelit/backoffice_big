@@ -474,7 +474,7 @@ const removeFilter = () => {
               {loading ? (
                 <>
                   {Array.from({ length: rowsPerPage }).map((_, i) => (
-                    <SkeletonRow key={i} columns={contentType === 'GGA' ? 6 : 8} />
+                    <SkeletonRow key={i} columns={11} />
                   ))}
                 </>
               ) : (

@@ -138,6 +138,7 @@ export interface Transaction {
   name: string;
   status: string;
   timestamp: string;
+  balanceAfter: number;
 }
 
 export interface GetPlayersTransactionHistoryResponse{
