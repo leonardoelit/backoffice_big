@@ -1,12 +1,14 @@
 "use client"
 import React, { useEffect, useRef, useState } from 'react'
 import { usePlayerTransactions } from '../hooks/usePlayerTransactions';
-import { PlayerTransactionFilter } from '../constants/types';
+import { Bonus, ManageBonusRequest, PlayerTransactionFilter } from '../constants/types';
 import { Table, TableBody, TableCell, TableHeader, TableRow } from '../ui/table';
 import { formatDateToDDMMYYYYHHMMSS } from '@/utils/utils';
 import DateRangePickerWithTime from './DateRangePickerWithTime';
+import { getBonuses, manageBonus } from '../lib/api';
+import { showToast } from '@/utils/toastUtil';
 
-const PlayerTransactionsTable = ({ playerId }: { playerId:string }) => {
+const PlayerBonusTable = ({ playerId }: { playerId:string }) => {
     const [currentPage, setCurrentPage] = useState(1);
     const [rowsPerPage, setRowsPerPage] = useState(25);
 
@@ -14,20 +16,49 @@ const PlayerTransactionsTable = ({ playerId }: { playerId:string }) => {
     const [dateTo, setDateTo] = useState<string | undefined>(undefined);
     const [isDateModified, setIsDateModified] = useState(false)
     const [type, setType] = useState<string | undefined>(undefined);
-    const [eventType, setEventType] = useState<string | undefined>(undefined);
+    const [showPopup, setShowPopup] = useState(false);
+    
 
     const [isFilterOn, setIsFilterOn] = useState(false);
+
+    const [bonusList, setBonusList] = useState<Bonus[]>([])
+    const popupRef = useRef<HTMLDivElement>(null);
+
+    // close popup if clicked outside
+      useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+          if (
+            showPopup &&
+            popupRef.current &&
+            !popupRef.current.contains(event.target as Node)
+          ) {
+            setShowPopup(false);
+          }
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+          document.removeEventListener("mousedown", handleClickOutside);
+        };
+      }, [showPopup]);
 
     const { transactions, loading, error, pagination, filter, setFilter } = usePlayerTransactions(
         {
           pageNumber: currentPage,
           pageSize: rowsPerPage,
-          playerId
+          playerId,
+          eventType: 'Bonus'
         }
       );
 
     const [open, setOpen] = useState(false)
     const dropdownRef = useRef<HTMLDivElement>(null)
+    const [formData, setFormData] = useState<ManageBonusRequest & { amount: string }>({
+        direction: "Inc",
+        defId: "",
+        amount: "", // <-- empty string instead of 0
+        playerId: playerId,
+        });
+      const [isSubmitting, setIsSubmitting] = useState(false)
     
       // Close dropdown on outside click
       useEffect(() => {
@@ -39,6 +70,24 @@ const PlayerTransactionsTable = ({ playerId }: { playerId:string }) => {
         document.addEventListener('mousedown', handleClickOutside)
         return () => document.removeEventListener('mousedown', handleClickOutside)
       }, [])
+
+      useEffect(() => {
+          getBonusesList();
+        }, []);
+      
+    const getBonusesList = async () => {
+      const bonusesResponse = await getBonuses();
+      if (!bonusesResponse.isSuccess) {
+        showToast(
+          bonusesResponse.message ??
+            "Something went wrong while getting bonus list",
+          "error"
+        );
+      } else {
+        setBonusList(bonusesResponse.bonuses ?? []);
+      }
+    };
+      
     
       const handlePageChange = (newPage: number) => {
         if (newPage >= 1 && newPage <= pagination.totalPages) {
@@ -72,7 +121,7 @@ const PlayerTransactionsTable = ({ playerId }: { playerId:string }) => {
           pageNumber: 1,
           pageSize: rowsPerPage,
           playerId: playerId,
-          eventType: eventType || undefined,
+          eventType: "Bonus",
           type: type || undefined
         };
       
@@ -84,7 +133,6 @@ const PlayerTransactionsTable = ({ playerId }: { playerId:string }) => {
       
         const isAnyFilterActive = 
           Boolean(type) ||
-          Boolean(eventType) ||
           isDateModified
       
         setIsFilterOn(isAnyFilterActive);
@@ -95,7 +143,6 @@ const PlayerTransactionsTable = ({ playerId }: { playerId:string }) => {
       const removeFilter = () => {
         // Reset all input states
         setType('');
-        setEventType('')
         setDateFrom('')
         setDateTo('')
         setIsDateModified(false)
@@ -115,6 +162,35 @@ const PlayerTransactionsTable = ({ playerId }: { playerId:string }) => {
         setIsFilterOn(false);
       };
 
+      const handleManageBonus = async () => {
+        setIsSubmitting(true)
+        if(formData.amount === ""){
+            showToast("Declare amount before submitting", "info");
+         setIsSubmitting(false)
+            return;
+        }
+        const bonus = bonusList.find((b) => b.defId === formData.defId);
+        if (bonus && (bonus.min > formData.amount || bonus.max < formData.amount)) {
+        showToast("Amount less than min or more than max", "info");
+         setIsSubmitting(false)
+        return;
+        }
+        try {
+           const res = await manageBonus(formData);
+           if (res.isSuccess) {
+             showToast("Bonus credited", "success");
+             handleRefetch();
+             setShowPopup(false);
+           } else {
+             showToast(res.message ?? "Failed to add bonus", "error");
+           }
+         } catch (err) {
+           showToast("An error occurred while managing bonus", "error");
+           console.error(err);
+         }
+         setIsSubmitting(false)
+      }
+
       const SkeletonRow = ({ columns }: { columns: number }) => (
           <TableRow>
             {Array.from({ length: columns }).map((_, index) => (
@@ -132,7 +208,92 @@ const PlayerTransactionsTable = ({ playerId }: { playerId:string }) => {
 
   return (
     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">
-          <div className="relative" ref={dropdownRef}>
+          {/* Popup modal */}
+      {showPopup && (
+  <div className="absolute inset-0 bg-black/30 flex items-center justify-center z-[9999999]">
+    <div
+      ref={popupRef}
+      className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 w-96"
+    >
+      <h2 className="text-lg font-semibold mb-4 text-gray-800 dark:text-gray-100">
+        Manage Bonus
+      </h2>
+
+      {/* Direction Select */}
+      <label className="block text-sm mb-1 text-gray-700 dark:text-gray-300">
+        Direction
+      </label>
+      <select
+        value={formData.direction}
+        onChange={(e) =>
+          setFormData({ ...formData, direction: e.target.value as "Inc" | "Dec" })
+        }
+        className="w-full mb-3 rounded-md border border-gray-300 dark:border-gray-600 
+                   bg-white dark:bg-gray-700 text-sm text-gray-700 dark:text-gray-200 
+                   px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+      >
+        <option value="Inc">Inc</option>
+        <option value="Dec">Dec</option>
+      </select>
+
+      {/* Bonus Select */}
+      <label className="block text-sm mb-1 text-gray-700 dark:text-gray-300">
+        Bonus
+      </label>
+      <select
+        value={formData.defId}
+        onChange={(e) =>
+          setFormData({ ...formData, defId: e.target.value })
+        }
+        className="w-full mb-3 rounded-md border border-gray-300 dark:border-gray-600 
+                   bg-white dark:bg-gray-700 text-sm text-gray-700 dark:text-gray-200 
+                   px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+      >
+        <option value="">Select Bonus</option>
+        {bonusList.map((b) => (
+          <option key={b.defId} value={b.defId}>
+            {b.name}
+          </option>
+        ))}
+      </select>
+
+      {/* Amount Input */}
+      <label className="block text-sm mb-1 text-gray-700 dark:text-gray-300">
+        Amount
+      </label>
+      <input
+        type="number"
+        value={formData.amount}
+        onChange={(e) =>
+          setFormData({ ...formData, amount: parseInt(e.target.value, 10) || 0 })
+        }
+        className="w-full mb-4 rounded-md border border-gray-300 dark:border-gray-600 
+                   bg-white dark:bg-gray-700 text-sm text-gray-700 dark:text-gray-200 
+                   px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+      />
+
+      {/* Buttons */}
+      <div className="flex justify-end gap-3">
+        <button
+        disabled={isSubmitting}
+          onClick={() => setShowPopup(false)}
+          className="px-4 py-2 bg-gray-300 text-gray-800 dark:bg-gray-600 dark:text-gray-200 text-sm rounded hover:bg-gray-400 disabled:bg-gray-400"
+        >
+          Back
+        </button>
+        <button
+        disabled={isSubmitting}
+          onClick={() => handleManageBonus()}
+          className="px-4 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 disabled:bg-blue-800"
+        >
+          Submit
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
+          <div className="relative flex flex-row items-center justify-between" ref={dropdownRef}>
           {/* Toggle button */}
           <button
             onClick={() => setOpen(!open)}
@@ -142,6 +303,13 @@ const PlayerTransactionsTable = ({ playerId }: { playerId:string }) => {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4h18M3 12h18M3 20h18" />
             </svg>
             Filters
+          </button>
+
+           <button
+            onClick={() => setShowPopup(true)}
+            className="px-4 py-2 bg-blue-600 text-white text-sm rounded-tr-md hover:bg-blue-700 flex items-center gap-2"
+          >
+            Add Bonus
           </button>
     
           {/* Dropdown panel */}
@@ -164,29 +332,6 @@ const PlayerTransactionsTable = ({ playerId }: { playerId:string }) => {
         <option value="">Select Direction</option>
         <option value="Inc">Inc</option>
         <option value="Dec">Dec</option>
-      </select>
-
-      {/* Event Type Select */}
-      <select
-        value={eventType}
-        onChange={(e) => setEventType(e.target.value)}
-        className="flex-1 min-w-[200px] rounded-md border border-gray-300 dark:border-gray-600 
-                  bg-white dark:bg-gray-700 text-sm text-gray-700 dark:text-gray-200 
-                  px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-      >
-        <option value="">Select Event</option>
-        <option value="Deposit">Deposit</option>
-        <option value="Withdrawal">Withdrawal</option>
-        <option value="Withdrawal Cancel">Withdrawal Cancel</option>
-        <option value="Bonus">Bonus</option>
-        <option value="Win">Win</option>
-        {/* <option value="Lose">Lose</option> */}
-        <option value="BetPlacing">BetPlacing</option>
-        <option value="BetPayedAbort">BetPayedAbort</option>
-        <option value="BetPlacingAbort">BetPlacingAbort</option>
-        <option value="PromoWin">PromoWin</option>
-        <option value="DropAndWin">DropAndWin</option>
-        <option value="FreeBet">FreeBet</option>
       </select>
 
       {/* Date Picker */}
@@ -375,4 +520,4 @@ const PlayerTransactionsTable = ({ playerId }: { playerId:string }) => {
   )
 }
 
-export default PlayerTransactionsTable
+export default PlayerBonusTable

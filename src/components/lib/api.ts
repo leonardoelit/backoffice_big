@@ -370,8 +370,8 @@ export async function getBonuses(): Promise<BonusResponse>{
   }
 }
 
-export async function manageBonus(requestBody: ManageBonusRequest): Promise<BonusResponse>{
-  try{
+export async function manageBonus(requestBody: ManageBonusRequest): Promise<BonusResponse> {
+  try {
     const token = localStorage.getItem("authToken");
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_API_URL}/api/Client/manageBonus`,
@@ -385,12 +385,12 @@ export async function manageBonus(requestBody: ManageBonusRequest): Promise<Bonu
         cache: 'no-store'
       }
     );
-    
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    
-    return await response.json();
+
+    const data: BonusResponse = await response.json();
+
+    // Always return the server data, even if HTTP status is not 200
+    return data;
+
   } catch (error) {
     console.error('Error managing bonus:', error);
     return {

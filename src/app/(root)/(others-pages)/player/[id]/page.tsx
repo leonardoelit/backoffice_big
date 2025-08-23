@@ -7,6 +7,7 @@ import PlayerInfoCards from "@/components/player-profile/PlayerInfoCards";
 import { Player } from "@/components/constants/types";
 import { getPlayerDataId } from "@/components/lib/api";
 import PlayerTransactionsTable from "@/components/player-profile/PlayerTransactionsTable";
+import PlayerBonusTable from "@/components/player-profile/PlayerBonusTable";
 
 export default function PlayerProfile() {
   const router = useRouter();
@@ -55,11 +56,7 @@ export default function PlayerProfile() {
       case "istatistik":
         return <Statistic playerData={playerData} isLoadingData={isLoading} />;
       case "bonuslar":
-        return (
-          <div className="text-center p-10 text-gray-500 dark:text-gray-400">
-            Bonuslar sekmesi içeriği yakında eklenecek.
-          </div>
-        );
+        return <PlayerBonusTable playerId={id} />
       case "işlemler":
         return <PlayerTransactionsTable playerId={id} />;
       case "ayarlar":
