@@ -9,10 +9,10 @@ interface StatisticProps {
 
 const Statistic = ({ playerData, isLoadingData }: StatisticProps) => {
   // Helper function to format currency
-  const formatCurrency = (amount: number | undefined) => {
-    if (amount === undefined) return "₺0.00";
-    return `₺${amount.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-  };
+  const formatCurrency = (amount: number | undefined | null) => {
+  if (amount == null || isNaN(amount)) return "₺0.00";
+  return `₺${amount.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+};
 
   // Helper function to format date
   const formatDate = (dateString: string | undefined) => {
