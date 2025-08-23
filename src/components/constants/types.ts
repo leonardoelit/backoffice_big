@@ -209,3 +209,50 @@ export interface PaymentResponse{
   description: string;
   id: number;
 }
+
+export interface CreateBonusRequest{
+  type: number;
+  name: string;
+  min: number;
+  max: number;
+  description: string;
+}
+
+export interface UpdateBonusRequest{
+  defId: string;
+  active: boolean;
+  type: number;
+  name: string;
+  min: number;
+  max: number;
+  description: string;
+}
+
+export interface Bonus {
+  type: number;
+  name: string;
+  defId: string;
+  active: boolean;
+  min:number;
+  max:number;
+  description: string;
+  createdAt: string;
+}
+
+export interface BonusResponse {
+  isSuccess: boolean;
+  message?: string;
+  bonuses?: Bonus[];
+}
+
+export interface ManageBonusRequest {
+  direction: string;
+  playerId: string;
+  amount: number;
+  defId: string;
+}
+
+export interface ActionResponse {
+  isSuccess: boolean;
+  message?: string;
+}
