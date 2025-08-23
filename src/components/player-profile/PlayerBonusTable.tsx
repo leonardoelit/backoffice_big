@@ -377,7 +377,7 @@ const PlayerBonusTable = ({ playerId }: { playerId:string }) => {
         </div>
           <div className="flex justify-between items-center px-4 py-2 bg-gray-50 dark:bg-white/[0.02]">
         <div className="text-sm text-gray-700 dark:text-gray-300">
-          Showing {transactions.length} of {pagination.totalCount} transactions
+          Showing {transactions.length} of {pagination.totalCount} bonuses
         </div>
         <div className="flex items-center gap-2">
           <label htmlFor="rowsPerPage" className="text-sm text-gray-700 dark:text-gray-300">
