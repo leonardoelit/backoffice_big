@@ -36,6 +36,7 @@ export interface PlayerFilter {
   pageSize?: number;
   playerId?: number;
   username?: string;
+  btag?: string;
   promoCode?: string;
 
   // New filters
@@ -77,6 +78,7 @@ export interface Player {
   mobileNumber?: string;
   email: string;
   footballTeam?: string;
+  btag?: string;
   promoCode?: string;
   balance: number;
   sportsBonusBalance: number;

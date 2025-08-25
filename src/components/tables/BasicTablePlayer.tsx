@@ -29,6 +29,8 @@ export default function PlayerTable({ contentType }: { contentType: string }) {
   const [playerIdInput, setPlayerIdInput] = useState("");
   const [usernameInput, setUsernameInput] = useState("");
   const [promoCodeInput, setPromoCodeInput] = useState("");
+  const [btagInput, setBtagInput] = useState("");
+
 
   const [registrationDateFrom, setRegistrationDateFrom] = useState<string | undefined>(undefined);
   const [registrationDateTo, setRegistrationDateTo] = useState<string | undefined>(undefined);
@@ -119,6 +121,7 @@ export default function PlayerTable({ contentType }: { contentType: string }) {
     playerId: playerIdInput ? Number(playerIdInput) : undefined,
     username: usernameInput || undefined,
     promoCode: promoCodeInput || undefined,
+    btag: btagInput || undefined,
     hasWithdrawal,
     hasDeposit,
     documentNumber: documentNumber || undefined,
@@ -154,6 +157,7 @@ export default function PlayerTable({ contentType }: { contentType: string }) {
     Boolean(playerIdInput) ||
     Boolean(usernameInput) ||
     Boolean(promoCodeInput) ||
+    Boolean(btagInput) ||
     hasWithdrawal !== undefined ||
     hasDeposit !== undefined ||
     Boolean(documentNumber) ||
@@ -177,6 +181,7 @@ const removeFilter = () => {
   setPlayerIdInput("");
   setUsernameInput("");
   setPromoCodeInput("");
+  setBtagInput("");
   
   // Reset date states
   setRegistrationDateFrom(undefined);
@@ -278,6 +283,13 @@ const removeFilter = () => {
                 <input
                   type="text"
                   placeholder="BTag"
+                  value={btagInput}
+                  onChange={(e) => setBtagInput(e.target.value)}
+                  className="w-full border px-3 py-2 rounded text-sm dark:bg-gray-700 dark:text-white"
+                />
+                <input
+                  type="text"
+                  placeholder="Promo Code"
                   value={promoCodeInput}
                   onChange={(e) => setPromoCodeInput(e.target.value)}
                   className="w-full border px-3 py-2 rounded text-sm dark:bg-gray-700 dark:text-white"
@@ -558,7 +570,7 @@ const removeFilter = () => {
                         {player.lastLoginDateTime ? formatDateToDDMMYYYY(player.lastLoginDateTime) : '-'}
                     </TableCell>
                     <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                        {player.promoCode ? player.promoCode : '-'}
+                        {player.btag ? player.btag : '-'}
                     </TableCell>
                     {/* <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
                       <button

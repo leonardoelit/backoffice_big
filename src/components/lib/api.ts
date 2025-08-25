@@ -14,6 +14,7 @@ export async function getPlayers(
     if (filter.pageSize) queryParams.set('pageSize', filter.pageSize.toString());
     if (filter.playerId) queryParams.set('playerId', filter.playerId.toString());
     if (filter.username) queryParams.set('username', filter.username);
+    if (filter.btag) queryParams.set('btag', filter.btag);
     if (filter.promoCode) queryParams.set('promoCode', filter.promoCode);
 
     // New filters
