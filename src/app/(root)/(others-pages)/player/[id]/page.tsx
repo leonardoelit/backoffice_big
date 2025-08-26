@@ -69,7 +69,7 @@ export default function PlayerProfile() {
         return null;
     }
   };
-//playerData?.username 
+
   return (
     <div className="w-full">
     {/* Breadcrumb */}
