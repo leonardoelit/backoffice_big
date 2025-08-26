@@ -69,8 +69,29 @@ export default function PlayerProfile() {
         return null;
     }
   };
-
+//playerData?.username 
   return (
+    <div className="w-full">
+    {/* Breadcrumb */}
+    <div className="flex items-center text-sm text-gray-500 dark:text-gray-400 mb-3">
+    <a 
+  href="/" 
+  className="hover:text-blue-500 cursor-pointer"
+>
+  Dashboard
+</a>  
+      <span className="mx-2">/</span>
+      <a 
+  href="/players/all-players" 
+  className="hover:text-blue-500 cursor-pointer"
+>
+  Players
+</a>      <span className="mx-2">/</span>
+      <span className="text-gray-900 dark:text-white font-medium">
+        {playerData?.username || "Yükleniyor..."}
+      </span>
+      </div>
+
     <div className="w-full">
       {/* Tabs */}
       <div className="flex space-x-3 mb-4 border-b border-gray-300 dark:border-gray-600">
@@ -97,6 +118,7 @@ export default function PlayerProfile() {
 
       {/* Tab Content */}
       {renderTabContent()}
+    </div>
     </div>
   );
 }

@@ -232,8 +232,8 @@ const PlayerBonusTable = ({ playerId }: { playerId:string }) => {
                    bg-white dark:bg-gray-700 text-sm text-gray-700 dark:text-gray-200 
                    px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
       >
-        <option value="Inc">Inc</option>
-        <option value="Dec">Dec</option>
+        <option value="Inc">Üst</option>
+        <option value="Dec">Alt</option>
       </select>
 
       {/* Bonus Select */}
@@ -371,30 +371,7 @@ const PlayerBonusTable = ({ playerId }: { playerId:string }) => {
     </div>
   </div>
 )}
-
-
-
         </div>
-          <div className="flex justify-between items-center px-4 py-2 bg-gray-50 dark:bg-white/[0.02]">
-        <div className="text-sm text-gray-700 dark:text-gray-300">
-          Showing {transactions.length} of {pagination.totalCount} bonuses
-        </div>
-        <div className="flex items-center gap-2">
-          <label htmlFor="rowsPerPage" className="text-sm text-gray-700 dark:text-gray-300">
-            Rows per page:
-          </label>
-          <select
-            id="rowsPerPage"
-            value={rowsPerPage}
-            onChange={handleRowsPerPageChange}
-            className="text-sm rounded-md border border-gray-300 px-2 py-1 dark:bg-gray-700 dark:text-white"
-          >
-            {[25, 50, 75, 100].map((val) => (
-              <option key={val} value={val}>{val}</option>
-            ))}
-          </select>
-        </div>
-      </div>
       <div className="w-full overflow-x-auto">
         <div className="min-w-[1102px] min-h-[600px]">
           <Table>
@@ -496,27 +473,49 @@ const PlayerBonusTable = ({ playerId }: { playerId:string }) => {
         </div>
       </div>
 
-      {/* Pagination Controls */}
-      <div className="flex justify-between items-center px-4 py-3">
-        <button
-          onClick={() => handlePageChange(currentPage - 1)}
-          disabled={currentPage === 1}
-          className="text-sm px-3 py-1 rounded-md border border-gray-300 dark:border-gray-600 dark:text-white disabled:opacity-50"
-        >
-          Previous
-        </button>
-        <span className="text-sm text-gray-700 dark:text-gray-300">
-          Page {currentPage} of {pagination.totalPages}
-        </span>
-        <button
-          onClick={() => handlePageChange(currentPage + 1)}
-          disabled={currentPage === pagination.totalPages}
-          className="text-sm px-3 py-1 rounded-md border border-gray-300 dark:border-gray-600 dark:text-white disabled:opacity-50"
-        >
-          Next
-        </button>
-      </div>
+{/* Pagination Controls */}
+<div className="flex items-center justify-end w-full px-4 py-2 space-x-3 border-t border-[#c8c9cb]">
+  <div className="text-sm text-gray-700 dark:text-gray-300 px-2 border-r border-[#c8c9cb]">
+          Showing {transactions.length} of {pagination.totalCount} transactions
+        </div>
+    <div className="flex items-center gap-2">
+          <label htmlFor="rowsPerPage" className="text-sm text-gray-700 dark:text-gray-300">
+            Rows per page:
+          </label>
+          <select
+            id="rowsPerPage"
+            value={rowsPerPage}
+            onChange={handleRowsPerPageChange}
+            className="text-sm rounded-md border border-gray-300 px-2 py-1 dark:bg-gray-700 dark:text-white "
+          >
+            {[25, 50, 75, 100].map((val) => (
+              <option key={val} value={val}>{val}</option>
+            ))}
+          </select>
+        </div>
+      <span className="text-sm text-gray-700 dark:text-gray-300 px-2 border-l border-[#c8c9cb]">
+    Page {currentPage} of {pagination.totalPages}
+  </span>
+
+  {/* Buttons */}
+  <div className="flex items-center space-x-2">
+    <button
+      onClick={() => handlePageChange(currentPage - 1)}
+      disabled={currentPage === 1}
+      className="text-sm px-3 py-1 rounded-md border border-gray-300 dark:border-gray-600 dark:text-white disabled:opacity-50"
+    >
+      Previous
+    </button>
+    <button
+      onClick={() => handlePageChange(currentPage + 1)}
+      disabled={currentPage === pagination.totalPages}
+      className="text-sm px-3 py-1 rounded-md border border-gray-300 dark:border-gray-600 dark:text-white disabled:opacity-50"
+    >
+      Next
+    </button>
     </div>
+  </div>
+</div>
   )
 }
 

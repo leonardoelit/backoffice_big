@@ -37,7 +37,7 @@ const BasicTableDeposits = () => {
 
     const [open, setOpen] = useState(false)
     const dropdownRef = useRef<HTMLDivElement>(null)
-    
+
     useEffect(() => {
         const handleClickOutside = (e: MouseEvent) => {
           if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
@@ -53,6 +53,25 @@ const BasicTableDeposits = () => {
           setCurrentPage(newPage);
           setFilter({ ...filter, pageNumber: newPage });
         }
+              // Get today's start and end for default filter
+      const now = new Date();
+      const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
+      const endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
+    
+      const from = startOfDay.toISOString();
+      const to = endOfDay.toISOString();
+    
+      setDateFrom(from);
+      setDateTo(to);
+      setIsDateModified(true);
+      setFilter({
+        pageNumber: 1,
+        pageSize: rowsPerPage,
+        typeName: 'deposit',
+        timeStampFrom: from,
+        timeStampTo: to
+      });
+    
       };
 
       const handleRowsPerPageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -285,14 +304,16 @@ const BasicTableDeposits = () => {
       <div className="w-full">
   <div className="rounded-md border border-gray-300 dark:border-gray-600 
                   px-2 py-1 bg-white dark:bg-gray-700">
-    <DateRangePickerWithTime
-      onChange={({ MinCreatedLocal, MaxCreatedLocal }) => {
-        setDateFrom(MinCreatedLocal)
-        setDateTo(MaxCreatedLocal)
-      }}
-      onModifiedChange={(modified) => setIsDateModified(modified)}
-      isChanged={isDateModified}
-    />
+<DateRangePickerWithTime
+  initialStartDate={new Date(new Date().setHours(0, 0, 0, 0))}   // today 00:00
+  initialEndDate={new Date(new Date().setHours(23, 59, 59, 999))} // today 23:59
+  onChange={({ MinCreatedLocal, MaxCreatedLocal }) => {
+    setDateFrom(MinCreatedLocal)
+    setDateTo(MaxCreatedLocal)
+  }}
+  onModifiedChange={(modified) => setIsDateModified(modified)}
+  isChanged={isDateModified}
+/>
   </div>
 </div>
     </div>

@@ -26,11 +26,11 @@ const Statistic = ({ playerData, isLoadingData }: StatisticProps) => {
   );
 
   const calculatePercentage = (stakes: number, win: number) => {
-  if (stakes === 0) return 0;
-  const profit = win - stakes; // what the player won - what they staked
-  return `${(profit / stakes) * 100}%`;
-};
-
+    if (stakes === 0) return "0%";
+    const profit = win - stakes;
+    const percentage = (profit / stakes) * 100;
+    return `${parseFloat(percentage.toFixed(2))}%`;
+  };
   return (
     <div className="container mx-auto px-4">
       {/* Top Summary Row */}
