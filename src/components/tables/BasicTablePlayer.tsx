@@ -387,28 +387,6 @@ const removeFilter = () => {
       )}
     </div>
 
-
-      <div className="flex justify-between items-center px-4 py-2 bg-gray-50 dark:bg-white/[0.02]">
-        <div className="text-sm text-gray-700 dark:text-gray-300">
-          Showing {players.length} of {pagination.totalCount} players
-        </div>
-        <div className="flex items-center gap-2">
-          <label htmlFor="rowsPerPage" className="text-sm text-gray-700 dark:text-gray-300">
-            Rows per page:
-          </label>
-          <select
-            id="rowsPerPage"
-            value={rowsPerPage}
-            onChange={handleRowsPerPageChange}
-            className="text-sm rounded-md border border-gray-300 px-2 py-1 dark:bg-gray-700 dark:text-white"
-          >
-            {[25, 50, 75, 100].map((val) => (
-              <option key={val} value={val}>{val}</option>
-            ))}
-          </select>
-        </div>
-      </div>
-
       <div className="w-full overflow-x-auto">
         <div className="min-w-[1102px] min-h-[600px]">
           <Table>
@@ -602,9 +580,27 @@ const removeFilter = () => {
         </div>
       </div>
 
-      {/* Pagination Controls */}
-      <div className="flex items-center justify-end w-full px-4 py-2 space-x-3 border-t border-[#c8c9cb]">
-      <span className="text-sm text-gray-700 dark:text-gray-300">
+  {/* Pagination Controls */}
+<div className="flex items-center justify-end w-full px-4 py-2 space-x-3 border-t border-[#c8c9cb]">
+  <div className="text-sm text-gray-700 dark:text-gray-300 px-2 border-r border-[#c8c9cb]">
+          Showing {players.length} of {pagination.totalCount} players
+        </div>
+    <div className="flex items-center gap-2">
+          <label htmlFor="rowsPerPage" className="text-sm text-gray-700 dark:text-gray-300">
+            Rows per page:
+          </label>
+          <select
+            id="rowsPerPage"
+            value={rowsPerPage}
+            onChange={handleRowsPerPageChange}
+            className="text-sm rounded-md border border-gray-300 px-2 py-1 dark:bg-gray-700 dark:text-white "
+          >
+            {[25, 50, 75, 100].map((val) => (
+              <option key={val} value={val}>{val}</option>
+            ))}
+          </select>
+        </div>
+      <span className="text-sm text-gray-700 dark:text-gray-300 px-2 border-l border-[#c8c9cb]">
     Page {currentPage} of {pagination.totalPages}
   </span>
 
@@ -624,8 +620,8 @@ const removeFilter = () => {
     >
       Next
     </button>
+    </div>
   </div>
-</div>
     </div>
   );
 }

@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef, useState } from 'react'
 import { DateRange } from 'react-date-range'
-import { subDays, format } from 'date-fns'
+import { format } from 'date-fns'
 
 interface DateRangeResult {
   MinCreatedLocal: string
@@ -20,8 +20,8 @@ interface DateRangePickerProps {
 export default function DateRangePickerWithTime({
   onChange,
   onModifiedChange,
-  initialStartDate = subDays(new Date(), 3),
-  initialEndDate = new Date(),
+  initialStartDate = new Date(new Date().setHours(0, 0, 0, 0)), // today start
+  initialEndDate = new Date(new Date().setHours(23, 59, 59, 999)), // today end
   isChanged
 }: DateRangePickerProps) {
   const [dropdownOpen, setDropdownOpen] = useState(false)
@@ -97,14 +97,30 @@ export default function DateRangePickerWithTime({
   }
 
   useEffect(() => {
+    // if no start/end set yet → initialize with today
     if (!customRange.startDate && !customRange.endDate) {
+      const todayStart = new Date()
+      todayStart.setHours(0, 0, 0, 0)
+  
+      const todayEnd = new Date()
+      todayEnd.setHours(23, 59, 59, 999)
+  
       setCustomRange((prev) => ({
         ...prev,
-        startDate: initialStartDate,
-        endDate: initialEndDate
+        startDate: todayStart,
+        endDate: todayEnd
       }))
+  
+      // fire onChange immediately so parent gets values
+      onChange({
+        MinCreatedLocal: todayStart.toISOString(),
+        MaxCreatedLocal: todayEnd.toISOString()
+      })
+  
+      // mark as changed so button shows correct date
+      if (onModifiedChange) onModifiedChange(true)
     }
-  }, [initialStartDate, initialEndDate])
+  }, [])
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {

@@ -11,9 +11,15 @@ const BasicTableWithdrawals = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const [rowsPerPage, setRowsPerPage] = useState(25);
 
-    const [dateFrom, setDateFrom] = useState<string | undefined>(undefined);
-    const [dateTo, setDateTo] = useState<string | undefined>(undefined);
-    const [isDateModified, setIsDateModified] = useState(false)
+     //Date range picker automaticaly picks today as default on page load part START
+     const today = new Date();
+     const startOfToday = new Date(today.setHours(0, 0, 0, 0)).toISOString();
+     const endOfToday = new Date(today.setHours(23, 59, 59, 999)).toISOString();
+     const [dateFrom, setDateFrom] = useState<string | undefined>(startOfToday);
+     const [dateTo, setDateTo] = useState<string | undefined>(endOfToday); 
+     const [isDateModified, setIsDateModified] = useState(true); // ✅ start true
+         //Date range picker automaticaly picks today as default on page load END
+ 
     const [playerFullName, setPlayerFullName] = useState<string | undefined>(undefined)
     const [playerId, setPlayerId] = useState<string | undefined>(undefined)
     const [amountFrom, setAmountFrom] = useState<string | undefined>(undefined)
@@ -73,6 +79,8 @@ const BasicTableWithdrawals = () => {
         }));
       };
 
+
+
     const handleRefetch = () => {
       setCurrentPage(1);
       
@@ -90,7 +98,20 @@ const BasicTableWithdrawals = () => {
         playerUsername: playerUsername || undefined,
         status: status || undefined
       };
-    
+        //Date range picker automaticaly picks today as default on page load part START
+        if (isDateModified) {
+          newFilter.timeStampFrom = dateFrom;
+          newFilter.timeStampTo = dateTo;
+        } else {
+          const todayStart = new Date();
+          todayStart.setHours(0, 0, 0, 0);
+          const todayEnd = new Date();
+          todayEnd.setHours(23, 59, 59, 999);
+          newFilter.timeStampFrom = todayStart.toISOString();
+          newFilter.timeStampTo = todayEnd.toISOString();
+        }
+        
+    //Date range picker automaticaly picks today as default on page load part END
       // Only include dates that were modified
       if (isDateModified) {
         newFilter.timeStampFrom = dateFrom;
@@ -138,11 +159,16 @@ const BasicTableWithdrawals = () => {
         pageSize: rowsPerPage,
         typeName: 'withdraw'
       };
-      
+  
       // Apply the default filter
       setFilter(defaultFilter);
       setIsFilterOn(false);
     };
+
+    useEffect(() => {
+      handleRefetch();
+    }, []);
+
     const SkeletonRow = ({ columns }: { columns: number }) => (
       <TableRow>
         {Array.from({ length: columns }).map((_, index) => (
@@ -304,14 +330,18 @@ const BasicTableWithdrawals = () => {
       <div className="w-full">
   <div className="rounded-md border border-gray-300 dark:border-gray-600 
                   px-2 py-1 bg-white dark:bg-gray-700">
-    <DateRangePickerWithTime
-      onChange={({ MinCreatedLocal, MaxCreatedLocal }) => {
-        setDateFrom(MinCreatedLocal)
-        setDateTo(MaxCreatedLocal)
-      }}
-      onModifiedChange={(modified) => setIsDateModified(modified)}
-      isChanged={isDateModified}
-    />
+<DateRangePickerWithTime
+  initialStartDate={new Date(dateFrom!)}
+  initialEndDate={new Date(dateTo!)}
+  onChange={({ MinCreatedLocal, MaxCreatedLocal }) => {
+    setDateFrom(MinCreatedLocal)
+    setDateTo(MaxCreatedLocal)
+    setIsDateModified(true)
+  }}
+  onModifiedChange={(modified) => setIsDateModified(modified)}
+  isChanged={isDateModified}
+/>
+
   </div>
 </div>
     </div>
@@ -344,26 +374,6 @@ const BasicTableWithdrawals = () => {
 )}
 
         </div>
-          <div className="flex justify-between items-center px-4 py-2 bg-gray-50 dark:bg-white/[0.02]">
-        <div className="text-sm text-gray-700 dark:text-gray-300">
-          Showing {financialTransactions.length} of {pagination.totalCount} withdraw transactions
-        </div>
-        <div className="flex items-center gap-2">
-          <label htmlFor="rowsPerPage" className="text-sm text-gray-700 dark:text-gray-300">
-            Rows per page:
-          </label>
-          <select
-            id="rowsPerPage"
-            value={rowsPerPage}
-            onChange={handleRowsPerPageChange}
-            className="text-sm rounded-md border border-gray-300 px-2 py-1 dark:bg-gray-700 dark:text-white"
-          >
-            {[25, 50, 75, 100].map((val) => (
-              <option key={val} value={val}>{val}</option>
-            ))}
-          </select>
-        </div>
-      </div>
       <div className="w-full overflow-x-auto">
         <div className="min-w-[1102px] min-h-[600px]">
           <Table>
@@ -491,27 +501,50 @@ const BasicTableWithdrawals = () => {
         </div>
       </div>
 
-      {/* Pagination Controls */}
-      <div className="flex justify-between items-center px-4 py-3">
-        <button
-          onClick={() => handlePageChange(currentPage - 1)}
-          disabled={currentPage === 1}
-          className="text-sm px-3 py-1 rounded-md border border-gray-300 dark:border-gray-600 dark:text-white disabled:opacity-50"
-        >
-          Previous
-        </button>
-        <span className="text-sm text-gray-700 dark:text-gray-300">
-          Page {currentPage} of {pagination.totalPages}
-        </span>
-        <button
-          onClick={() => handlePageChange(currentPage + 1)}
-          disabled={currentPage === pagination.totalPages}
-          className="text-sm px-3 py-1 rounded-md border border-gray-300 dark:border-gray-600 dark:text-white disabled:opacity-50"
-        >
-          Next
-        </button>
-      </div>
+
+  {/* Pagination Controls */}
+<div className="flex items-center justify-end w-full px-4 py-2 space-x-3 border-t border-[#c8c9cb]">
+  <div className="text-sm text-gray-700 dark:text-gray-300 px-2 border-r border-[#c8c9cb]">
+          Showing {financialTransactions.length} of {pagination.totalCount} transactions
+        </div>
+    <div className="flex items-center gap-2">
+          <label htmlFor="rowsPerPage" className="text-sm text-gray-700 dark:text-gray-300">
+            Rows per page:
+          </label>
+          <select
+            id="rowsPerPage"
+            value={rowsPerPage}
+            onChange={handleRowsPerPageChange}
+            className="text-sm rounded-md border border-gray-300 px-2 py-1 dark:bg-gray-700 dark:text-white "
+          >
+            {[25, 50, 75, 100].map((val) => (
+              <option key={val} value={val}>{val}</option>
+            ))}
+          </select>
+        </div>
+      <span className="text-sm text-gray-700 dark:text-gray-300 px-2 border-l border-[#c8c9cb]">
+    Page {currentPage} of {pagination.totalPages}
+  </span>
+
+  {/* Buttons */}
+  <div className="flex items-center space-x-2">
+    <button
+      onClick={() => handlePageChange(currentPage - 1)}
+      disabled={currentPage === 1}
+      className="text-sm px-3 py-1 rounded-md border border-gray-300 dark:border-gray-600 dark:text-white disabled:opacity-50"
+    >
+      Previous
+    </button>
+    <button
+      onClick={() => handlePageChange(currentPage + 1)}
+      disabled={currentPage === pagination.totalPages}
+      className="text-sm px-3 py-1 rounded-md border border-gray-300 dark:border-gray-600 dark:text-white disabled:opacity-50"
+    >
+      Next
+    </button>
     </div>
+  </div>
+</div>
   )
 }
 

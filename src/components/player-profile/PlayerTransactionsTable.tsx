@@ -6,130 +6,130 @@ import { Table, TableBody, TableCell, TableHeader, TableRow } from '../ui/table'
 import { formatDateToDDMMYYYYHHMMSS } from '@/utils/utils';
 import DateRangePickerWithTime from './DateRangePickerWithTime';
 
-const PlayerTransactionsTable = ({ playerId }: { playerId:string }) => {
-    const [currentPage, setCurrentPage] = useState(1);
-    const [rowsPerPage, setRowsPerPage] = useState(25);
+const PlayerTransactionsTable = ({ playerId }: { playerId: string }) => {
+  const [currentPage, setCurrentPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(25);
 
-    const [dateFrom, setDateFrom] = useState<string | undefined>(undefined);
-    const [dateTo, setDateTo] = useState<string | undefined>(undefined);
-    const [isDateModified, setIsDateModified] = useState(false)
-    const [type, setType] = useState<string | undefined>(undefined);
-    const [eventType, setEventType] = useState<string | undefined>(undefined);
+  // ✅ Set default date range to today
+  const today = new Date();
+  const startOfToday = new Date(today.setHours(0, 0, 0, 0)).toISOString();
+  const endOfToday = new Date(today.setHours(23, 59, 59, 999)).toISOString();
 
-    const [isFilterOn, setIsFilterOn] = useState(false);
+  const [dateFrom, setDateFrom] = useState<string | undefined>(startOfToday);
+  const [dateTo, setDateTo] = useState<string | undefined>(endOfToday);
+  const [isDateModified, setIsDateModified] = useState(true);
 
-    const { transactions, loading, error, pagination, filter, setFilter } = usePlayerTransactions(
-        {
-          pageNumber: currentPage,
-          pageSize: rowsPerPage,
-          playerId
-        }
-      );
+  const [type, setType] = useState<string | undefined>(undefined);
+  const [eventType, setEventType] = useState<string | undefined>(undefined);
+  const [isFilterOn, setIsFilterOn] = useState(false);
 
-    const [open, setOpen] = useState(false)
-    const dropdownRef = useRef<HTMLDivElement>(null)
-    
-      // Close dropdown on outside click
-      useEffect(() => {
-        const handleClickOutside = (e: MouseEvent) => {
-          if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
-            setOpen(false)
-          }
-        }
-        document.addEventListener('mousedown', handleClickOutside)
-        return () => document.removeEventListener('mousedown', handleClickOutside)
-      }, [])
-    
-      const handlePageChange = (newPage: number) => {
-        if (newPage >= 1 && newPage <= pagination.totalPages) {
-          setCurrentPage(newPage);
-          setFilter({ ...filter, pageNumber: newPage });
-        }
-      };
+  const { transactions, loading, error, pagination, filter, setFilter } = usePlayerTransactions({
+    pageNumber: currentPage,
+    pageSize: rowsPerPage,
+    playerId,
+    timeStampFrom: dateFrom, // ✅ default today
+    timeStampTo: dateTo      // ✅ default today
+  });
 
-      const handleRowsPerPageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-          const newRowsPerPage = Number(e.target.value);
-          setRowsPerPage(newRowsPerPage);
-          setCurrentPage(1);
-          setFilter({ ...filter, pageSize: newRowsPerPage, pageNumber: 1 });
-        };
-      
-        const handleSort = (column: string) => {
-        setFilter(prev => ({
-          ...prev,
-          sortBy: column,
-          sortDirection: prev.sortBy === column 
-            ? prev.sortDirection === 'asc' ? 'desc' : 'asc'
-            : 'asc',
-          pageNumber: 1, // Reset to first page when sorting
-        }));
-      };
-      
-        const handleRefetch = () => {
-        setCurrentPage(1);
-        
-        const newFilter:PlayerTransactionFilter  = {
-          pageNumber: 1,
-          pageSize: rowsPerPage,
-          playerId: playerId,
-          eventType: eventType || undefined,
-          type: type || undefined
-        };
-      
-        // Only include dates that were modified
-        if (isDateModified) {
-          newFilter.timeStampFrom = dateFrom;
-          newFilter.timeStampTo = dateTo;
-        }
-      
-        const isAnyFilterActive = 
-          Boolean(type) ||
-          Boolean(eventType) ||
-          isDateModified
-      
-        setIsFilterOn(isAnyFilterActive);
-      
-        setFilter(newFilter);
-      };
-      
-      const removeFilter = () => {
-        // Reset all input states
-        setType('');
-        setEventType('')
-        setDateFrom('')
-        setDateTo('')
-        setIsDateModified(false)
-        
-        // Reset to first page
-        setCurrentPage(1);
-        
-        // Create default filter with only contentType-specific filters
-        const defaultFilter = {
-          pageNumber: 1,
-          pageSize: rowsPerPage,
-          playerId: playerId
-        };
-        
-        // Apply the default filter
-        setFilter(defaultFilter);
-        setIsFilterOn(false);
-      };
+  const [open, setOpen] = useState(false)
+  const dropdownRef = useRef<HTMLDivElement>(null)
 
-      const SkeletonRow = ({ columns }: { columns: number }) => (
-          <TableRow>
-            {Array.from({ length: columns }).map((_, index) => (
-              <TableCell key={index} className="px-5 py-4">
-                <div className="h-4 w-full rounded bg-gray-200 dark:bg-gray-700 animate-pulse" />
-              </TableCell>
-            ))}
-          </TableRow>
-        );
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
 
-      if (error) {
-        console.log(error)
+  const handlePageChange = (newPage: number) => {
+    if (newPage >= 1 && newPage <= pagination.totalPages) {
+      setCurrentPage(newPage);
+      setFilter({ ...filter, pageNumber: newPage });
+    }
+  };
+
+  const handleRowsPerPageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newRowsPerPage = Number(e.target.value);
+    setRowsPerPage(newRowsPerPage);
+    setCurrentPage(1);
+    setFilter({ ...filter, pageSize: newRowsPerPage, pageNumber: 1 });
+  };
+
+  const handleSort = (column: string) => {
+    setFilter(prev => ({
+      ...prev,
+      sortBy: column,
+      sortDirection: prev.sortBy === column
+        ? prev.sortDirection === 'asc' ? 'desc' : 'asc'
+        : 'asc',
+      pageNumber: 1,
+    }));
+  };
+
+  const handleRefetch = () => {
+    setCurrentPage(1);
+
+    const newFilter: PlayerTransactionFilter = {
+      pageNumber: 1,
+      pageSize: rowsPerPage,
+      playerId,
+      type: type || undefined,
+      eventType: eventType || undefined,
+      timeStampFrom: dateFrom,
+      timeStampTo: dateTo,
+    };
+
+    const isAnyFilterActive =
+      Boolean(type) ||
+      Boolean(eventType) ||
+      isDateModified
+
+    setIsFilterOn(isAnyFilterActive);
+    setFilter(newFilter);
+  };
+
+  // ✅ Apply default filter on mount
+  useEffect(() => {
+    handleRefetch();
+  }, []);
+
+  const removeFilter = () => {
+    setType('');
+    setEventType('');
+    setDateFrom(startOfToday);
+    setDateTo(endOfToday);
+    setIsDateModified(true);
+
+    setCurrentPage(1);
+    const defaultFilter = {
+      pageNumber: 1,
+      pageSize: rowsPerPage,
+      playerId,
+      timeStampFrom: startOfToday,
+      timeStampTo: endOfToday
+    };
+    setFilter(defaultFilter);
+    setIsFilterOn(false);
+  };
+
+  const SkeletonRow = ({ columns }: { columns: number }) => (
+    <TableRow>
+      {Array.from({ length: columns }).map((_, index) => (
+        <TableCell key={index} className="px-5 py-4">
+          <div className="h-4 w-full rounded bg-gray-200 dark:bg-gray-700 animate-pulse" />
+        </TableCell>
+      ))}
+    </TableRow>
+  );
+
+  if (error) {
+    console.log(error)
     return <div className="p-4 text-red-500">Error: {error}</div>;
   }
-
   return (
     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">
           <div className="relative" ref={dropdownRef}>
