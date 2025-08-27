@@ -406,52 +406,52 @@ const BasicTablePendingWithdrawals = () => {
                   Username
                 </TableCell>
                 <TableCell isHeader className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400">
-                  Player Fullname
+                  Oyuncu Tam İsim
                 </TableCell>
                 <TableCell 
                   isHeader 
                   className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400 cursor-pointer" 
                   onClick={() => handleSort("type")}
                 >
-                  Type
+                  Tip
                 </TableCell>
                 <TableCell 
                   isHeader 
                   className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400 cursor-pointer" 
                   onClick={() => handleSort("typeName")}
                 >
-                  Payment Method
+                  Ödeme Yöntemi
                 </TableCell>
                 <TableCell 
                   isHeader 
                   className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400 cursor-pointer" 
                   onClick={() => handleSort("amount")}
                 >
-                  Amount
+                  Miktar
                 </TableCell>
                 <TableCell isHeader className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400">
-                  Account Number
+                  Hesap Numarası
                 </TableCell>
                 <TableCell 
                   isHeader 
                   className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400 cursor-pointer" 
                   onClick={() => handleSort("status")}
                 >
-                  Status
+                  Durum
                 </TableCell>
                   <TableCell 
                     isHeader 
                     className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400 cursor-pointer" 
                     onClick={() => handleSort("timestamp")}
                   >
-                    Time
+                    Zaman
                   </TableCell>
                   <TableCell 
                     isHeader 
                     className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400 cursor-pointer" 
                     onClick={() => handleSort("timestamp")}
                   >
-                    Actions
+                    Aksiyonlar
                   </TableCell>
               </TableRow>
             </TableHeader>
@@ -516,10 +516,10 @@ const BasicTablePendingWithdrawals = () => {
                     <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
                         <div className='flex flex-row items-start justify-start gap-2'>
                             <button disabled={isSendingResponse} onClick={() => handleActionClick(t.id, t.playerID, 'accept')} className='px-2 py-1 text-green-600 border-[1px] border-green-600 bg-white hover:green-700 hover:bg-gray-200 hover:test-semibold disabled:bg-gray-400 rounded-md'>
-                                Accept
+                                Kabul Et
                             </button>
                             <button disabled={isSendingResponse} onClick={() => handleActionClick(t.id, t.playerID, 'reject')} className='px-2 py-1 text-red-600 border-[1px] border-red-600 bg-white hover:green-700 hover:bg-gray-200 hover:test-semibold disabled:bg-gray-400 rounded-md'>
-                                Reject
+                                Reddet
                             </button>
                         </div>
                     </TableCell>
