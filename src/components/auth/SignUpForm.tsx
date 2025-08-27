@@ -2,11 +2,9 @@
 import Input from "@/components/form/input/InputField";
 import Label from "@/components/form/Label";
 import { EyeCloseIcon, EyeIcon } from "@/icons";
-import { registerAction } from "@/server/userActions";
 import Link from "next/link";
-import React, { startTransition, useState } from "react";
+import React, { useState } from "react";
 import Button from "../ui/button/Button";
-import { showToast } from "@/utils/toastUtil";
 
 interface ExistError {
   usernameMatch: boolean;
@@ -61,24 +59,24 @@ export default function SignUpForm() {
       emailMatch: false,
     });
 
-    startTransition(async () => {
-      const response = await registerAction(username, fullName, lastname, email, btag, telegramLink, password);
-      if (!response.isSuccess) {
-        setExistError({
-          usernameMatch: response.existingCredentials.usernameMatch,
-          btagMatch: response.existingCredentials.btagMatch,
-          emailMatch: response.existingCredentials.emailMatch
-        });
-        setError(response.message);
-      }
-      showToast(
-        response.isSuccess
-          ? "Hesabınız oluşturuldu ancak kullanmaya başlamadan önce bir yetkili tarafından onaylanması gerekiyor. 😔"
-          : response.message,
-        response.isSuccess ? 'success' : 'error'
-      );
-      setLoading(false);
-    });
+    // startTransition(async () => {
+    //   const response = await registerAction(username, fullName, lastname, email, btag, telegramLink, password);
+    //   if (!response.isSuccess) {
+    //     setExistError({
+    //       usernameMatch: response.existingCredentials.usernameMatch,
+    //       btagMatch: response.existingCredentials.btagMatch,
+    //       emailMatch: response.existingCredentials.emailMatch
+    //     });
+    //     setError(response.message);
+    //   }
+    //   showToast(
+    //     response.isSuccess
+    //       ? "Hesabınız oluşturuldu ancak kullanmaya başlamadan önce bir yetkili tarafından onaylanması gerekiyor. 😔"
+    //       : response.message,
+    //     response.isSuccess ? 'success' : 'error'
+    //   );
+    //   setLoading(false);
+    // });
   };
 
 

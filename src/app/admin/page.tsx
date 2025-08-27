@@ -1,14 +1,13 @@
 "use client"
 
-import React, { startTransition, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import ComponentCard from "@/components/common/ComponentCard";
 import { EcommerceMetrics } from "@/components/ecommerce/EcommerceMetrics";
 import BasicTableSmallAdmin from "@/components/tables/BasicTableSmallAdmin";
-import { getAllAffiliates } from "@/server/userActions";
 import CountUp from "react-countup";
 import DateRangePicker from "@/components/DateRangePicker";
 import { format } from 'date-fns';
-import { EnrichedClientData, useAuth } from "@/context/AuthContext";
+import { EnrichedClientData } from "@/context/AuthContext";
 
 export interface AdminUserStats {
   id: number;
@@ -49,14 +48,12 @@ interface TopStatsResult {
 }
 
 export default function AdminPage() {
-  const { allAffiliatesListInSelectedTime ,getAllAffiliatesWithTime } = useAuth();
     const [profit, setProfit] = useState(Number);
     const [prevProfit, setPrevProfit] = useState(Number);
     const [pendingCommision, setPendingCommision] = useState(0.00);
     const [userCount, setUserCount] = useState(Number);
     const [currentTotalDeposit, setCurrentTotalDeposit] = useState(0.00);
     const [currentTotalDepositCount, setCurrentTotalDepositCount] = useState(0);
-    const [allAffiliates, setAllAfiliates] = useState<AdminUserStats[]>([])
     const [totalWithdrawableBalance, settotalWithdrawableBalance] = useState(0.00)
     const [totalWithdrawableUserCount, settotalWithdrawableUserCount] = useState(0)
     const [topFiveTotalDeposit, setTopFiveTotalDeposit] = useState<AdminUserTableStats[]>([])
@@ -269,48 +266,7 @@ export default function AdminPage() {
 
     useEffect(() => {
         setIsLoadingTotal(true);
-        getAllAffiliatesWithTime(range);
       }, [range])
-
-    useEffect(() => {
-      const token = localStorage.getItem('authToken');
-      if(token){
-        startTransition(async () => {
-          const data = await getAllAffiliates(token);
-          if(data.isSuccess){
-            setAllAfiliates(data.allUsers)
-          }
-        })
-      }
-    },[])
-
-    useEffect(() => {
-      if(allAffiliates && allAffiliatesListInSelectedTime){
-        setUserCount(allAffiliates.length)
-        setPrevProfit(profit)
-        const pending = calculatePendingCommission(allAffiliates);
-        const profitNow = calculatePercentageProfit(allAffiliatesListInSelectedTime);
-        const topFive = getTopBTagStatsWithUsers(allAffiliatesListInSelectedTime, allAffiliates)
-        setTopFiveTotalDeposit(topFive.topByDeposit)
-        setTopFiveTotalWithdrawal(topFive.topByWithdrawal)
-        setTopFiveNetContribution(topFive.topByNetDeposit)
-        setPendingCommision(pending);
-        setProfit(profitNow)
-        const currentDepositInfo = calculateTotalDeposits(allAffiliatesListInSelectedTime)
-        setCurrentTotalDeposit(currentDepositInfo.total);
-        setCurrentTotalDepositCount(currentDepositInfo.count)
-        const currentWithdrawalInfo = calculateTotalWithdrawals(allAffiliatesListInSelectedTime)
-        setCurrentTotalWithdrawal(currentWithdrawalInfo.total);
-        setCurrentTotalWithdrawalCount(currentWithdrawalInfo.count)
-        const currentCommisionInfo = calculateTotalPendingCommission(allAffiliatesListInSelectedTime, allAffiliates)
-        setCurrentTotalCommisionAmount(currentCommisionInfo.totalCommission);
-        setCurrentTotalCommisionCount(currentCommisionInfo.userCount)
-        const withdrabaleBalanceInfo = calculateTotalWithdrawableBalance(allAffiliates);
-        settotalWithdrawableBalance(withdrabaleBalanceInfo.total)
-        settotalWithdrawableUserCount(withdrabaleBalanceInfo.count)
-        setIsLoadingTotal(false);
-      }
-    }, [allAffiliates.length, allAffiliatesListInSelectedTime])
 
     const handleDateChange = (range: { MinCreatedLocal: string; MaxCreatedLocal: string }) => {
     setRange(range)

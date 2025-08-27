@@ -4,7 +4,6 @@ import Label from "@/components/form/Label";
 import Button from "@/components/ui/button/Button";
 import { EyeCloseIcon, EyeIcon } from "@/icons";
 import { authenticateUser } from "@/server/userActions";
-import Link from "next/link";
 import React, { startTransition, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";

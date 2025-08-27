@@ -7,8 +7,6 @@ import {
   TableRow,
 } from "../ui/table";
 import { useAuth } from "@/context/AuthContext";
-//import { changeUserCredentials, deleteUser, loginAsUser } from "@/server/userActions";
-// aga bunda sıkıntı vardı commenta aldım bu patlatıyordu
 import { showToast } from "@/utils/toastUtil";
 import { useRouter } from "next/navigation";
 import Link from "next/link";

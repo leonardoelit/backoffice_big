@@ -2,12 +2,8 @@
 import Input from "@/components/form/input/InputField";
 import Label from "@/components/form/Label";
 import Button from "@/components/ui/button/Button";
-import { createNewUser } from "@/server/userActions";
 import React, { startTransition, useState } from "react";
-import { useAuth } from "@/context/AuthContext";
-import { useRouter } from "next/navigation";
 import Select from "../form/Select";
-import { showToast } from "@/utils/toastUtil";
 import { EyeCloseIcon, EyeIcon } from "@/icons";
 
 interface ExistError {
@@ -40,8 +36,6 @@ export default function AddUserForm() {
       btagMatch: false,
       emailMatch: false,
     })
-  const { userInfo } = useAuth();
-  const router = useRouter();
 
   const handleSubmit = () => {
     const errors = {
@@ -66,27 +60,27 @@ export default function AddUserForm() {
     });
 
     startTransition(async () => {
-        const token = localStorage.getItem("authToken");
-        if (!token || !userInfo) {
-        return;
-        }
+        // const token = localStorage.getItem("authToken");
+        // if (!token || !userInfo) {
+        // return;
+        // }
 
-        const response = await createNewUser(token, username, fullname, lastname, email, btag, telegramLink , password, role);
+        // const response = await createNewUser(token, username, fullname, lastname, email, btag, telegramLink , password, role);
 
-        if (response.isSuccess) {
-        showToast('Kullanıcı başarı ile oluşturuldu!', 'success')
-        router.push('/admin/users')
-        } else {
-        showToast('Bazı kullanıcı bilgileri sistemde mevcut!', 'error')
-        if (!response.isSuccess) {
-          setExistError({
-            usernameMatch: response.existingCredentials.usernameMatch,
-            btagMatch: response.existingCredentials.btagMatch,
-            emailMatch: response.existingCredentials.emailMatch
-          });
-        }
-        console.log(response.message);
-        }
+        // if (response.isSuccess) {
+        // showToast('Kullanıcı başarı ile oluşturuldu!', 'success')
+        // router.push('/admin/users')
+        // } else {
+        // showToast('Bazı kullanıcı bilgileri sistemde mevcut!', 'error')
+        // if (!response.isSuccess) {
+        //   setExistError({
+        //     usernameMatch: response.existingCredentials.usernameMatch,
+        //     btagMatch: response.existingCredentials.btagMatch,
+        //     emailMatch: response.existingCredentials.emailMatch
+        //   });
+        // }
+        // console.log(response.message);
+        // }
 
         setLoading(false);
     });

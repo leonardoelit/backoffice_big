@@ -1,18 +1,5 @@
 'use client';
 
-import {
-  getAllTransactions,
-  getAllUserAffiliates,
-  getAllUsers,
-  getAllWithdrawalRequests,
-  getUserAffiliatesWithTime,
-  getUserInfo,
-  getUsersTransactions,
-  getUserWithdrawals,
-  changeUserCredentials,
-  getAllAffiliatesWithTimeAdmin,
-} from '@/server/userActions';
-
 import { parseJwt } from '@/utils/utils';
 import {
   createContext,
@@ -26,7 +13,6 @@ import {
 
 import { deleteCookie } from 'cookies-next';
 import { useRouter } from 'next/navigation';
-import { showToast } from '@/utils/toastUtil';
 import { AuthResponse, JwtPayload, Player, User } from '@/components/constants/types';
 
 interface AuthContextType {
@@ -35,33 +21,11 @@ interface AuthContextType {
   token: string | null;
   isLoadingSignIn: boolean;
   userInfo: User;
-  allAffiliatesList: ClientKpi[];
   allPlayerData: Player[];
-  affiliatesListInSelectedTime: EnrichedClientData[];
-  allAffiliatesListInSelectedTime: EnrichedClientData[];
   playerBalanceData: PlayerBalanceResponse;
-  usersTransactions: Transaction[];
-  getUserTransactions: () => void;
-  usersWithdrawals: Withdrawal[];
-  getUsersWithdrawals: () => void;
-  allUsersList: User[];
-  getAllUsersAdmin: () => void;
-  allTransactionsList: Transaction[];
-  getAllTransactionsAdmin: () => void;
-  allWithdrawalRequests: Withdrawal[];
-  getAllWithdrawalsAdmin: () => void;
-  changeUserCredentialsAdmin: (username:string, btag:string|null, pct:number|null, password:string|null, approve: boolean | null) => void;
-  login: (response: LoginResponse) => void;
+  login: (response: AuthResponse) => void;
   logout: () => void;
   logoutAdmin: (response: LoginResponse) => void;
-  getAffiliatesWithTime: (range: {
-    MinCreatedLocal: string,
-    MaxCreatedLocal: string,
-  }) => void;
-  getAllAffiliatesWithTime: (range: {
-    MinCreatedLocal: string,
-    MaxCreatedLocal: string,
-  }) => void;
 }
 
 export interface UserInfo {
@@ -93,51 +57,6 @@ interface LoginResponse {
     TMTWithdrawal: number,
     userCount: number,
     approved: boolean;
-}
-
-export interface ClientKpi {
-  BTag: string;
-  CasinoProfitness: number;
-  ClientId: number;
-  CurrencyId: string;
-  DepositAmount: number;
-  DepositCount: number;
-  FirstDepositTime: string | null;
-  FirstDepositTimeLocal: string | null;
-  GamingProfitAndLose: number;
-  Id: number;
-  IsTest: boolean;
-  IsVerified: boolean;
-  LastCasinoBetTime: string | null;
-  LastCasinoBetTimeLocal: string | null;
-  LastDepositAmount: number;
-  LastDepositTime: string | null;
-  LastDepositTimeLocal: string | null;
-  LastSportBetTime: string | null;
-  LastSportBetTimeLocal: string | null;
-  LastWithdrawalAmount: number;
-  LastWithdrawalTime: string | null;
-  LastWithdrawalTimeLocal: string | null;
-  Login: string;
-  Name: string;
-  ProfitAndLose: number | null;
-  SportProfitness: number;
-  SportsbookProfileId: number;
-  TotalCasinoBonusStakes: number;
-  TotalCasinoBonusWinings: number;
-  TotalCasinoStakes: number;
-  TotalCasinoWinnings: number;
-  TotalDeposit: number;
-  TotalSportBets: number;
-  TotalSportBonusStakes: number;
-  TotalSportBonusWinings: number;
-  TotalSportStakes: number;
-  TotalSportWinnings: number;
-  TotalUnsettledBets: number;
-  TotalUnsettledStakes: number;
-  TotalWithdrawal: number;
-  WithdrawalAmount: number;
-  WithdrawalCount: number;
 }
 
 export interface PlayerBalanceResponse {
@@ -188,9 +107,6 @@ export interface EnrichedClientData {
   dateLocal: string;
 }
 
-
-
-
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
@@ -206,21 +122,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     lastname: '',
     role: "User",
   });
-
-  const [allAffiliatesList, setAllAffiliateList] = useState<ClientKpi[]>([]);
-  const [affiliatesListInSelectedTime, setAffiliatesListInSelectedTime] = useState<EnrichedClientData[]>([]);
-  const [allAffiliatesListInSelectedTime, setAllAffiliatesListInSelectedTime] = useState<EnrichedClientData[]>([]);
   const [allPlayerData, setAllPlayerData] = useState<Player[]>([]);
   const [playerBalanceData, setPlayerBalanceData] = useState<PlayerBalanceResponse>({
     playerCount: 0,
     balanceList: [],
   });
-
-  const [usersTransactions, setUsersTransactions] = useState<Transaction[]>([]);
-  const [usersWithdrawals, setUsersWithdrawals] = useState<Withdrawal[]>([]);
-  const [allUsersList, setAllUsersList] = useState<User[]>([]);
-  const [allTransactionsList, setAllTransactionsList] = useState<Transaction[]>([]);
-  const [allWithdrawalRequests, setAllWithdrawalRequests] = useState<Withdrawal[]>([]);
 
   const router = useRouter();
 
@@ -255,113 +161,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
     });
   }, []);
-
-  
-
-  const getAllAffiliates = useCallback((token: string) => {
-    startTransition(async () => {
-      const res = await getAllUserAffiliates(token);
-      if (res.isSuccess) {
-        setAllAffiliateList(res.data.allTimeData.reverse());
-        setAllPlayerData(res.data.allPlayerData.reverse());
-      }
-      setIsLoadingSignIn(false);
-    });
-  }, []);
-
-  const getAffiliatesWithTime = useCallback((range: {
-    MinCreatedLocal: string;
-    MaxCreatedLocal: string;
-  }) => {
-    const authToken = localStorage.getItem('authToken');
-    if (!authToken) return;
-
-    startTransition(async () => {
-      const res = await getUserAffiliatesWithTime(authToken, range);
-      if (res.isSuccess) {
-        setAffiliatesListInSelectedTime(res.affiliateList);
-        setPlayerBalanceData({
-          playerCount: res.balanceData.playerCount,
-          balanceList: res.balanceData.balanceList.reverse(),
-        });
-      }
-    });
-  }, []);
-
-  const getUserTransactions = useCallback(() => {
-    const authToken = localStorage.getItem('authToken');
-    if (!authToken) return;
-
-    startTransition(async () => {
-      const res = await getUsersTransactions(authToken);
-      if (res.isSuccess) setUsersTransactions(res.transactionData);
-    });
-  }, []);
-
-  const getUsersWithdrawals = useCallback(() => {
-    const authToken = localStorage.getItem('authToken');
-    if (!authToken) return;
-
-    startTransition(async () => {
-      const res = await getUserWithdrawals(authToken);
-      if (res.isSuccess) setUsersWithdrawals(res.withdrawalHistory);
-    });
-  }, []);
-
-  const getAllUsersAdmin = useCallback(() => {
-    if (!token) return;
-
-    startTransition(async () => {
-      const res = await getAllUsers(token);
-      console.log(res)
-      if (res.isSuccess) setAllUsersList(res.allUsers);
-    });
-  }, [token]);
-
-  const getAllAffiliatesWithTime = useCallback((range: {
-    MinCreatedLocal: string;
-    MaxCreatedLocal: string;
-  }) => {
-    const authToken = localStorage.getItem('authToken');
-    if (!authToken) return;
-
-    startTransition(async () => {
-      const res = await getAllAffiliatesWithTimeAdmin(authToken, range);
-      if (res.isSuccess) {
-        setAllAffiliatesListInSelectedTime(res.allUsersDataWithTime);
-      }else{
-        showToast('Belirli zaman aralığındaki user data larını alırken hata', 'error')
-      }
-    });
-  }, []);
-
-  const getAllTransactionsAdmin = useCallback(() => {
-    if (!token || parseJwt(token).role !== 'admin') return;
-
-    startTransition(async () => {
-      const res = await getAllTransactions(token);
-      if (res.isSuccess) setAllTransactionsList(res.allTransactions);
-    });
-  }, [token]);
-
-  const getAllWithdrawalsAdmin = useCallback(() => {
-    if (!token || parseJwt(token).role !== 'admin') return;
-
-    startTransition(async () => {
-      const res = await getAllWithdrawalRequests(token);
-      if (res.isSuccess) setAllWithdrawalRequests(res.allWithdrawalRequests);
-    });
-  }, [token]);
-
-  const changeUserCredentialsAdmin = useCallback(
-    async (username: string, btag: string | null, pct: number | null, password: string | null, approve: boolean | null) => {
-      if (!token || parseJwt(token).role !== 'admin') return;
-
-      const res = await changeUserCredentials(token, username, btag, pct, password, approve);
-      if (!res.isSuccess) console.warn(res.message);
-    },
-    [token]
-  );
 
 const login = useCallback((response: AuthResponse) => {
   if (!response.isSuccess) {
@@ -469,36 +268,16 @@ const login = useCallback((response: AuthResponse) => {
     token,
     isLoadingSignIn,
     userInfo,
-    allAffiliatesList,
     allPlayerData,
-    affiliatesListInSelectedTime,
-    allAffiliatesListInSelectedTime,
-    getAllAffiliatesWithTime,
     playerBalanceData,
-    getAffiliatesWithTime,
-    usersTransactions,
-    getUserTransactions,
-    usersWithdrawals,
-    getUsersWithdrawals,
-    allUsersList,
-    getAllUsersAdmin,
-    allTransactionsList,
-    getAllTransactionsAdmin,
-    allWithdrawalRequests,
-    getAllWithdrawalsAdmin,
-    changeUserCredentialsAdmin,
     login,
     logout,
     logoutAdmin
   }), [
     isAuthenticated, isAdmin, token, isLoadingSignIn,
-    userInfo, allAffiliatesList,
-    allPlayerData, affiliatesListInSelectedTime, allAffiliatesListInSelectedTime, playerBalanceData,
-    usersTransactions, usersWithdrawals, allUsersList,
-    allTransactionsList, allWithdrawalRequests,
-    getAffiliatesWithTime, getAllAffiliatesWithTime, getUserTransactions, getUsersWithdrawals,
-    getAllUsersAdmin, getAllTransactionsAdmin, getAllWithdrawalsAdmin,
-    changeUserCredentialsAdmin, login, logout, logoutAdmin
+    userInfo,
+    allPlayerData, playerBalanceData,
+    login, logout, logoutAdmin
   ]);
 
   return (

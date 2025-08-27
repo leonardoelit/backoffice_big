@@ -1,4 +1,4 @@
-import React, { startTransition, useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   Table,
   TableBody,
@@ -6,159 +6,8 @@ import {
   TableHeader,
   TableRow,
 } from "../ui/table";
-import { ClientKpi, useAuth } from "@/context/AuthContext";
 import Link from "next/link";
-import { getFavPlayers, removePlayerFromFavPlayers } from "@/server/userActions";
-import { showToast } from "@/utils/toastUtil";
-
-export interface Player {
-  Id: number;
-  CurrencyId: string;
-  Currencies: any;
-  FirstName: string;
-  LastName: string;
-  MiddleName: string;
-  Login: string;
-  RegionId: number;
-  Gender: number;
-  PersonalId: string;
-  Address: string;
-  Email: string;
-  Language: string;
-  Phone: string;
-  MobilePhone: string;
-  BirthDate: string;
-  TimeZone: any;
-  NickName: string | null;
-  DocNumber: string;
-  IBAN: string | null;
-  PromoCode: string | null;
-  ProfileId: number | null;
-  MaximalDailyBet: number | null;
-  MaximalSingleBet: number | null;
-  CasinoMaximalDailyBet: number | null;
-  CasinoMaximalSingleBet: number | null;
-  PreMatchSelectionLimit: number | null;
-  LiveSelectionLimit: number | null;
-  Excluded: boolean | null;
-  ExcludedLocalDate: string | null;
-  IsSubscribedToNewsletter: boolean;
-  IsVerified: boolean;
-  PartnerName: string;
-  PartnerId: number;
-  LastLoginIp: string;
-  RegistrationIp: string;
-  YesterdayBalance: number | null;
-  CreditLimit: number;
-  IsUsingCredit: boolean;
-  LastLoginTime: string;
-  LastLoginLocalDate: string;
-  Balance: number;
-  IsLocked: boolean;
-  IsCasinoBlocked: boolean | null;
-  IsSportBlocked: boolean | null;
-  IsRMTBlocked: boolean | null;
-  Password: string | null;
-  SportsbookProfileId: number;
-  CasinoProfileId: number | null;
-  GlobalLiveDelay: number | null;
-  Created: string;
-  CreatedLocalDate: string;
-  RFId: string | null;
-  ResetExpireDate: string | null;
-  ResetExpireDateLocal: string | null;
-  DocIssuedBy: string | null;
-  LoyaltyLevelId: number | null;
-  IsUsingLoyaltyProgram: boolean;
-  LoyaltyPoint: number;
-  AffilateId: number | null;
-  BTag: string;
-  TermsAndConditionsVersion: string;
-  TCVersionAcceptanceDate: string;
-  TCVersionAcceptanceLocalDate: string;
-  ExcludedLast: string | null;
-  ExcludedLastLocal: string | null;
-  UnplayedBalance: number;
-  IsTest: boolean;
-  ExternalId: string | null;
-  AuthomaticWithdrawalAmount: number | null;
-  AuthomaticWithdrawalMinLeftAmount: number | null;
-  IsAutomaticWithdrawalEnabled: boolean | null;
-  SwiftCode: string | null;
-  Title: string | null;
-  BirthCity: string | null;
-  BirthDepartment: string | null;
-  BirthRegionId: number | null;
-  ZipCode: string | null;
-  BirthRegionCode2: string | null;
-  ActivationCode: string | null;
-  ActivationCodeExpireDate: string | null;
-  ActivationCodeExpireDateLocal: string | null;
-  LastSportBetTime: string | null;
-  LastSportBetTimeLocal: string | null;
-  LastCasinoBetTime: string;
-  LastCasinoBetTimeLocal: string;
-  FirstDepositTime: string | null;
-  FirstDepositDateLocal: string | null;
-  LastDepositDateLocal: string | null;
-  LastDepositTime: string | null;
-  PasswordChangedLastLocal: string | null;
-  PasswordChangedLast: string | null;
-  ActivationState: number | null;
-  ExcludeTypeId: number | null;
-  DocIssueDate: string | null;
-  DocIssueCode: string | null;
-  Province: string | null;
-  IsResident: boolean;
-  RegistrationSource: number;
-  IncomeSource: string | null;
-  AccountHolder: string | null;
-  CashDeskId: number | null;
-  ClientCashDeskName: string | null;
-  IsSubscribeToEmail: boolean;
-  IsSubscribeToSMS: boolean;
-  IsSubscribeToInternalMessage: boolean;
-  IsSubscribeToPushNotification: boolean;
-  IsSubscribeToPhoneCall: boolean;
-  NotificationOptions: number;
-  IsLoggedIn: boolean;
-  City: string | null;
-  CountryName: string;
-  ClientVerificationDate: string | null;
-  BankName: string | null;
-  Status: number;
-  IsNoBonus: boolean;
-  IsTwoFactorAuthenticationEnabled: boolean | null;
-  IsQRCodeUsed: boolean | null;
-  PartnerClientCategoryId: number | null;
-  WrongLoginBlockLocalTime: string | null;
-  WrongLoginAttempts: number;
-  LastWrongLoginTimeLocalDate: string | null;
-  PepStatusId: number | null;
-  SelectedPepStatuses: any;
-  DocRegionId: number | null;
-  DocRegionName: string | null;
-  DocType: number | null;
-  DocExpirationDate: string | null;
-  AMLRisk: number | null;
-  ExclusionReason: string | null;
-  Citizenship: string | null;
-  IsPhoneVerified: boolean;
-  IsMobilePhoneVerified: boolean;
-  IsEkengVerified: boolean;
-  IsEmailVerified: boolean;
-  OwnerId: number | null;
-  ChildId: number | null;
-  BirthName: string | null;
-  StatusActiveDate: string | null;
-  StatusActiveDateLocalTime: string | null;
-  PartnerFlag: string | null;
-  AdditionalAddress: string | null;
-  TotalDeposit: number;
-  TotalWithdrawal: number;
-  DepositCount: number;
-  WithdrawalCount:number;
-}
+import { Player } from "../constants/types";
 
 interface FavPlayer {
     username:string;
@@ -168,12 +17,10 @@ interface FavPlayer {
 type SortColumn = keyof Player | "NetProfit";
 
 export default function BasicTableFavPlayers() {
-  const { allPlayerData, allAffiliatesList, affiliatesListInSelectedTime, userInfo } = useAuth();
 
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(25);
   const [trimmedAllPlayerData, setTrimmedAllPlayerData] = useState<Player[]>([])
-  const [trimmedAllAffiliatesList, settrimmedAllAffiliatesList] = useState<ClientKpi[]>([])
   const [favPlayerList, setFavPlayerList] = useState<FavPlayer[]>([])
   const [isRemoveFromFavLoading, setIsRemoveFromFavLoading] = useState(false)
   const [isLoading, setIsLoading] = useState(true);
@@ -240,26 +87,16 @@ export default function BasicTableFavPlayers() {
     (currentPage - 1) * rowsPerPage,
     currentPage * rowsPerPage
   );
-
-  useEffect(() => {
-    getFavPlayersAsync()
-  }, [allAffiliatesList, affiliatesListInSelectedTime])
-
-  useEffect(() => {
-    if(favPlayerList.length){
-        formatListsByContentType()
-    }
-  }, [favPlayerList])
   
 
   const handleRemoveFromFav = async (playerName:string) => {
     setIsRemoveFromFavLoading(true)
-    const token = localStorage.getItem('authToken')
-    if(token && userInfo){
-      const res = await removePlayerFromFavPlayers(token, userInfo.username ,playerName)
-      showToast(res.isSuccess ? 'Oyuncu favorilerden çıkarıldı' : res.message, res.isSuccess ? 'info' : 'error');
-      await getFavPlayersAsync()
-    }
+    // const token = localStorage.getItem('authToken')
+    // if(token && userInfo){
+    //   const res = await removePlayerFromFavPlayers(token, userInfo.username ,playerName)
+    //   showToast(res.isSuccess ? 'Oyuncu favorilerden çıkarıldı' : res.message, res.isSuccess ? 'info' : 'error');
+    //   await getFavPlayersAsync()
+    // }
     setIsRemoveFromFavLoading(false)
   }
 
@@ -283,55 +120,55 @@ export default function BasicTableFavPlayers() {
   };
 
   const getFavPlayersAsync = async () => {
-    const token = localStorage.getItem("authToken");
-    if(token){
-        const favPlayersResponse = await getFavPlayers(token);
-        if(favPlayersResponse.isSuccess){
-            setFavPlayerList(favPlayersResponse.favPlayers)
-        }
-    }
+    // const token = localStorage.getItem("authToken");
+    // if(token){
+    //     const favPlayersResponse = await getFavPlayers(token);
+    //     if(favPlayersResponse.isSuccess){
+    //         setFavPlayerList(favPlayersResponse.favPlayers)
+    //     }
+    // }
   }
   
-  const formatListsByContentType = () => {
-  startTransition(() => {
-    // Create affiliate lookup
-    const affiliateMap = new Map(
-      allAffiliatesList.map(affiliate => [
-        affiliate.Login,
-        {
-          TotalDeposit: affiliate.TotalDeposit,
-          TotalWithdrawal: affiliate.TotalWithdrawal,
-          DepositCount: affiliate.DepositCount,
-          WithdrawalCount: affiliate.WithdrawalCount,
-        },
-      ])
-    );
+//   const formatListsByContentType = () => {
+//   startTransition(() => {
+//     // Create affiliate lookup
+//     const affiliateMap = new Map(
+//       allAffiliatesList.map(affiliate => [
+//         affiliate.Login,
+//         {
+//           TotalDeposit: affiliate.TotalDeposit,
+//           TotalWithdrawal: affiliate.TotalWithdrawal,
+//           DepositCount: affiliate.DepositCount,
+//           WithdrawalCount: affiliate.WithdrawalCount,
+//         },
+//       ])
+//     );
 
-    // Create favorite players lookup
-    const favPlayersMap = new Set(favPlayerList.map(fav => fav.playerName));
+//     // Create favorite players lookup
+//     const favPlayersMap = new Set(favPlayerList.map(fav => fav.playerName));
 
-    // Filter and enrich
-    const enrichedPlayers = allPlayerData
-      .filter(player => affiliateMap.has(player.Login) && favPlayersMap.has(player.Login))
-      .map(player => {
-        const affiliateData = affiliateMap.get(player.Login);
+//     // Filter and enrich
+//     const enrichedPlayers = allPlayerData
+//       .filter(player => affiliateMap.has(player.Login) && favPlayersMap.has(player.Login))
+//       .map(player => {
+//         const affiliateData = affiliateMap.get(player.Login);
 
-        return {
-          ...player,
-          TotalDeposit: affiliateData?.TotalDeposit ?? 0,
-          TotalWithdrawal: affiliateData?.TotalWithdrawal ?? 0,
-          DepositCount: affiliateData?.DepositCount ?? 0,
-          WithdrawalCount: affiliateData?.WithdrawalCount ?? 0,
-          isFavorite: true, // optional: flag favorites
-        };
-      });
+//         return {
+//           ...player,
+//           TotalDeposit: affiliateData?.TotalDeposit ?? 0,
+//           TotalWithdrawal: affiliateData?.TotalWithdrawal ?? 0,
+//           DepositCount: affiliateData?.DepositCount ?? 0,
+//           WithdrawalCount: affiliateData?.WithdrawalCount ?? 0,
+//           isFavorite: true, // optional: flag favorites
+//         };
+//       });
 
-    setTrimmedAllPlayerData(enrichedPlayers);
-    settrimmedAllAffiliatesList(allAffiliatesList);
-    setIsLoading(false);
-  });
+//     setTrimmedAllPlayerData(enrichedPlayers);
+//     settrimmedAllAffiliatesList(allAffiliatesList);
+//     setIsLoading(false);
+//   });
 
-};
+// };
 
   return (
     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">
