@@ -131,19 +131,43 @@ const PlayerTransactionsTable = ({ playerId }: { playerId: string }) => {
     return <div className="p-4 text-red-500">Error: {error}</div>;
   }
   return (
-    <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">
-          <div className="relative" ref={dropdownRef}>
-          {/* Toggle button */}
-          <button
-            onClick={() => setOpen(!open)}
-            className="px-4 py-2 bg-blue-600 text-white text-sm rounded-tl-md hover:bg-blue-700 flex items-center gap-2"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4h18M3 12h18M3 20h18" />
-            </svg>
-            Filters
-          </button>
     
+    <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">
+      
+      <div className="-mt-2 relative flex items-center justify-between" ref={dropdownRef}>
+  {/* Filter button */}
+  <button
+    onClick={() => setOpen(!open)}
+    className="px-4 py-2 bg-blue-600 text-white text-sm rounded-tl-md hover:bg-blue-700 flex items-center gap-2"
+  >
+    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4h18M3 12h18M3 20h18" />
+    </svg>
+    Filters
+  </button>
+
+  {/* Refresh button container */}
+  <div className="mr-2 mt-4">
+    <button
+      onClick={handleRefetch}
+      title="Refresh Table"
+      className="p-2 bg-blue-500 text-white rounded hover:bg-blue-600 flex items-center justify-center"
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+        strokeWidth={2}
+        stroke="currentColor"
+        className="w-5 h-5"
+      >
+        <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582M20 20v-5h-.581M4.582 9a8 8 0 0111.836-1.414M19.418 15a8 8 0 01-11.836 1.414" />
+      </svg>
+    </button>
+  </div>
+
+
+
           {/* Dropdown panel */}
           {open && (
   <div
@@ -153,6 +177,7 @@ const PlayerTransactionsTable = ({ playerId }: { playerId: string }) => {
   >
     {/* Filter row */}
     <div className="flex flex-col md:flex-row gap-4 mb-4">
+      
       {/* Direction Select */}
       <select
         value={type}
@@ -204,6 +229,7 @@ const PlayerTransactionsTable = ({ playerId }: { playerId: string }) => {
 
     {/* Footer Buttons */}
     <div className="flex justify-end gap-3">
+      
       {isFilterOn && (
         <button
           onClick={removeFilter}
@@ -224,15 +250,15 @@ const PlayerTransactionsTable = ({ playerId }: { playerId: string }) => {
         Filtreleri Uygula
       </button>
     </div>
+    
   </div>
 )}
-
-
-
         </div>
 
       <div className="w-full overflow-x-auto">
+
         <div className="min-w-[1102px] min-h-[600px]">
+          
           <Table>
             <TableHeader className="border-b border-gray-100 dark:border-white/[0.05]">
               <TableRow>
