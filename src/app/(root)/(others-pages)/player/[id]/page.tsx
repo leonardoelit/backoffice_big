@@ -55,9 +55,9 @@ export default function PlayerProfile() {
         return <PlayerInfoCards playerData={playerData} isLoadingData={isLoading} />;
       case "istatistik":
         return <Statistic playerData={playerData} isLoadingData={isLoading} />;
-      case "bonuslar":
-        return <PlayerBonusTable playerId={id} />
       case "işlemler":
+        return <PlayerBonusTable playerId={id} />
+      case "raporlar":
         return <PlayerTransactionsTable playerId={id} />;
       case "ayarlar":
         return (
