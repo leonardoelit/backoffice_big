@@ -171,9 +171,10 @@ const PlayerTransactionsTable = ({ playerId }: { playerId: string }) => {
           {/* Dropdown panel */}
           {open && (
   <div
-    className="absolute mt-2 w-full md:w-[80vw] max-w-4xl right-0 
-               bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 
-               rounded-lg shadow-lg z-50 p-4"
+  className="absolute mt-52 w-full md:w-[80vw] max-w-4xl right-0 
+  bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 
+  rounded-lg shadow-lg z-50 p-4"
+
   >
     {/* Filter row */}
     <div className="flex flex-col md:flex-row gap-4 mb-4">
