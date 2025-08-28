@@ -258,3 +258,26 @@ export interface ActionResponse {
   isSuccess: boolean;
   message?: string;
 }
+
+export interface UpdatePlayersDataRequest {
+  playerId: string;
+
+  username?: string;
+  firstName?: string;
+  middleName?: string;
+  lastName?: string;
+  country?: string;
+  city?: string;
+  birthday?: string;         
+  address?: string;
+  gender?: number;           
+  documentNumber?: string;
+  mobileNumber?: string;
+  email?: string;
+  password?: string;
+  btag?: string;
+  promoCode?: string;
+
+  emailSubscription?: boolean;
+  smsSubscription?: boolean;
+}

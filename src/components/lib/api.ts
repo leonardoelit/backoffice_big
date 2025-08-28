@@ -1,4 +1,4 @@
-import { BonusResponse, CreateBonusRequest, GetAllFinancialTransactionsResponse, GetAllPlayersResponse, GetPlayersDataWithIdResponse, GetPlayersTransactionHistoryResponse, ManageBonusRequest, PaymentResponse, PlayerFilter, PlayerFinancialFilter, PlayerTransactionFilter, UpdateBonusRequest } from "../constants/types";
+import { ActionResponse, BonusResponse, CreateBonusRequest, GetAllFinancialTransactionsResponse, GetAllPlayersResponse, GetPlayersDataWithIdResponse, GetPlayersTransactionHistoryResponse, ManageBonusRequest, PaymentResponse, PlayerFilter, PlayerFinancialFilter, PlayerTransactionFilter, UpdateBonusRequest, UpdatePlayersDataRequest } from "../constants/types";
 
 
 export async function getPlayers(
@@ -103,6 +103,34 @@ export async function getPlayerDataId(
     return {
       isSuccess: false,
       message: error instanceof Error ? error.message : 'Failed to fetch players'
+    };
+  }
+}
+
+export async function updatePlayersData(requestBody: UpdatePlayersDataRequest): Promise<ActionResponse> {
+  try {
+    const token = localStorage.getItem("authToken");
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/api/Client/updatePlayersData`,
+      {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(requestBody),
+        cache: 'no-store'
+      }
+    );
+
+    const data: ActionResponse = await response.json();
+
+    return data;
+  } catch (error) {
+    console.error('Error updating player data:', error);
+    return {
+      isSuccess: false,
+      message: "Internal server error"
     };
   }
 }
