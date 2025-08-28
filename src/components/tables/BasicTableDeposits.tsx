@@ -373,13 +373,6 @@ const BasicTableDeposits = () => {
                 <TableCell 
                   isHeader 
                   className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400 cursor-pointer" 
-                  onClick={() => handleSort("type")}
-                >
-                  Type
-                </TableCell>
-                <TableCell 
-                  isHeader 
-                  className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400 cursor-pointer" 
                   onClick={() => handleSort("typeName")}
                 >
                   Payment Method
@@ -440,9 +433,6 @@ const BasicTableDeposits = () => {
                     </TableCell>
                     <TableCell className="px-4 py-3 text-gray-900 text-start text-theme-sm dark:text-gray-400">
                       {t.playerFullName}
-                    </TableCell>
-                    <TableCell className="px-4 py-3 text-gray-700 text-start text-theme-sm dark:text-gray-400">
-                        {t.type === "Inc" ? (<span className='text-green-600'>{t.type}</span>) : (<span className='text-red-600'>{t.type}</span>)}
                     </TableCell>
                     <TableCell className="px-4 py-3 text-gray-900 text-start text-theme-sm dark:text-gray-400">
                       {t.paymentName}
