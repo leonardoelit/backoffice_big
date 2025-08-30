@@ -401,7 +401,7 @@ const PlayerInfoCards: React.FC<PlayerInfoCardsProps> = ({ playerData, isLoading
             { label: "Is Sport Blocked", value: false },
             { label: "Is RMT Blocked", value: false },
             { label: "Durum", value: "Temporary not real" },
-            { label: "Statü", value: "Online not real" },
+            { label: "Statü", value: playerData?.isOnline ? "Online" : "Offline" },
             { label: "Oyuncu Kategorisi", value: base("playerCategory") },
             { label: "Casino Profili", value: "" },
             { label: "Dil", value: "Türkçe" },

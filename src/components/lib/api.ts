@@ -18,6 +18,7 @@ export async function getPlayers(
     if (filter.promoCode) queryParams.set('promoCode', filter.promoCode);
 
     // New filters
+    if (filter.hasDeposit !== undefined) queryParams.set('isOnline', filter.hasDeposit.toString());
     if (filter.firstDepositDateFrom) queryParams.set('firstDepositDateFrom', filter.firstDepositDateFrom);
     if (filter.firstDepositDateTo) queryParams.set('firstDepositDateTo', filter.firstDepositDateTo);
     if (filter.lastDepositDateFrom) queryParams.set('lastDepositDateFrom', filter.lastDepositDateFrom);

@@ -6,7 +6,7 @@ import { GetAllPlayersResponse, PlayerFilter } from "../constants/types";
 import { showToast } from "@/utils/toastUtil";
 import { getPlayers } from "../lib/api";
 
-export function usePlayers(token: string, initialFilter: PlayerFilter = {}) {
+export function usePlayers(initialFilter: PlayerFilter = {}) {
   const [data, setData] = useState<GetAllPlayersResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -28,6 +28,7 @@ export function usePlayers(token: string, initialFilter: PlayerFilter = {}) {
     lastWithdrawalDateTo: undefined,
     hasWithdrawal: undefined,
     hasDeposit: undefined,
+    isOnline: undefined,
     registrationDateFrom: undefined,
     registrationDateTo: undefined,
     documentNumber: undefined,
@@ -49,7 +50,7 @@ export function usePlayers(token: string, initialFilter: PlayerFilter = {}) {
       if (!result.isSuccess) {
         throw new Error(result.message || 'Failed to fetch players');
       }
-
+      console.log(result.players)
       setData(result);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to fetch players';

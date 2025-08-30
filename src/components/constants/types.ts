@@ -61,6 +61,7 @@ export interface PlayerFilter {
   email?: string;
   firstName?: string;
   lastName?: string;
+  isOnline?: boolean;
 }
 
 export interface Player { 
@@ -113,6 +114,7 @@ export interface Player {
   totalSportWin?: number;
   totalCasinoStakes?: number;
   totalSportStakes?: number;
+  isOnline?: boolean;
 }
 
 

@@ -17,7 +17,6 @@ import { formatDateToDDMMYYYY } from "@/utils/utils";
 type SortColumn = keyof Player | "registrationDateTime";
 
 export default function PlayerTable({ contentType }: { contentType: string }) {
-  const { token } = useAuth(); 
 
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(25);
@@ -47,6 +46,7 @@ export default function PlayerTable({ contentType }: { contentType: string }) {
 
   const [hasWithdrawal, setHasWithdrawal] = useState<boolean | undefined>(undefined);
   const [hasDeposit, setHasDeposit] = useState<boolean | undefined>(undefined);
+  const [isOnline, setIsOnline] = useState<boolean | undefined>(undefined);
 
   const [documentNumber, setDocumentNumber] = useState("");
   const [mobileNumber, setMobileNumber] = useState("");
@@ -66,7 +66,6 @@ export default function PlayerTable({ contentType }: { contentType: string }) {
   
   // Use the usePlayers hook with filters based on contentType
   const { players, loading, error, pagination, filter, setFilter } = usePlayers(
-    token!,
     {
       pageNumber: currentPage,
       pageSize: rowsPerPage
@@ -124,6 +123,7 @@ export default function PlayerTable({ contentType }: { contentType: string }) {
     btag: btagInput || undefined,
     hasWithdrawal,
     hasDeposit,
+    isOnline,
     documentNumber: documentNumber || undefined,
     mobileNumber: mobileNumber || undefined,
     email: email || undefined,
@@ -160,6 +160,7 @@ export default function PlayerTable({ contentType }: { contentType: string }) {
     Boolean(btagInput) ||
     hasWithdrawal !== undefined ||
     hasDeposit !== undefined ||
+    isOnline !== undefined ||
     Boolean(documentNumber) ||
     Boolean(mobileNumber) ||
     Boolean(email) ||
@@ -198,6 +199,7 @@ const removeFilter = () => {
   // Reset boolean filters
   setHasWithdrawal(undefined);
   setHasDeposit(undefined);
+  setIsOnline(undefined);
   
   // Reset personal info filters
   setDocumentNumber("");
@@ -319,6 +321,34 @@ const removeFilter = () => {
                   <option value="yes">Evet</option>
                   <option value="no">Hayır</option>
                 </select>
+                <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  id="withdrawal-checkbox"
+                  checked={isOnline === true}
+                  ref={(el) => {
+                    if (el) {
+                      el.indeterminate = isOnline === undefined;
+                    }
+                  }}
+                  onChange={(e) => {
+                    if (isOnline === undefined) {
+                      setIsOnline(true);
+                    } else if (hasWithdrawal === true) {
+                      setIsOnline(false);
+                    } else {
+                      setIsOnline(undefined);
+                    }
+                  }}
+                  className="w-4 h-4 text-blue-600 bg-gray-100 rounded border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                />
+                <label
+                  htmlFor="withdrawal-checkbox"
+                  className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300"
+                >
+                  Online
+                </label>
+              </div>
               </div>
             </div>
 
@@ -454,6 +484,9 @@ const removeFilter = () => {
                 <TableCell isHeader className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400 cursor-pointer">
                   BTag
                 </TableCell>
+                <TableCell isHeader className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400 cursor-pointer">
+                  Online
+                </TableCell>
                 {/* <TableCell isHeader className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400 cursor-pointer">
                   Risk
                 </TableCell> */}
@@ -464,7 +497,7 @@ const removeFilter = () => {
               {loading ? (
                 <>
                   {Array.from({ length: rowsPerPage }).map((_, i) => (
-                    <SkeletonRow key={i} columns={11} />
+                    <SkeletonRow key={i} columns={12} />
                   ))}
                 </>
               ) : (
@@ -549,6 +582,13 @@ const removeFilter = () => {
                     </TableCell>
                     <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
                         {player.btag ? player.btag : '-'}
+                    </TableCell>
+                    <TableCell className="px-4 py-3">
+                        <div className={`h-4 w-4 rounded-full mr-2 border-[1px] border-gray-700 ${
+                            player.isOnline
+                              ? 'bg-green-600 animate-pulse'
+                              : 'bg-red-600'
+                          }`} />
                     </TableCell>
                     {/* <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
                       <button
