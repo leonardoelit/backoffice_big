@@ -331,10 +331,10 @@ const removeFilter = () => {
                       el.indeterminate = isOnline === undefined;
                     }
                   }}
-                  onChange={(e) => {
+                  onChange={() => {
                     if (isOnline === undefined) {
                       setIsOnline(true);
-                    } else if (hasWithdrawal === true) {
+                    } else if (isOnline === true) {
                       setIsOnline(false);
                     } else {
                       setIsOnline(undefined);
@@ -485,7 +485,7 @@ const removeFilter = () => {
                   BTag
                 </TableCell>
                 <TableCell isHeader className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400 cursor-pointer">
-                  Online
+                  Durum
                 </TableCell>
                 {/* <TableCell isHeader className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400 cursor-pointer">
                   Risk
@@ -584,12 +584,20 @@ const removeFilter = () => {
                         {player.btag ? player.btag : '-'}
                     </TableCell>
                     <TableCell className="px-4 py-3">
-                        <div className={`h-4 w-4 rounded-full mr-2 border-[1px] border-gray-700 ${
-                            player.isOnline
-                              ? 'bg-green-600 animate-pulse'
-                              : 'bg-red-600'
-                          }`} />
-                    </TableCell>
+                    <div className="flex items-center">
+                      <div
+                        className={`relative h-4 w-4 rounded-full mr-2
+                          ${player.isOnline
+                            ? 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.7)] soft-pulse'
+                            : 'bg-red-500 shadow-[0_0_6px_rgba(239,68,68,0.6)]'}`
+                        }
+                      ></div>
+                      <span className="text-xs font-medium text-gray-200">
+                        {player.isOnline ? 'Online' : 'Offline'}
+                      </span>
+                    </div>
+                  </TableCell>
+
                     {/* <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
                       <button
                         title="Risk Analysis"

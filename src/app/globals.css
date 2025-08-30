@@ -727,6 +727,33 @@ span.flatpickr-weekday,
   @apply border-brand-500 bg-brand-500 dark:border-brand-500;
 }
 
+@keyframes slowPing {
+  0% { transform: scale(1); opacity: 1; }
+  75%, 100% { transform: scale(1.6); opacity: 0; }
+}
+
+@keyframes slowPulse {
+  0%, 100% { opacity: 0.7; }
+  50% { opacity: 1; }
+}
+
+.slow-ping {
+  animation: slowPing 2.5s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+.slow-pulse {
+  animation: slowPulse 2.5s ease-in-out infinite;
+}
+
+@keyframes softPulse {
+  0%, 100% { box-shadow: 0 0 8px rgba(34,197,94,0.6); }
+  50% { box-shadow: 0 0 12px rgba(34,197,94,0.9); }
+}
+
+.soft-pulse {
+  animation: softPulse 2.5s ease-in-out infinite;
+}
+
 .task {
   transition: all 0.2s ease; /* Smooth transition for visual effects */
 }
