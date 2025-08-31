@@ -120,7 +120,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     email: '',
     fullname: '',
     lastname: '',
-    role: "User",
+    role: ["User"],
   });
   const [allPlayerData, setAllPlayerData] = useState<Player[]>([]);
   const [playerBalanceData, setPlayerBalanceData] = useState<PlayerBalanceResponse>({
@@ -139,13 +139,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     // Fetch User Info
     startTransition(async () => {
-      const nameParts = userDetail.name.trim().split(/\s+/);
+      const nameParts = userDetail.unique_name.trim().split(/\s+/);
       const firstname = nameParts[0] || '';
       const lastname = nameParts.slice(1).join(' ') || '';
-      console.log(firstname, " ", lastname)
       if (userDetail) {
         setUserInfo({
-          id: userDetail.nameid,
+          id: userDetail.sub,
           fullname: firstname,
           lastname: lastname,
           email: userDetail.email,
@@ -154,7 +153,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         //if (userDetail.role === 'User') getAllAffiliates(storedToken);
         setIsAuthenticated(true);
         setToken(storedToken);
-        setIsAdmin(userDetail.role === 'Admin');
+        setIsAdmin(userDetail.role.includes("SuperAdmin"));
       }else{
         logout()
         router.push('/signin')
@@ -171,21 +170,23 @@ const login = useCallback((response: AuthResponse) => {
 
   const userDetail:JwtPayload = parseJwt(response.token!)
 
+  console.log(userDetail);
+
   if(userDetail === null){
     logout();
     return;
   }
 
-  const nameParts = userDetail.name.trim().split(/\s+/);
+  const nameParts = userDetail.unique_name.trim().split(/\s+/);
   const firstname = nameParts[0] || '';
   const lastname = nameParts.slice(1).join(' ') || '';
 
   setUserInfo({
-    id: userDetail.nameid,
+    id: userDetail.sub,
     fullname: firstname,
     lastname: lastname,
     email: userDetail.email,
-    role: userDetail.role
+    role: userDetail.role,
   })
 
   setIsLoadingSignIn(true);
@@ -193,7 +194,7 @@ const login = useCallback((response: AuthResponse) => {
 
   setToken(response.token!);
   setIsAuthenticated(true);
-  setIsAdmin(userDetail.role === 'Admin');
+  setIsAdmin(userDetail.role.includes("SuperAdmin"));
   //setIsAdmin(response.role === 'admin');
 
   //const parsed = parseJwt(response.token);

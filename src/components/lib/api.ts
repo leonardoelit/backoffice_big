@@ -1,5 +1,10 @@
-import { ActionResponse, BonusResponse, CreateBonusRequest, GetAllFinancialTransactionsResponse, GetAllPlayersResponse, GetPlayersDataWithIdResponse, GetPlayersTransactionHistoryResponse, ManageBonusRequest, PaymentResponse, PlayerFilter, PlayerFinancialFilter, PlayerTransactionFilter, UpdateBonusRequest, UpdatePlayersDataRequest } from "../constants/types";
+import { ActionResponse, BonusResponse, CreateBonusRequest, GetAllFinancialTransactionsResponse, GetAllPlayersResponse, GetPlayersDataWithIdResponse, GetPlayersTransactionHistoryResponse, ManageBonusRequest, PaymentResponse, PermissionRequest, PlayerFilter, PlayerFinancialFilter, PlayerTransactionFilter, RolePermissionRequest, RoleRequest, UpdateBonusRequest, UpdatePlayersDataRequest, UserRoleRequest } from "../constants/types";
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
+async function getToken(): Promise<string> {
+  return localStorage.getItem("authToken") || "";
+}
 
 export async function getPlayers(
   filter: PlayerFilter = {}
@@ -427,5 +432,73 @@ export async function manageBonus(requestBody: ManageBonusRequest): Promise<Bonu
       isSuccess: false,
       message: "Internal server error"
     };
+  }
+}
+
+// Create a new permission
+export async function createPermission(requestBody: PermissionRequest): Promise<ActionResponse> {
+  try {
+    const token = await getToken();
+    const res = await fetch(`${API_URL}/api/Client/roles/createPermission`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify(requestBody),
+      cache: 'no-store'
+    });
+    return await res.json();
+  } catch (error) {
+    console.error('Error creating permission:', error);
+    return { isSuccess: false, message: 'Internal server error' };
+  }
+}
+
+// Create a new role
+export async function createRole(requestBody: RoleRequest): Promise<ActionResponse> {
+  try {
+    const token = await getToken();
+    const res = await fetch(`${API_URL}/api/Client/roles/createRole`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify(requestBody),
+      cache: 'no-store'
+    });
+    return await res.json();
+  } catch (error) {
+    console.error('Error creating role:', error);
+    return { isSuccess: false, message: 'Internal server error' };
+  }
+}
+
+// Assign permissions to a role
+export async function assignPermissionsToRole(requestBody: RolePermissionRequest): Promise<ActionResponse> {
+  try {
+    const token = await getToken();
+    const res = await fetch(`${API_URL}/api/Client/roles/assignPermissionsToRole`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify(requestBody),
+      cache: 'no-store'
+    });
+    return await res.json();
+  } catch (error) {
+    console.error('Error assigning permissions to role:', error);
+    return { isSuccess: false, message: 'Internal server error' };
+  }
+}
+
+// Assign roles to a user
+export async function assignRolesToUser(requestBody: UserRoleRequest): Promise<ActionResponse> {
+  try {
+    const token = await getToken();
+    const res = await fetch(`${API_URL}/api/Client/roles/assignRolesToUser`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify(requestBody),
+      cache: 'no-store'
+    });
+    return await res.json();
+  } catch (error) {
+    console.error('Error assigning roles to user:', error);
+    return { isSuccess: false, message: 'Internal server error' };
   }
 }

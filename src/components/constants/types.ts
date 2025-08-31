@@ -6,11 +6,12 @@ export interface AuthResponse {
 }
 
 export interface User {
-  id: string;
+    id: string;
   fullname: string;
   lastname: string;
   email: string;
-  role: 'Admin' | 'User' | '';
+  role: string[]; // <-- multiple roles
+  permissions?: string[]; // optional, if you want to store permission claims too
 }
 
 export interface JwtPayload {
@@ -19,10 +20,11 @@ export interface JwtPayload {
   exp: number;
   iat: number;
   iss: string;
-  name: string;
-  nameid: string;  // User ID
+  unique_name: string;
+  sub: string;  // User ID
   nbf: number;
-  role: 'Admin' | 'User' | '';
+  role: string[];  // <-- multiple roles
+  Permission?: string[]; // optional permissions array
 }
 
 enum PlayerCategory {
@@ -282,4 +284,22 @@ export interface UpdatePlayersDataRequest {
 
   emailSubscription?: boolean;
   smsSubscription?: boolean;
+}
+
+export interface PermissionRequest {
+  name: string;
+}
+
+export interface RoleRequest {
+  name: string;
+}
+
+export interface RolePermissionRequest {
+  roleName: string;
+  permissions: string[]; // array of permission names
+}
+
+export interface UserRoleRequest {
+  userId: string; // AppUser Id
+  roles: string[];
 }

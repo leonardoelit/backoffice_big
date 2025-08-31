@@ -78,6 +78,11 @@ const navItems: NavItem[] = [
     path: "/transactions",
   },
   {
+    icon: <PaperPlaneIcon />,
+    name: "Roller",
+    path: "/roles",
+  },
+  {
     icon: <BoltIcon />,
     name: "Users",
     subItems: [
