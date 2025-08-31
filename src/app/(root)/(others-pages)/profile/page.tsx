@@ -3,9 +3,9 @@ import { Metadata } from "next";
 import React from "react";
 
 export const metadata: Metadata = {
-  title: "Profil | ElitBet - Affiliate Dashboard",
+  title: "Profil | Toz Gaming",
   description:
-    "ElitBet Affiliate Dashboard Profil Sayfası ",
+    "Toz Gaming Backoffice Profile Settings",
 };
 
 export default function Profile() {

@@ -14,10 +14,10 @@ export default function AdminLayout({
   const { isExpanded, isHovered, isMobileOpen } = useSidebar();
 
    useEffect(() => {
-    document.title = "Affiliate Dashboard | LT Solutions";
+    document.title = "Backoffice | Toz Gaming ";
     const metaDescription = document.querySelector('meta[name="description"]');
     if (metaDescription) {
-      metaDescription.setAttribute('content', 'Affiliate control panel');
+      metaDescription.setAttribute('content', 'Toz Gaming Admin Control Panel');
     }
   }, []);
 

@@ -2,8 +2,8 @@ import SignUpForm from "@/components/auth/SignUpForm";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Elit Bet Affiliate Panel Sign Up",
-  description: "Sign up to Elit Bet Affiliate Program",
+  title: "Toz Gaming | Sign Up",
+  description: "Sign up to Toz Gaming Administrative Program",
   // other metadata
 };
 

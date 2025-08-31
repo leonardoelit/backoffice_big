@@ -35,10 +35,7 @@ const navItems: NavItem[] = [
   {
     icon: <UserIcon />,
     name: "Oyuncular",
-    subItems: [
-      { name: "Tüm Oyuncular", path: "/players/all-players", pro: false },
-      { name: "Oyuncu Raporları", path: "/players/ates", pro: false },
-    ],
+    path: "/players/all-players", 
   },
   {
     icon: <DocsIcon />,
@@ -53,12 +50,13 @@ const navItems: NavItem[] = [
     icon: <ShootingStarIcon />,
     name: "Raporlar",
     subItems: [
-      { name: "Yatırım Raporları", path: "/financial/deposit", pro: false },
-      { name: "Çekim Raporları", path: "/financial/withdrawal", pro: false },
-      { name: "Casino Raporları", path: "/financial/risk", pro: false },
-      { name: "Spor Raporları", path: "/financial/risk", pro: false },
-      { name: "Bonus Raporları", path: "/financial/risk", pro: false },
-      { name: "Faturalandırma", path: "/financial/risk", pro: false },
+      { name: "Oyuncu Raporları", path: "/reports/player-reports", pro: false },
+      { name: "Yatırım Raporları", path: "/reports/deposit-reports", pro: false },
+      { name: "Çekim Raporları", path: "/reports/withdrawal-reports", pro: false },
+      { name: "Game Raporları", path: "/reports/game-reports", pro: false },
+      { name: "Provider Raporları", path: "/reports/provider-reports", pro: false },
+      { name: "Spor Raporları", path: "/reports/bet-reports", pro: false },
+      { name: "Faturalandırma", path: "/reports/invoice", pro: false },
     ],
   },
   {
@@ -69,12 +67,23 @@ const navItems: NavItem[] = [
   {
     icon: <ListIcon />,
     name: "Bonus Talep",
-    path: "/bonus-requests",
+    subItems: [
+      { name: "Bonus Talepleri", path: "/bonus-requests", pro: false },
+      { name: "Talep Geçmişi", path: "/bonus-requests-history", pro: false },
+    ],
   },
   {
     icon: <PaperPlaneIcon />,
     name: "İşlemler",
     path: "/transactions",
+  },
+  {
+    icon: <BoltIcon />,
+    name: "Users",
+    subItems: [
+      { name: "Users", path: "/users", pro: false },
+      { name: "Permissions", path: "/users/permissions", pro: false },
+    ],
   },
   {
     icon: <BoltIcon />,
@@ -340,7 +349,7 @@ const AppSidebar: React.FC = () => {
               />
               <Image
                 className="hidden dark:block"
-                src="/images/logo/logo-dark.png"
+                src="/images/logo/logo.png"
                 alt="Logo"
                 width={150}
                 height={40}
@@ -348,7 +357,7 @@ const AppSidebar: React.FC = () => {
             </>
           ) : (
             <Image
-              src="/images/logo/logo-icon.png"
+              src="/images/tozicon.png"
               alt="Logo"
               width={32}
               height={32}
