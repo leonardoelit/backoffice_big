@@ -14,6 +14,15 @@ export interface User {
   permissions?: string[]; // optional, if you want to store permission claims too
 }
 
+export interface UserData {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  status: boolean;
+  role: string[];
+}
+
 export interface JwtPayload {
   aud: string;
   email: string;
@@ -286,14 +295,6 @@ export interface UpdatePlayersDataRequest {
   smsSubscription?: boolean;
 }
 
-export interface PermissionRequest {
-  name: string;
-}
-
-export interface RoleRequest {
-  name: string;
-}
-
 export interface RolePermissionRequest {
   roleName: string;
   permissions: string[]; // array of permission names
@@ -302,4 +303,49 @@ export interface RolePermissionRequest {
 export interface UserRoleRequest {
   userId: string; // AppUser Id
   roles: string[];
+}
+
+export interface RoleRequest {
+  roleName: string;
+}
+
+export interface PermissionRequest {
+  name: string;
+}
+
+export interface RolePermissionRequest {
+  roleName: string;
+  permissions: string[];
+}
+
+export interface UserRoleRequest {
+  userId: string;
+  roles: string[];
+}
+
+export interface CreateUserRequest {
+  firstName: string;
+  lastName: string;
+  email: string;
+  password: string;
+  roles?: string[];
+}
+
+export interface UserResponse {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  status: boolean;
+  roles: string[];
+}
+
+export interface RoleResponse {
+  id: string;
+  name: string;
+}
+
+export interface PermissionResponse {
+  id: string;
+  name: string;
 }
