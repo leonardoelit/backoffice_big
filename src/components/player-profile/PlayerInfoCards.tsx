@@ -4,6 +4,7 @@ import { showToast } from "@/utils/toastUtil";
 import { Player } from "../constants/types";
 import { formatDateToDDMMYYYY } from "@/utils/utils";
 import { updatePlayersData } from "../lib/api";
+import RiskPopUp from "@/components/player-profile/RiskPopUp";
 
 // ---------- helpers ----------
 type EditableType = "text" | "email" | "date" | "checkbox";
@@ -254,11 +255,13 @@ interface PlayerInfoCardsProps {
 }
 
 const PlayerInfoCards: React.FC<PlayerInfoCardsProps> = ({ playerData, isLoadingData }) => {
+  const [isRiskOpen, setRiskOpen] = useState(false); // Risk popup state
   // Collect unsaved changes here
   const [draft, setDraft] = useState<Partial<Record<UpdatableKey, any>>>({});
   // Persist saved overrides so UI reflects successful save even if parent hasn't refetched yet
   const [overrides, setOverrides] = useState<Partial<Record<UpdatableKey, any>>>({});
   const [isUpdating, setIsUpdating] = useState(false);
+  const base = (k: keyof typeof playerData) => (playerData ? playerData[k] : undefined);
 
   useEffect(() => {
     // Reset when player changes
@@ -301,28 +304,76 @@ const PlayerInfoCards: React.FC<PlayerInfoCardsProps> = ({ playerData, isLoading
     return <div className="p-6 text-gray-500 dark:text-gray-400">Oyuncu bilgisi bulunamadı.</div>;
   }
 
-  // convenience getters for base values from `playerData`
-  const base = (k: keyof Player) => (playerData ? (playerData as any)[k] : undefined);
 
   return (
     <div className="px-6 py-8 space-y-6 bg-gray-50 dark:bg-gray-900 min-h-screen">
-      {/* Header */}
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-            Oyuncu Bilgileri
-          </h2>
-          <p className="text-gray-500 dark:text-gray-400 mt-1">
-            Oyuncu bilgilerini görüntüle ve değiştir
-          </p>
-        </div>
-        <div
-          className="bg-white dark:bg-gray-800 p-3 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors"
-          aria-label="Edit"
+  {/* Header */}
+  <div className="flex justify-between items-center mb-6">
+    <div>
+      <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+        Oyuncu Bilgileri
+      </h2>
+      <p className="text-gray-500 dark:text-gray-400 mt-1">
+        Oyuncu bilgilerini görüntüle ve değiştir
+      </p>
+    </div>
+
+    {/* Action buttons container */}
+    <div className="flex items-center gap-3">
+
+      {/* Add to Favorites button */}
+      <button
+        title="Add to Favorites"
+        className="bg-white dark:bg-gray-800 p-3 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 hover:bg-yellow-50 dark:hover:bg-yellow-900 transition-colors"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="22"
+          height="22"
+          viewBox="0 0 24 24"
+          fill="currentColor"
+          className="text-yellow-500"
         >
-          <PencilIcon className="w-5 h-5 text-gray-600 dark:text-gray-300" />
-        </div>
-      </div>
+          <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
+        </svg>
+      </button>
+
+      {/* Risk button */}
+      <button
+        title="Risk Analysis"
+        onClick={() => setRiskOpen(true)}
+        className="bg-white dark:bg-gray-800 p-3 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 hover:bg-purple-50 dark:hover:bg-purple-900 transition-colors"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="22"
+          height="22"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          className="lucide lucide-lightning w-5 h-5 text-purple-500 hover:fill-yellow-600"
+        >
+          <polyline points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+        </svg>
+      </button>
+      <button
+        aria-label="Edit"
+        className="bg-white dark:bg-gray-800 p-3 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors"
+      >
+        <PencilIcon className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+      </button>
+    </div>
+       {/* Risk Popup */}
+       <RiskPopUp
+        isOpen={isRiskOpen}
+        onClose={() => setRiskOpen(false)}
+        onSubmit={(value) => console.log("Risk input:", value)}
+      />
+  </div>
+
 
       {/* Info Grid (all original info preserved) */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
@@ -339,7 +390,7 @@ const PlayerInfoCards: React.FC<PlayerInfoCardsProps> = ({ playerData, isLoading
             { label: "Soyisim", value: base("lastName"), editable: true, type: "text", field: "lastName" },
             { label: "Doğum Günü", value: base("birthday") as any, editable: true, type: "date", field: "birthday" },
             { label: "Şehir", value: base("city"), editable: true, type: "text", field: "city" },
-            { label: "Cinsiyer", value: (base("gender") as any) ?? "-", editable: false },
+            { label: "Cinsiyet", value: (base("gender") as any) ?? "-", editable: false },
             { label: "TCID", value: base("documentNumber"), editable: true, type: "text", field: "documentNumber" },
             { label: "Personal ID", value: "" },
             { label: "Document Expiration Date", value: "" },
@@ -392,10 +443,10 @@ const PlayerInfoCards: React.FC<PlayerInfoCardsProps> = ({ playerData, isLoading
           data={[
             { label: "Player ID", value: playerData?.playerId ? String(playerData.playerId) : "" },
             { label: "Username", value: base("username"), editable: true, type: "text", field: "username" },
-            { label: "Hesap Durumu", value: "" },
+            { label: "Bakiye (TRY)", value: playerData?.balance !== undefined ? `₺${playerData.balance.toLocaleString()}` : "" },
             { label: "Verified", value: (base("verificationStatus") as any) ?? "" },
             { label: "Kayıt Tarihi", value: playerData?.registrationDateTime ? formatDateToDDMMYYYY(playerData.registrationDateTime as any) : "" },
-            { label: "Bakiye (TRY)", value: playerData?.balance !== undefined ? `₺${playerData.balance.toLocaleString()}` : "" },
+            { label: "Hesap Durumu", value: "" },
             { label: "Affiliate Id", value: "" },
             { label: "Is Casino Blocked", value: false },
             { label: "Is Sport Blocked", value: false },

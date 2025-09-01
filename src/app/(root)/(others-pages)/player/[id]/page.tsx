@@ -4,6 +4,7 @@ import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import Statistic from "@/components/player-profile/Statistics";
 import PlayerInfoCards from "@/components/player-profile/PlayerInfoCards";
+import RiskPopUp from "@/components/player-profile/RiskPopUp";
 import { Player } from "@/components/constants/types";
 import { getPlayerDataId } from "@/components/lib/api";
 import PlayerTransactionsTable from "@/components/player-profile/PlayerTransactionsTable";
@@ -48,7 +49,7 @@ export default function PlayerProfile() {
 
     router.push(`${window.location.pathname}?${newParams.toString()}`, { scroll: false });
   };
-
+    
   const renderTabContent = () => {
     switch (activeTab) {
       case "overview":
@@ -90,7 +91,23 @@ export default function PlayerProfile() {
       <span className="text-gray-900 dark:text-white font-medium">
         {playerData?.username || "Yükleniyor..."}
       </span>
-      </div>
+       {/* Online Status */}
+  {playerData && (
+    <div className="flex ml-4 items-center gap-2">
+      <div
+        className={`h-3 w-3 rounded-full ${
+          playerData.isOnline
+            ? "bg-green-500 shadow-[0_0_6px_rgba(34,197,94,0.7)]"
+            : "bg-red-500 shadow-[0_0_6px_rgba(239,68,68,0.6)]"
+        }`}
+      ></div>
+      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+        {playerData.isOnline ? "Online" : "Offline"}
+      </span>
+    </div>
+  )}
+</div>
+
 
     <div className="w-full">
       {/* Tabs */}
