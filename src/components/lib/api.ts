@@ -1,4 +1,4 @@
-import { ActionResponse, BonusResponse, CreateBonusRequest, CreateUserRequest, GetAllFinancialTransactionsResponse, GetAllPlayersResponse, GetPlayersDataWithIdResponse, GetPlayersTransactionHistoryResponse, ManageBonusRequest, ManagePlayerBalanceDto, PaymentResponse, PermissionRequest, PermissionResponse, PlayerFilter, PlayerFinancialFilter, PlayerTransactionFilter, RolePermissionRequest, RoleRequest, RoleResponse, UpdateBonusRequest, UpdatePlayersDataRequest, UserResponse, UserRoleRequest } from "../constants/types";
+import { ActionResponse, BonusResponse, CreateBonusRequest, CreateUserRequest, GetAllFinancialTransactionsResponse, GetAllPlayersResponse, GetBonusRequestsResponse, GetPlayersDataWithIdResponse, GetPlayersTransactionHistoryResponse, ManageBonusRequest, ManagePlayerBalanceDto, PaymentResponse, PermissionRequest, PermissionResponse, PlayerBonusRequestFilter, PlayerFilter, PlayerFinancialFilter, PlayerTransactionFilter, RolePermissionRequest, RoleRequest, RoleResponse, UpdateBonusRequest, UpdatePlayersDataRequest, UserResponse, UserRoleRequest } from "../constants/types";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -399,6 +399,61 @@ export async function getBonuses(): Promise<BonusResponse>{
     return {
       isSuccess: false,
       message: "Internal server error"
+    };
+  }
+}
+
+export async function getBonusRequests(
+  filter: PlayerBonusRequestFilter
+): Promise<GetBonusRequestsResponse> {
+  try {
+    const token = localStorage.getItem("authToken");
+    
+    // Convert filter to query params
+    const queryParams = new URLSearchParams();
+    
+    if (filter.pageNumber) queryParams.set('pageNumber', filter.pageNumber.toString());
+    if (filter.pageSize) queryParams.set('pageSize', filter.pageSize.toString());
+    if (filter.playerId) queryParams.set('playerId', filter.playerId.toString());
+    if (filter.username) queryParams.set('playerUsername', filter.username);
+    if (filter.bonusName) queryParams.set('bonusName', filter.bonusName);
+    if (filter.defId) queryParams.set('defId', filter.defId);
+
+    if (filter.type) queryParams.set('type', filter.type.toString());
+    if (filter.status) queryParams.set('status', filter.status.toString());
+
+
+
+    // New filters
+    if (filter.updatedAtFrom) queryParams.set('updatedAtFrom', filter.updatedAtFrom);
+    if (filter.updatedAtTo) queryParams.set('updatedAtTo', filter.updatedAtTo);
+
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/api/Client/getPlayersBonusRequests?${queryParams.toString()}`,
+      {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        cache: 'no-store'
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching players:', error);
+    return {
+      isSuccess: false,
+      message: error instanceof Error ? error.message : 'Failed to fetch players',
+      financialTransactions: [],
+      currentPage: 1,
+      totalPages: 1,
+      totalCount: 0
     };
   }
 }

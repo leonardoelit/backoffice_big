@@ -4,7 +4,6 @@ import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import Statistic from "@/components/player-profile/Statistics";
 import PlayerInfoCards from "@/components/player-profile/PlayerInfoCards";
-import RiskPopUp from "@/components/player-profile/RiskPopUp";
 import { Player } from "@/components/constants/types";
 import { getPlayerDataId } from "@/components/lib/api";
 import PlayerTransactionsTable from "@/components/player-profile/PlayerTransactionsTable";

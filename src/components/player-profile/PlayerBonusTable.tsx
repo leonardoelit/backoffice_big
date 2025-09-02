@@ -180,6 +180,7 @@ const PlayerBonusTable = ({ playerId }: { playerId:string }) => {
         try {
            const res = await manageBonus(formData);
            if (res.isSuccess) {
+            console.log(res)
              showToast("Bonus credited", "success");
              handleRefetch();
              setShowPopup(false);

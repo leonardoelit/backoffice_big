@@ -364,3 +364,44 @@ export interface PermissionResponse {
   id: string;
   name: string;
 }
+
+export interface PlayerBonusRequestFilter {
+  pageNumber?: number;
+  pageSize?: number;
+  playerId?: string;
+  username?: string;
+  bonusName?: string;
+  type?: number;
+  defId?: string;
+  status?: number;
+
+  updatedAtFrom?: string;
+  updatedAtTo?: string;
+}
+
+export interface GetBonusRequestsResponse{
+  isSuccess: boolean;
+  message?: string;
+  bonusRequestList: BonusData[];
+  currentPage: number;
+  totalPages: number;
+  totalCount: number;
+}
+
+export interface BonusData {
+  id: number;
+  playerId: string;
+  playerName: string;
+  clientName?: string;
+  bonusName: string;
+  percentage?: number;
+  lastDepositAmount: number;
+  lastDepositTime?: string;
+  lastWithdrawalTime?: string;
+  defId: string;
+  type: number;
+  lastTimePlayerTakeBonus?: string;
+  status: number;
+  note?: string;
+  updatedAt: string;
+}
