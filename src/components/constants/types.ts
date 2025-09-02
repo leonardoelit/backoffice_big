@@ -228,6 +228,8 @@ export interface PaymentResponse{
 export interface CreateBonusRequest{
   type: number;
   name: string;
+  isPercentage: boolean;
+  percentage?: number;
   min: number;
   max: number;
   description: string;
@@ -238,6 +240,8 @@ export interface UpdateBonusRequest{
   active: boolean;
   type: number;
   name: string;
+  isPercentage: boolean;
+  percentage?: number;
   min: number;
   max: number;
   description: string;
@@ -248,6 +252,8 @@ export interface Bonus {
   name: string;
   defId: string;
   active: boolean;
+  isPercentage: boolean;
+  percentage?: number;
   min:number;
   max:number;
   description: string;
@@ -261,10 +267,19 @@ export interface BonusResponse {
 }
 
 export interface ManageBonusRequest {
+  result: boolean;
   direction: string;
   playerId: string;
   amount: number;
-  defId: string;
+  defId?: string;
+  bonusRequestId?: number;
+  note:string;
+}
+
+export interface ManagePlayerBalanceDto {
+  direction: string;
+  playerId: string;
+  amount: number;
 }
 
 export interface ActionResponse {

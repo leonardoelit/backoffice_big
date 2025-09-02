@@ -1,4 +1,4 @@
-import { ActionResponse, BonusResponse, CreateBonusRequest, CreateUserRequest, GetAllFinancialTransactionsResponse, GetAllPlayersResponse, GetPlayersDataWithIdResponse, GetPlayersTransactionHistoryResponse, ManageBonusRequest, PaymentResponse, PermissionRequest, PermissionResponse, PlayerFilter, PlayerFinancialFilter, PlayerTransactionFilter, RolePermissionRequest, RoleRequest, RoleResponse, UpdateBonusRequest, UpdatePlayersDataRequest, UserResponse, UserRoleRequest } from "../constants/types";
+import { ActionResponse, BonusResponse, CreateBonusRequest, CreateUserRequest, GetAllFinancialTransactionsResponse, GetAllPlayersResponse, GetPlayersDataWithIdResponse, GetPlayersTransactionHistoryResponse, ManageBonusRequest, ManagePlayerBalanceDto, PaymentResponse, PermissionRequest, PermissionResponse, PlayerFilter, PlayerFinancialFilter, PlayerTransactionFilter, RolePermissionRequest, RoleRequest, RoleResponse, UpdateBonusRequest, UpdatePlayersDataRequest, UserResponse, UserRoleRequest } from "../constants/types";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -388,8 +388,6 @@ export async function getBonuses(): Promise<BonusResponse>{
         cache: 'no-store'
       }
     );
-
-    console.log(response)
     
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
@@ -422,6 +420,36 @@ export async function manageBonus(requestBody: ManageBonusRequest): Promise<Bonu
     );
 
     const data: BonusResponse = await response.json();
+
+    // Always return the server data, even if HTTP status is not 200
+    return data;
+
+  } catch (error) {
+    console.error('Error managing bonus:', error);
+    return {
+      isSuccess: false,
+      message: "Internal server error"
+    };
+  }
+}
+
+export async function managePlayerBalance(requestBody: ManagePlayerBalanceDto): Promise<ActionResponse> {
+  try {
+    const token = localStorage.getItem("authToken");
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/api/Client/managePlayerBalance`,
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(requestBody),
+        cache: 'no-store'
+      }
+    );
+
+    const data: ActionResponse = await response.json();
 
     // Always return the server data, even if HTTP status is not 200
     return data;

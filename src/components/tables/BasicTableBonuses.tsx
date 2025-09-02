@@ -44,6 +44,8 @@ const BasicTableBonuses = () => {
     name: "",
     min: 0,
     max: 0,
+    isPercentage: false,
+    percentage: 0,
     description: "",
   });
 
@@ -53,6 +55,7 @@ const BasicTableBonuses = () => {
     defId: "",
     type: bonusTypes[0].id,
     name: "",
+    isPercentage: false,
     min: 0,
     max: 0,
     description: "",
@@ -63,6 +66,8 @@ const BasicTableBonuses = () => {
     setFormData({
       type: bonusTypes[0].id,
       name: "",
+      isPercentage: false,
+      percentage: 0,
       min: 0,
       max: 0,
       description: "",
@@ -78,6 +83,8 @@ const BasicTableBonuses = () => {
       active: bonus.active,
       type: bonus.type,
       name: bonus.name,
+      isPercentage: bonus.isPercentage,
+      percentage: bonus.percentage,
       min: bonus.min,
       max: bonus.max,
       description: bonus.description,
@@ -199,6 +206,8 @@ const BasicTableBonuses = () => {
       setFormData({
         type: bonusTypes[0].id,
         name: "",
+        isPercentage: false,
+        percentage: 0,
         min: 0,
         max: 0,
         description: "",
@@ -246,7 +255,7 @@ const BasicTableBonuses = () => {
         </div>
         <div className="flex items-center gap-2">
           <button
-            onClick={() => setShowPopup(true)}
+            onClick={openCreatePopup}
             className="bg-blue-600 text-white px-3 py-1 rounded-md shadow hover:bg-blue-700"
           >
             + Add Bonus
@@ -284,6 +293,9 @@ const BasicTableBonuses = () => {
                 <TableCell isHeader className="text-left px-5 py-3 font-medium text-gray-500 cursor-pointer" onClick={() => handleSort("type")}>
                   Type
                 </TableCell>
+                <TableCell isHeader className="text-left px-5 py-3 font-medium text-gray-500 cursor-pointer" onClick={() => handleSort("type")}>
+                  Percentage
+                </TableCell>
                 <TableCell isHeader className="text-left px-5 py-3 font-medium text-gray-500">
                   Active
                 </TableCell>
@@ -312,7 +324,7 @@ const BasicTableBonuses = () => {
             >
               {isLoading ? (
                 Array.from({ length: rowsPerPage }).map((_, i) => (
-                  <SkeletonRow key={i} columns={8} />
+                  <SkeletonRow key={i} columns={9} />
                 ))
               ) : paginatedList.length > 0 ? (
                 paginatedList.map((bonus) => (
@@ -322,6 +334,7 @@ const BasicTableBonuses = () => {
                       {bonusTypes.find((t) => t.id === bonus.type)?.name ??
                         bonus.type}
                     </TableCell>
+                    <TableCell className="px-5 py-4">{bonus.isPercentage ? bonus.percentage : "-"}</TableCell>
                     <TableCell className="px-5 py-4">
                       {bonus.active ? (
                         <span className="text-green-600 font-medium">Active</span>
@@ -384,7 +397,7 @@ const BasicTableBonuses = () => {
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={8} className="px-5 py-4 text-center">
+                  <TableCell colSpan={9} className="px-5 py-4 text-center">
                     No bonuses found
                   </TableCell>
                 </TableRow>
@@ -455,6 +468,43 @@ const BasicTableBonuses = () => {
                     className="w-full border px-2 py-1 rounded"
                   />
                 </label>
+                <label className="block text-sm mb-2">
+                  Is Percentage
+                  <input
+                    type="checkbox"
+                    checked={formData.isPercentage}
+                    onChange={(e) =>
+                      setFormData({ ...formData, isPercentage: e.target.checked })
+                    }
+                    className="ml-2"
+                  />
+                </label>
+
+                {formData.isPercentage && (
+                  <label className="block text-sm mb-2">
+                    Percentage
+                    <input
+                      type="text"
+                      value={formData.percentage}
+                      onChange={(e) => {
+                        const val = e.target.value;
+
+                        // Allow only digits (and optional single decimal)
+                        if (/^\d{0,3}(\.\d{0,2})?$/.test(val)) {
+                          let num = Number(val);
+
+                          // Clamp value between 0 and 100
+                          //if (num > 100) num = 100;
+                          if (num < 0) num = 0;
+
+                          setFormData({ ...formData, percentage: num });
+                        }
+                      }}
+                      className="w-full border px-2 py-1 rounded"
+                      placeholder="Enter percentage (0-100)"
+                    />
+                  </label>
+                )}
                 <label className="block text-sm mb-2">
                   Min
                   <input
@@ -566,6 +616,45 @@ const BasicTableBonuses = () => {
                     className="w-full border px-2 py-1 rounded"
                   />
                 </label>
+                <label className="block text-sm mb-2">
+                Is Percentage
+                <input
+                  type="checkbox"
+                  checked={updateFormData.isPercentage}
+                  onChange={(e) =>
+                    setUpdateFormData({
+                      ...updateFormData,
+                      isPercentage: e.target.checked,
+                    })
+                  }
+                  className="ml-2"
+                />
+              </label>
+
+              {updateFormData.isPercentage && (
+                <label className="block text-sm mb-2">
+                  Percentage
+                  <input
+                    type="text"
+                    value={updateFormData.percentage}
+                    onChange={(e) => {
+                      const val = e.target.value;
+
+                      if (/^\d{0,3}(\.\d{0,2})?$/.test(val)) {
+                        let num = Number(val);
+
+                        if (num < 0) num = 0;
+
+                        setUpdateFormData({ ...updateFormData, percentage: num });
+                      }
+                    }}
+                    className="w-full border px-2 py-1 rounded"
+                    placeholder="Enter percentage (0-100)"
+                  />
+                </label>
+              )}
+
+
                 <label className="block text-sm mb-2">
                   Min
                   <input

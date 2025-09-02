@@ -5,6 +5,8 @@ import { PlayerTransactionFilter } from '../constants/types';
 import { Table, TableBody, TableCell, TableHeader, TableRow } from '../ui/table';
 import { formatDateToDDMMYYYYHHMMSS } from '@/utils/utils';
 import DateRangePickerWithTime from './DateRangePickerWithTime';
+import { managePlayerBalance } from '../lib/api';
+import { showToast } from '@/utils/toastUtil';
 
 const PlayerTransactionsTable = ({ playerId }: { playerId: string }) => {
   const [currentPage, setCurrentPage] = useState(1);
@@ -22,6 +24,30 @@ const PlayerTransactionsTable = ({ playerId }: { playerId: string }) => {
   const [type, setType] = useState<string | undefined>(undefined);
   const [eventType, setEventType] = useState<string | undefined>(undefined);
   const [isFilterOn, setIsFilterOn] = useState(false);
+
+  const [showPopup, setShowPopup] = useState(false);
+  const [formData, setFormData] = useState<{
+    direction: string;
+    playerId: string;
+    amount: number | '';
+  }>({
+    direction: 'Inc',
+    playerId: playerId,
+    amount: ''
+  });
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const popupRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (showPopup && popupRef.current && !popupRef.current.contains(event.target as Node)) {
+        setShowPopup(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showPopup]);
 
   const { transactions, loading, error, pagination, filter, setFilter } = usePlayerTransactions({
     pageNumber: currentPage,
@@ -116,6 +142,37 @@ const PlayerTransactionsTable = ({ playerId }: { playerId: string }) => {
     setIsFilterOn(false);
   };
 
+  const handleManagePlayerBalance = async () => {
+  if (formData.amount === '' || formData.amount <= 0) {
+    alert('Please enter a valid amount');
+    return;
+  }
+
+  setIsSubmitting(true);
+
+  try {
+    const res = await managePlayerBalance({
+      direction: formData.direction,
+      playerId: playerId,
+      amount: Number(formData.amount),
+    });
+
+    if (res.isSuccess) {
+      showToast("Oyuncunun bakiyesi güncellendi", "success")
+      setShowPopup(false);
+      handleRefetch(); // refresh the table
+    } else {
+      showToast(res.message || 'Failed to update balance', "error")
+    }
+  } catch (err) {
+    console.error(err);
+    showToast("Beklenmeyen error, lütfen bekleyiniz", "error")
+  }
+
+  setIsSubmitting(false);
+};
+
+
   const SkeletonRow = ({ columns }: { columns: number }) => (
     <TableRow>
       {Array.from({ length: columns }).map((_, index) => (
@@ -147,7 +204,27 @@ const PlayerTransactionsTable = ({ playerId }: { playerId: string }) => {
   </button>
 
   {/* Refresh button container */}
-  <div className="mr-2 mt-4">
+  <div className="mr-2 mt-4 flex flex-row gap-2">
+    <button
+      onClick={() => {
+        setShowPopup(true);
+        setFormData({
+          direction: 'Inc',
+          playerId: playerId,
+          amount: ''
+        });
+      }}
+       className="p-2 bg-blue-500 text-white rounded hover:bg-blue-600 flex items-center justify-center"
+    >
+      <svg 
+        className="w-5 h-5" 
+        viewBox="0 0 24 24" 
+        fill="none" 
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path d="M4 12H20M12 4V20" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"></path>
+      </svg>
+    </button>
     <button
       onClick={handleRefetch}
       title="Refresh Table"
@@ -173,7 +250,7 @@ const PlayerTransactionsTable = ({ playerId }: { playerId: string }) => {
   <div
   className="absolute mt-52 w-full md:w-[80vw] max-w-4xl right-0 
   bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 
-  rounded-lg shadow-lg z-50 p-4"
+  rounded-lg shadow-lg z-[99999999] p-4"
 
   >
     {/* Filter row */}
@@ -255,6 +332,57 @@ const PlayerTransactionsTable = ({ playerId }: { playerId: string }) => {
   </div>
 )}
         </div>
+
+        {showPopup && (
+          <div className="absolute inset-0 bg-black/30 flex items-center justify-center z-[9999999]">
+            <div
+              ref={popupRef}
+              className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 w-96"
+            >
+              <h2 className="text-lg font-semibold mb-4 text-gray-800 dark:text-gray-100">
+                Manage Player Balance
+              </h2>
+
+              {/* Direction */}
+              <label className="block text-sm mb-1 text-gray-700 dark:text-gray-300">Direction</label>
+              <select
+                value={formData.direction}
+                onChange={e => setFormData({ ...formData, direction: e.target.value })}
+                className="w-full mb-3 rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="Inc">Inc / Add</option>
+                <option value="Dec">Dec / Subtract</option>
+              </select>
+
+              {/* Amount */}
+              <label className="block text-sm mb-1 text-gray-700 dark:text-gray-300">Amount</label>
+              <input
+                type="number"
+                value={formData.amount}
+                onChange={e => setFormData({ ...formData, amount: parseInt(e.target.value) || 0 })}
+                className="w-full mb-4 rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+
+              {/* Buttons */}
+              <div className="flex justify-end gap-3">
+                <button
+                  onClick={() => setShowPopup(false)}
+                  className="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleManagePlayerBalance}
+                  disabled={isSubmitting}
+                  className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-blue-800"
+                >
+                  Submit
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
 
       <div className="w-full overflow-x-auto">
 

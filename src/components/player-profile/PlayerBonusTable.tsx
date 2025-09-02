@@ -53,6 +53,8 @@ const PlayerBonusTable = ({ playerId }: { playerId:string }) => {
     const [open, setOpen] = useState(false)
     const dropdownRef = useRef<HTMLDivElement>(null)
     const [formData, setFormData] = useState<ManageBonusRequest & { amount: string }>({
+        result: true,
+        note: "",
         direction: "Inc",
         defId: "",
         amount: "", // <-- empty string instead of 0
@@ -272,6 +274,21 @@ const PlayerBonusTable = ({ playerId }: { playerId:string }) => {
                    px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
       />
 
+      {/* Note Input */}
+      <label className="block text-sm mb-1 text-gray-700 dark:text-gray-300">
+        Note
+      </label>
+      <input
+        type="text"
+        value={formData.note}
+        onChange={(e) => setFormData({ ...formData, note: e.target.value })}
+        placeholder="Add a note..."
+        className="w-full mb-4 rounded-md border border-gray-300 dark:border-gray-600 
+                  bg-white dark:bg-gray-700 text-sm text-gray-700 dark:text-gray-200 
+                  px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+      />
+
+
       {/* Buttons */}
       <div className="flex justify-end gap-3">
         <button
@@ -306,11 +323,23 @@ const PlayerBonusTable = ({ playerId }: { playerId:string }) => {
           </button>
 
            <button
-            onClick={() => setShowPopup(true)}
+            onClick={() => {
+              // reset form data before opening
+              setFormData({
+                result: true,
+                note: "",
+                direction: "Inc",
+                defId: "",
+                amount: "",
+                playerId: playerId,
+              });
+              setShowPopup(true);
+            }}
             className="px-4 py-2 bg-blue-600 text-white text-sm rounded-tr-md hover:bg-blue-700 flex items-center gap-2"
           >
             Add Bonus
           </button>
+
     
           {/* Dropdown panel */}
           {open && (
