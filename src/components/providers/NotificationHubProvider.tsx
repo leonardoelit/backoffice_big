@@ -14,40 +14,49 @@ const HubContext = createContext<HubContextType | undefined>(undefined);
 export const NotificationHubProvider = ({ children }: { children: React.ReactNode }) => {
   const { increment } = useNotifications();
   const connectionRef = useRef<signalR.HubConnection | null>(null);
+  const listenersRegisteredRef = useRef(false); // ✅ only register once
 
   useEffect(() => {
-    if (connectionRef.current) return; // Already connected
+    if (!connectionRef.current) {
+      const connection = new signalR.HubConnectionBuilder()
+        .withUrl(`${process.env.NEXT_PUBLIC_API_URL}/notificationHub`, { withCredentials: true })
+        .withAutomaticReconnect()
+        .build();
 
-    const connection = new signalR.HubConnectionBuilder()
-      .withUrl(`${process.env.NEXT_PUBLIC_API_URL}/notificationHub`, { withCredentials: true })
-      .withAutomaticReconnect()
-      .build();
+      connectionRef.current = connection;
+    }
 
-    connection.on("WithdrawRequest", (msg: string) => {
-      increment("withdrawRequest");
-      showToast(msg, "info");
-    });
+    const connection = connectionRef.current;
 
-    connection.on("DepositRequest", (msg: string) => {
-      increment("depositRequest");
-      showToast(msg, "info");
-    });
+    if (!listenersRegisteredRef.current) {
+      connection.on("WithdrawRequest", (msg: string) => {
+        increment("withdrawRequest");
+        showToast(msg, "info");
+      });
 
-    connection.on("BonusRequest", (msg: string) => {
-      increment("bonusRequest");
-      showToast(msg, "info");
-    });
+      connection.on("DepositRequest", (msg: string) => {
+        increment("depositRequest");
+        showToast(msg, "info");
+      });
 
-    connection
-      .start()
-      .then(() => console.log("✅ SignalR connected"))
-      .catch((err) => console.error("❌ SignalR connection error:", err));
+      connection.on("BonusRequest", (msg: string) => {
+        increment("bonusRequest");
+        showToast(msg, "info");
+      });
 
-    connectionRef.current = connection;
+      listenersRegisteredRef.current = true;
+    }
+
+    if (connection.state !== signalR.HubConnectionState.Connected) {
+      connection
+        .start()
+        .then(() => console.log("✅ SignalR connected"))
+        .catch((err) => console.error("❌ SignalR connection error:", err));
+    }
 
     return () => {
-      connection.stop();
-      connectionRef.current = null;
+      // ❌ don't stop connection here, keep it alive for the tab
+      // connection.stop();
     };
   }, [increment]);
 
