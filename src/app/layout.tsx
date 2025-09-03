@@ -9,6 +9,7 @@ import { AuthProvider } from '@/context/AuthContext';
 
 import { Toaster } from 'react-hot-toast';
 import { NotificationProvider } from '@/context/NotificationContext';
+import { NotificationHubProvider } from '@/components/providers/NotificationHubProvider';
 
 const outfit = Outfit({
   subsets: ["latin"],
@@ -26,8 +27,10 @@ export default function RootLayout({
           <AuthProvider>
             <Toaster position="bottom-right" />
             <NotificationProvider>
-          <SidebarProvider>{children}</SidebarProvider>
-            </NotificationProvider>
+              <NotificationHubProvider>
+                <SidebarProvider>{children}</SidebarProvider>
+              </NotificationHubProvider>
+          </NotificationProvider>
           </AuthProvider>
         </ThemeProvider>
       </body>
