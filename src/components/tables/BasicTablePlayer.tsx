@@ -524,9 +524,10 @@ const removeFilter = () => {
                         {player.firstName} {player.lastName}
                       </TableCell>
                     {contentType !== 'GGA' && (
-                      <TableCell className="px-4 py-3 text-gray-900 text-start text-theme-sm dark:text-gray-400">
-                        {player.balance} TL
-                      </TableCell>
+         <TableCell className="px-4 py-3 text-gray-900 text-start text-theme-sm dark:text-gray-400">
+         {player.balance.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} TL
+       </TableCell>
+       
                     )}
                     <TableCell className="px-4 py-2 text-start text-theme-sm">
                       <div className="flex flex-row items-center justify-between gap-2">
