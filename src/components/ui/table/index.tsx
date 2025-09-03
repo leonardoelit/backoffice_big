@@ -28,6 +28,7 @@ interface TableRowProps {
 interface TableCellProps {
   children: ReactNode; // Cell content
   isHeader?: boolean; // If true, renders as <th>, otherwise <td>
+  title?: string;
   className?: string; // Optional className for styling
   onClick?: (() => void);
 }
@@ -57,10 +58,11 @@ const TableCell: React.FC<TableCellProps> = ({
   children,
   isHeader = false,
   className,
+  title,
   onClick,
 }) => {
   const CellTag = isHeader ? "th" : "td";
-  return <CellTag className={` ${className}`} onClick={onClick ? onClick : () => {}}>{children}</CellTag>;
+  return <CellTag title={`${title}`} className={` ${className}`} onClick={onClick ? onClick : () => {}}>{children}</CellTag>;
 };
 
 export { Table, TableHeader, TableBody, TableRow, TableCell };
