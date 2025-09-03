@@ -43,7 +43,7 @@ export const NotificationHubProvider = ({ children }: { children: React.ReactNod
         }
       };
 
-      connection.on("WithdrawRequest", (msg: string) => {
+      connection.on("WithdrawalRequest", (msg: string) => {
         increment("withdrawRequest");
         showToast(msg, "info");
         playSound();
