@@ -6,12 +6,14 @@ const BonusConfirmationModal = ({
   isOpen,
   onClose,
   onConfirm,
+  isSubmitting,
   action,
 }: {
   isOpen: boolean;
   onClose: () => void;
   onConfirm: (amount: number, note: string) => void;
-  action: "accept" | "reject";
+  isSubmitting: boolean;
+  action: "accept" | "reject" | null;
 }) => {
   const [amount, setAmount] = useState<string>("");
   const [note, setNote] = useState<string>("");
@@ -34,6 +36,11 @@ const BonusConfirmationModal = ({
 
     if (action === "accept" && (isNaN(numericAmount) || numericAmount <= 0)) {
       showToast("Miktar 0 dan büyük olmalıdır", "info");
+      return;
+    }
+
+    if(action == null){
+      showToast("Aksiyon belirlenemedi, lütfen tekrar deneyiniz")
       return;
     }
 
@@ -85,17 +92,19 @@ const BonusConfirmationModal = ({
 
         <div className="flex justify-end space-x-3">
           <button
+            disabled={isSubmitting}
             onClick={onClose}
-            className="px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-200 dark:bg-gray-700 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600"
+            className="px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-200 dark:bg-gray-700 rounded-md hover:bg-gray-300 disabled:bg-gray-300 dark:hover:bg-gray-600 dark:disabled:bg-gray-600"
           >
             Cancel
           </button>
           <button
+            disabled={isSubmitting}
             onClick={handleConfirm}
             className={`px-4 py-2 text-white rounded-md ${
               action === "accept"
-                ? "bg-green-600 hover:bg-green-700"
-                : "bg-red-600 hover:bg-red-700"
+                ? "bg-green-600 hover:bg-green-700 disabled:bg-green-800"
+                : "bg-red-600 hover:bg-red-700 disabled:bg-red-800"
             }`}
           >
             {action === "accept" ? "Confirm Accept" : "Confirm Reject"}

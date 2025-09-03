@@ -25,7 +25,6 @@ const BasicTablePendingBonusRequests = () => {
     const [playerId, setPlayerId] = useState<string | undefined>(undefined)
     const [bonusName, setBonusName] = useState<string | undefined>(undefined)
     const [type, setType] = useState<number | undefined>(undefined)
-    const [status, setStatus] = useState<number | undefined>(0)
     const [defId, setDefId] = useState<string | undefined>(undefined)
 
     const [modalState, setModalState] = useState<{
@@ -45,13 +44,10 @@ const BasicTablePendingBonusRequests = () => {
 
     const [isFilterOn, setIsFilterOn] = useState(false);
 
-    const now = new Date();
     const { bonusRequests, loading, error, pagination, filter, setFilter } = useBonusRequests({
       pageNumber: currentPage,
       pageSize: rowsPerPage,
-      status: 0, // Pending
-      updatedAtFrom: now.toISOString(),
-      updatedAtTo: now.toISOString()
+      status: 0,
     });
 
 
@@ -81,17 +77,6 @@ const BasicTablePendingBonusRequests = () => {
           setCurrentPage(1);
           setFilter({ ...filter, pageSize: newRowsPerPage, pageNumber: 1 });
         };
-      
-        const handleSort = (column: string) => {
-        setFilter(prev => ({
-          ...prev,
-          sortBy: column,
-          sortDirection: prev.sortBy === column 
-            ? prev.sortDirection === 'asc' ? 'desc' : 'asc'
-            : 'asc',
-          pageNumber: 1, // Reset to first page when sorting
-        }));
-      };
 
     const handleRefetch = () => {
       setCurrentPage(1);
@@ -104,7 +89,7 @@ const BasicTablePendingBonusRequests = () => {
         type: type || undefined,
         defId: defId || undefined,
         username: username || undefined,
-        status: status || undefined
+        status: 0
       };
     
       // Only include dates that were modified
@@ -119,7 +104,6 @@ const BasicTablePendingBonusRequests = () => {
         Boolean(type) ||
         Boolean(defId) ||
         Boolean(bonusName) ||
-        Boolean(status) ||
         isDateModified
     
       setIsFilterOn(isAnyFilterActive);
@@ -134,7 +118,6 @@ const BasicTablePendingBonusRequests = () => {
       setDefId('')
       setBonusName('')
       setType(undefined)
-      setStatus(0)
       setIsDateModified(false)
       
       // Reset to first page
@@ -210,7 +193,8 @@ const BasicTablePendingBonusRequests = () => {
         isOpen={modalState.isOpen}
         onClose={() => setModalState({ isOpen: false, id: null, playerId: null, action: null })}
         onConfirm={(amount, note) => handleConfirmedAction(amount, note)}
-        action={modalState.action || 'accept'}
+        isSubmitting={isSendingResponse}
+        action={modalState.action}
       />
           <div className="relative" ref={dropdownRef}>
           {/* Toggle button */}
@@ -276,12 +260,6 @@ const BasicTablePendingBonusRequests = () => {
                         bg-white dark:bg-gray-700 text-sm text-gray-700 dark:text-gray-200 
                         px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
-            </div>
-
-            
-
-            {/* Filter row 2 */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
 
             <select
               value={type}
@@ -292,20 +270,6 @@ const BasicTablePendingBonusRequests = () => {
             >
               <option value="">Select Type</option>
               {bonusTypes.map((option) => (
-                <option key={option.id} value={option.id}>
-                  {option.name}
-                </option>
-              ))}
-            </select>
-            <select
-              value={status}
-              onChange={(e) => setStatus(Number(e.target.value))}
-              className="w-full rounded-md border border-gray-300 dark:border-gray-600 
-                        bg-white dark:bg-gray-700 text-sm text-gray-700 dark:text-gray-200 
-                        px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="">Select Status</option>
-              {bonusRequestStatusEnum.map((option) => (
                 <option key={option.id} value={option.id}>
                   {option.name}
                 </option>
@@ -324,9 +288,7 @@ const BasicTablePendingBonusRequests = () => {
             onModifiedChange={(modified) => setIsDateModified(modified)}
             isChanged={isDateModified}
           />
-
         </div>
-
             </div>
 
     {/* Existing Payment + Event selectors can stay above or below as you want */}
