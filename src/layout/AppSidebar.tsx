@@ -202,7 +202,7 @@ const AppSidebar: React.FC = () => {
               {(isExpanded || isHovered || isMobileOpen) && (
                 <span className={`menu-item-text`}>{nav.name}</span>
               )}
-              {badgeCount > 0 && isExpanded && (
+              {badgeCount > 0 && (isExpanded || isHovered) && (
                 <span className="ml-2 inline-flex items-center justify-center px-2 py-0.5 text-xs font-bold text-white bg-red-600 rounded-full">
                   {badgeCount}
                 </span>
