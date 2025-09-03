@@ -1,7 +1,7 @@
 // contexts/NotificationContext.tsx
 "use client";
 
-import React, { createContext, useState, useContext } from "react";
+import React, { createContext, useState, useContext, useCallback } from "react";
 
 export interface NotificationCounts {
   withdrawRequest: number;
@@ -24,13 +24,15 @@ export const NotificationProvider = ({ children }: { children: React.ReactNode }
     bonusRequest: 0,
   });
 
-  const increment = (type: keyof NotificationCounts) => {
+  // Use useCallback to memoize the increment function
+  const increment = useCallback((type: keyof NotificationCounts) => {
     setCounts((prev) => ({ ...prev, [type]: prev[type] + 1 }));
-  };
+  }, []);
 
-  const reset = (type: keyof NotificationCounts) => {
+  // Use useCallback to memoize the reset function
+  const reset = useCallback((type: keyof NotificationCounts) => {
     setCounts((prev) => ({ ...prev, [type]: 0 }));
-  };
+  }, []);
 
   return (
     <NotificationContext.Provider value={{ counts, increment, reset }}>

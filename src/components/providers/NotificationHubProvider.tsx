@@ -1,7 +1,7 @@
 "use client";
 
 import * as signalR from "@microsoft/signalr";
-import React, { createContext, useContext, useEffect, useRef } from "react";
+import React, { createContext, useCallback, useEffect, useRef } from "react";
 import { showToast } from "@/utils/toastUtil";
 import { useNotifications } from "@/context/NotificationContext";
 
@@ -15,16 +15,58 @@ export const NotificationHubProvider = ({ children }: { children: React.ReactNod
   const { increment } = useNotifications();
   const connectionRef = useRef<signalR.HubConnection | null>(null);
   const listenersRegisteredRef = useRef(false);
+  const isConnectingRef = useRef(false); // Track connection status
 
-  // Use useEffect for Audio, so it only runs on the client
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  
   useEffect(() => {
     if (typeof window !== "undefined" && !audioRef.current) {
       audioRef.current = new Audio("/sounds/notification.mp3");
     }
   }, []);
 
+  // Memoize the connection start function
+  const startConnectionWithRetry = useCallback(async (connection: signalR.HubConnection) => {
+    if (isConnectingRef.current) return; // Prevent multiple connection attempts
+    
+    isConnectingRef.current = true;
+    const maxRetries = 5;
+    const delayMs = 5000;
+    let attempt = 0;
+
+    while (attempt < maxRetries) {
+      if (document.visibilityState === "hidden") {
+        await new Promise((resolve) => {
+          const handleVisibility = () => {
+            if (document.visibilityState === "visible") {
+              document.removeEventListener("visibilitychange", handleVisibility);
+              resolve(null);
+            }
+          };
+          document.addEventListener("visibilitychange", handleVisibility);
+        });
+      }
+
+      try {
+        await connection.start();
+        console.log("✅ SignalR connected");
+        isConnectingRef.current = false;
+        return;
+      } catch (err) {
+        attempt++;
+        console.warn(`SignalR connection attempt ${attempt} failed`, err);
+        if (attempt >= maxRetries) {
+          showToast("Cannot connect to server for notifications", "info");
+          isConnectingRef.current = false;
+          return;
+        }
+        await new Promise((resolve) => setTimeout(resolve, delayMs));
+      }
+    }
+  }, []);
+
   useEffect(() => {
+    // Only create connection if it doesn't exist
     if (!connectionRef.current) {
       const connection = new signalR.HubConnectionBuilder()
         .withUrl(`${process.env.NEXT_PUBLIC_API_URL}/notificationHub`, { withCredentials: true })
@@ -36,6 +78,7 @@ export const NotificationHubProvider = ({ children }: { children: React.ReactNod
 
     const connection = connectionRef.current;
 
+    // Only register listeners once
     if (!listenersRegisteredRef.current) {
       const playSound = () => {
         if (audioRef.current) {
@@ -64,23 +107,17 @@ export const NotificationHubProvider = ({ children }: { children: React.ReactNod
       listenersRegisteredRef.current = true;
     }
 
-    if (connection.state !== signalR.HubConnectionState.Connected) {
-      connection
-        .start()
-        .then(() => console.log("✅ SignalR connected"))
-        .catch((err) => console.error("❌ SignalR connection error:", err));
+    // Only attempt to start if disconnected
+    if (connection.state === signalR.HubConnectionState.Disconnected) {
+      startConnectionWithRetry(connection);
     }
 
+    // Cleanup function
     return () => {
-      // don't stop connection here
+      // Don't disconnect as we want to maintain the connection
+      // This cleanup only runs if the provider unmounts completely
     };
-  }, [increment]);
+  }, [increment, startConnectionWithRetry]); // Add dependencies
 
   return <HubContext.Provider value={{ connection: connectionRef.current }}>{children}</HubContext.Provider>;
-};
-
-export const useNotificationHub = () => {
-  const ctx = useContext(HubContext);
-  if (!ctx) throw new Error("useNotificationHub must be used within NotificationHubProvider");
-  return ctx;
 };
