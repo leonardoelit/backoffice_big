@@ -14,13 +14,15 @@ const HubContext = createContext<HubContextType | undefined>(undefined);
 export const NotificationHubProvider = ({ children }: { children: React.ReactNode }) => {
   const { increment } = useNotifications();
   const connectionRef = useRef<signalR.HubConnection | null>(null);
-  const listenersRegisteredRef = useRef(false); // only register once
+  const listenersRegisteredRef = useRef(false);
 
-  // Create audio element once
+  // Use useEffect for Audio, so it only runs on the client
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  if (!audioRef.current) {
-    audioRef.current = new Audio("/sounds/notification.mp3"); // <-- put your sound file in public/sounds/
-  }
+  useEffect(() => {
+    if (typeof window !== "undefined" && !audioRef.current) {
+      audioRef.current = new Audio("/sounds/notification.mp3");
+    }
+  }, []);
 
   useEffect(() => {
     if (!connectionRef.current) {
@@ -36,7 +38,9 @@ export const NotificationHubProvider = ({ children }: { children: React.ReactNod
 
     if (!listenersRegisteredRef.current) {
       const playSound = () => {
-        audioRef.current?.play().catch((err) => console.warn("Unable to play sound:", err));
+        if (audioRef.current) {
+          audioRef.current.play().catch((err) => console.warn("Unable to play sound:", err));
+        }
       };
 
       connection.on("WithdrawRequest", (msg: string) => {
