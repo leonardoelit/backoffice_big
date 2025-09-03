@@ -18,6 +18,7 @@ import {
   ShootingStarIcon,
   UserIcon
 } from "../icons/index";
+import { useNotifications } from "@/context/NotificationContext";
 
 type NavItem = {
   name: string;
@@ -127,6 +128,16 @@ const AppSidebar: React.FC = () => {
   const { isExpanded, isMobileOpen, isHovered, setIsHovered } = useSidebar();
   const pathname = usePathname();
 
+  const { counts, reset } = useNotifications();
+
+  // Reset notifications when user navigates to the page
+  useEffect(() => {
+    if (pathname.includes("/financial/deposit")) reset("depositRequest");
+    if (pathname.includes("/financial/withdrawal")) reset("withdrawRequest");
+    if (pathname.includes("/bonus-requests")) reset("bonusRequest");
+  }, [pathname, reset]);
+
+
   const renderMenuItems = (
     navItems: NavItem[],
     menuType: "main" | "others"
@@ -207,7 +218,12 @@ const AppSidebar: React.FC = () => {
               }}
             >
               <ul className="mt-2 space-y-1 ml-9">
-                {nav.subItems.map((subItem) => (
+                {nav.subItems.map((subItem) => {
+                  let badgeCount = 0;
+                  if (subItem.path === "/financial/deposit") badgeCount = counts.depositRequest;
+                  if (subItem.path === "/financial/withdrawal") badgeCount = counts.withdrawRequest;
+                  if (subItem.path === "/bonus-requests") badgeCount = counts.bonusRequest;
+                  return (
                   <li key={subItem.name}>
                     <Link
                       href={subItem.path}
@@ -241,10 +257,16 @@ const AppSidebar: React.FC = () => {
                             pro
                           </span>
                         )}
+                        {badgeCount > 0 && (
+                          <span className="ml-2 inline-flex items-center justify-center px-2 py-0.5 text-xs font-bold text-white bg-red-600 rounded-full">
+                            {badgeCount}
+                          </span>
+                        )}
                       </span>
                     </Link>
                   </li>
-                ))}
+                )
+                })}
               </ul>
             </div>
           )}

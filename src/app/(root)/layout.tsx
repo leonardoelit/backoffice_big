@@ -1,5 +1,6 @@
 "use client";
 
+import { useNotificationHub } from "@/components/hooks/useNotifications";
 import { useSidebar } from "@/context/SidebarContext";
 import AppHeader from "@/layout/AppHeader";
 import AppSidebar from "@/layout/AppSidebar";
@@ -12,6 +13,7 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   const { isExpanded, isHovered, isMobileOpen } = useSidebar();
+  useNotificationHub();
 
    useEffect(() => {
     document.title = "Backoffice | Toz Gaming ";

@@ -428,3 +428,9 @@ export interface BonusData {
   note?: string;
   updatedAt: string;
 }
+
+export interface NotificationCounts {
+  withdrawRequest: number;
+  depositRequest: number;
+  bonusRequest: number;
+}
