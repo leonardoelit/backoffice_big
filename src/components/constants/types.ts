@@ -266,6 +266,29 @@ export interface BonusResponse {
   bonuses?: Bonus[];
 }
 
+export interface PlayerBonusSettingsResponse{
+  isSuccess: boolean;
+  message?: string;
+  bonusSettingList: BonusSettingData[];
+}
+
+export interface BonusSettingData{
+bonusId: number;
+  name: string;
+  type: number;
+  percentage?: number;
+  defaultPercentage?: number;
+  isPercentage: boolean;
+  note: string | null;
+  defId: string;
+}
+
+export interface ChangePlayersBonusSettingRequest{
+  playerId: number;
+  bonusId: number;
+  percentage: number;
+}
+
 export interface ManageBonusRequest {
   result: boolean;
   direction: string;

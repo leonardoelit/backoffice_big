@@ -426,12 +426,6 @@ const BasicTablePendingBonusRequests = () => {
                   isHeader 
                   className="px-3 py-2 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400 cursor-pointer"
                 >
-                  Not
-                  </TableCell>
-                  <TableCell 
-                  isHeader 
-                  className="px-3 py-2 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400 cursor-pointer"
-                >
                   Zaman
                   </TableCell>
                   <TableCell 
@@ -490,9 +484,6 @@ const BasicTablePendingBonusRequests = () => {
                     </TableCell>
                     <TableCell className={`px-4 py-3 ${t.status === 0 || t.status === 1 ? 'text-yellow-600' : t.status === 2 ? 'text-success-600' : t.status === 3 ? 'text-red-600' : 'text-gray-500 dark:text-gray-400'} text-start text-theme-sm`}>
                       {bonusRequestStatusEnum.find((p) => p.id === t.status)?.name}
-                    </TableCell>
-                    <TableCell className="px-3 py-2 text-gray-900 truncate max-w-[120px]">
-                      {t.note}
                     </TableCell>
                     <TableCell className="px-4 py-3 text-gray-900 text-start text-theme-sm dark:text-gray-400">
                       {t.updatedAt === undefined ? " - " : formatDateToDDMMYYYYHHMMSS(t.updatedAt)}

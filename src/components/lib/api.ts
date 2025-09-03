@@ -1,4 +1,4 @@
-import { ActionResponse, BonusResponse, CreateBonusRequest, CreateUserRequest, GetAllFinancialTransactionsResponse, GetAllPlayersResponse, GetBonusRequestsResponse, GetPlayersDataWithIdResponse, GetPlayersTransactionHistoryResponse, ManageBonusRequest, ManagePlayerBalanceDto, PaymentResponse, PermissionRequest, PermissionResponse, PlayerBonusRequestFilter, PlayerFilter, PlayerFinancialFilter, PlayerTransactionFilter, RolePermissionRequest, RoleRequest, RoleResponse, UpdateBonusRequest, UpdatePlayersDataRequest, UserResponse, UserRoleRequest } from "../constants/types";
+import { ActionResponse, BonusResponse, ChangePlayersBonusSettingRequest, CreateBonusRequest, CreateUserRequest, GetAllFinancialTransactionsResponse, GetAllPlayersResponse, GetBonusRequestsResponse, GetPlayersDataWithIdResponse, GetPlayersTransactionHistoryResponse, ManageBonusRequest, ManagePlayerBalanceDto, PaymentResponse, PermissionRequest, PermissionResponse, PlayerBonusRequestFilter, PlayerBonusSettingsResponse, PlayerFilter, PlayerFinancialFilter, PlayerTransactionFilter, RolePermissionRequest, RoleRequest, RoleResponse, UpdateBonusRequest, UpdatePlayersDataRequest, UserResponse, UserRoleRequest } from "../constants/types";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -396,6 +396,72 @@ export async function getBonuses(): Promise<BonusResponse>{
     return await response.json();
   } catch (error) {
     console.error('Error getting bonuses:', error);
+    return {
+      isSuccess: false,
+      message: "Internal server error"
+    };
+  }
+}
+
+export async function getPlayerBonusSettings(
+  playerId:string
+): Promise<PlayerBonusSettingsResponse> {
+  try {
+    const token = localStorage.getItem("authToken");
+    
+    // Convert filter to query params
+    const queryParams = new URLSearchParams();
+    
+    if (playerId) queryParams.set('playerId', playerId);
+
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/api/Client/getPlayersBonusSettings?${queryParams.toString()}`,
+      {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        cache: 'no-store'
+      }
+    );
+
+    const data:PlayerBonusSettingsResponse = await response.json()
+
+    return data;
+  } catch (error) {
+    console.error('Error fetching players:', error);
+    return {
+      isSuccess: false,
+      message: error instanceof Error ? error.message : 'Failed to fetch players bonus settings',
+      bonusSettingList: [],
+    };
+  }
+}
+
+export async function changePlayerBonusSetting(requestBody: ChangePlayersBonusSettingRequest): Promise<ActionResponse> {
+  try {
+    const token = localStorage.getItem("authToken");
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/api/Client/changePlayersBonusSetting`,
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(requestBody),
+        cache: 'no-store'
+      }
+    );
+
+    const data: ActionResponse = await response.json();
+
+    // Always return the server data, even if HTTP status is not 200
+    return data;
+
+  } catch (error) {
+    console.error('Error managing bonus:', error);
     return {
       isSuccess: false,
       message: "Internal server error"
