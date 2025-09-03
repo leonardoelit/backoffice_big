@@ -14,7 +14,13 @@ const HubContext = createContext<HubContextType | undefined>(undefined);
 export const NotificationHubProvider = ({ children }: { children: React.ReactNode }) => {
   const { increment } = useNotifications();
   const connectionRef = useRef<signalR.HubConnection | null>(null);
-  const listenersRegisteredRef = useRef(false); // ✅ only register once
+  const listenersRegisteredRef = useRef(false); // only register once
+
+  // Create audio element once
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  if (!audioRef.current) {
+    audioRef.current = new Audio("/sounds/notification.mp3"); // <-- put your sound file in public/sounds/
+  }
 
   useEffect(() => {
     if (!connectionRef.current) {
@@ -29,19 +35,26 @@ export const NotificationHubProvider = ({ children }: { children: React.ReactNod
     const connection = connectionRef.current;
 
     if (!listenersRegisteredRef.current) {
+      const playSound = () => {
+        audioRef.current?.play().catch((err) => console.warn("Unable to play sound:", err));
+      };
+
       connection.on("WithdrawRequest", (msg: string) => {
         increment("withdrawRequest");
         showToast(msg, "info");
+        playSound();
       });
 
       connection.on("DepositRequest", (msg: string) => {
         increment("depositRequest");
         showToast(msg, "info");
+        playSound();
       });
 
       connection.on("BonusRequest", (msg: string) => {
         increment("bonusRequest");
         showToast(msg, "info");
+        playSound();
       });
 
       listenersRegisteredRef.current = true;
@@ -55,8 +68,7 @@ export const NotificationHubProvider = ({ children }: { children: React.ReactNod
     }
 
     return () => {
-      // ❌ don't stop connection here, keep it alive for the tab
-      // connection.stop();
+      // don't stop connection here
     };
   }, [increment]);
 

@@ -143,7 +143,11 @@ const AppSidebar: React.FC = () => {
     menuType: "main" | "others"
   ) => (
     <ul className="flex flex-col gap-4">
-      {navItems.map((nav, index) => (
+      {navItems.map((nav, index) => {
+        let badgeCount = 0;
+        if (nav.path === "/financial") badgeCount = counts.depositRequest + counts.withdrawRequest;
+        if (nav.path === "/bonus-requests") badgeCount = counts.bonusRequest;
+        return (
         <li key={nav.name}>
           {nav.subItems ? (
             <button
@@ -169,6 +173,11 @@ const AppSidebar: React.FC = () => {
               </span>
               {(isExpanded || isHovered || isMobileOpen) && (
                 <span className={`menu-item-text`}>{nav.name}</span>
+              )}
+              {badgeCount > 0 && (
+                <span className="ml-2 inline-flex items-center justify-center px-2 py-0.5 text-xs font-bold text-white bg-red-600 rounded-full">
+                  {badgeCount}
+                </span>
               )}
               {(isExpanded || isHovered || isMobileOpen) && (
                 <ChevronDownIcon
@@ -271,7 +280,8 @@ const AppSidebar: React.FC = () => {
             </div>
           )}
         </li>
-      ))}
+      )
+      })}
     </ul>
   );
 
