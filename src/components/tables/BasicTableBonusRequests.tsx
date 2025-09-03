@@ -1,26 +1,27 @@
 "use client"
 import React, { useEffect, useRef, useState } from 'react'
-import { BonusData, ManageBonusRequest, PlayerBonusRequestFilter } from '../constants/types';
+import { BonusData, PlayerBonusRequestFilter } from '../constants/types';
 import { Table, TableBody, TableCell, TableHeader, TableRow } from '../ui/table';
 import { formatDateToDDMMYYYYHHMMSS } from '@/utils/utils';
 import DateRangePickerWithTime from '../player-profile/DateRangePickerWithTime';
-import { manageBonus } from '../lib/api';
-import { showToast } from '@/utils/toastUtil';
 import { bonusRequestStatusEnum } from '@/components/constants/index'
 import Link from 'next/link';
 import { bonusTypes } from './BasicTableBonuses';
 import { useBonusRequests } from '../hooks/useBonusRequests';
-import BonusConfirmationModal from './BonusConfirmationModal';
 
 
 
-const BasicTablePendingBonusRequests = () => {
+const BasicTableBonusRequests = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const [rowsPerPage, setRowsPerPage] = useState(25);
 
-  const [isDateModified, setIsDateModified] = useState(false)
-    const [updatedAtFrom, setUpdatedAtFrom] = useState<string | undefined>(undefined);
-    const [updatedAtTo, setUpdatedAtTo] = useState<string | undefined>(undefined);
+    const today = new Date();
+     const startOfToday = new Date(today.setHours(0, 0, 0, 0)).toISOString();
+     const endOfToday = new Date(today.setHours(23, 59, 59, 999)).toISOString();
+
+  const [isDateModified, setIsDateModified] = useState(true)
+    const [updatedAtFrom, setUpdatedAtFrom] = useState<string>(startOfToday);
+    const [updatedAtTo, setUpdatedAtTo] = useState<string>(endOfToday);
     const [username, setUsername] = useState<string | undefined>(undefined)
     const [playerId, setPlayerId] = useState<string | undefined>(undefined)
     const [bonusName, setBonusName] = useState<string | undefined>(undefined)
@@ -28,30 +29,14 @@ const BasicTablePendingBonusRequests = () => {
     const [status, setStatus] = useState<number | undefined>(0)
     const [defId, setDefId] = useState<string | undefined>(undefined)
 
-    const [modalState, setModalState] = useState<{
-    isOpen: boolean;
-    id: number | null;
-    playerId: string | null;
-    action: 'accept' | 'reject' | null;
-  }>({
-    isOpen: false,
-    id: null,
-    playerId: null,
-    action: null
-  });
-
-    const [isSendingResponse, setIsSendingResponse] = useState(false);
-
 
     const [isFilterOn, setIsFilterOn] = useState(false);
 
-    const now = new Date();
     const { bonusRequests, loading, error, pagination, filter, setFilter } = useBonusRequests({
       pageNumber: currentPage,
       pageSize: rowsPerPage,
-      status: 0, // Pending
-      updatedAtFrom: now.toISOString(),
-      updatedAtTo: now.toISOString()
+      updatedAtFrom: startOfToday,
+      updatedAtTo: endOfToday
     });
 
 
@@ -81,17 +66,6 @@ const BasicTablePendingBonusRequests = () => {
           setCurrentPage(1);
           setFilter({ ...filter, pageSize: newRowsPerPage, pageNumber: 1 });
         };
-      
-        const handleSort = (column: string) => {
-        setFilter(prev => ({
-          ...prev,
-          sortBy: column,
-          sortDirection: prev.sortBy === column 
-            ? prev.sortDirection === 'asc' ? 'desc' : 'asc'
-            : 'asc',
-          pageNumber: 1, // Reset to first page when sorting
-        }));
-      };
 
     const handleRefetch = () => {
       setCurrentPage(1);
@@ -134,7 +108,7 @@ const BasicTablePendingBonusRequests = () => {
       setDefId('')
       setBonusName('')
       setType(undefined)
-      setStatus(0)
+      setStatus(undefined)
       setIsDateModified(false)
       
       // Reset to first page
@@ -143,52 +117,13 @@ const BasicTablePendingBonusRequests = () => {
       // Create default filter with only contentType-specific filters
       const defaultFilter = {
         pageNumber: 1,
-        pageSize: rowsPerPage,
-        status: 0
+        pageSize: rowsPerPage
       };
       
       // Apply the default filter
       setFilter(defaultFilter);
       setIsFilterOn(false);
     };
-
-    // Modify manageRequest to open confirmation modal
-  const handleActionClick = (id: number, playerId: string, action: 'accept' | 'reject') => {
-    setModalState({
-      isOpen: true,
-      id,
-      playerId,
-      action
-    });
-  };
-
-  // Create function to handle confirmed action
-  const handleConfirmedAction = async (amount:number, note:string) => {
-    if (modalState.id && modalState.playerId && modalState.action) {
-      setIsSendingResponse(true);
-      const requestBody:ManageBonusRequest = {
-        direction: "Inc",
-        result: modalState.action === "accept",
-        playerId: modalState.playerId,
-        bonusRequestId: modalState.id,
-        amount: amount,
-        note: note
-      }
-      const result = await manageBonus(
-        requestBody
-      );
-      
-      if (!result.isSuccess) {
-        showToast(result.message ? result.message : "Bonus sonuçlanırken hata", "error");
-      } else {
-        showToast(result.message ? result.message : `Bonus ${requestBody.result ? "onaylandı, oyuncunun bakiyesi güncellendi" : "reddedildi"}`, "success");
-        handleRefetch();
-      }
-      
-      setIsSendingResponse(false);
-      setModalState({ isOpen: false, id: null, playerId: null, action: null });
-    }
-  };
 
     const SkeletonRow = ({ columns }: { columns: number }) => (
       <TableRow>
@@ -206,12 +141,6 @@ const BasicTablePendingBonusRequests = () => {
   }
   return (
     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">
-          <BonusConfirmationModal
-        isOpen={modalState.isOpen}
-        onClose={() => setModalState({ isOpen: false, id: null, playerId: null, action: null })}
-        onConfirm={(amount, note) => handleConfirmedAction(amount, note)}
-        action={modalState.action || 'accept'}
-      />
           <div className="relative" ref={dropdownRef}>
           {/* Toggle button */}
           <button
@@ -384,7 +313,7 @@ const BasicTablePendingBonusRequests = () => {
                   isHeader 
                   className="px-3 py-2 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400 cursor-pointer"
                 >
-                  Tip
+                  Çalışan İsmi
                 </TableCell>
                 <TableCell 
                   isHeader 
@@ -434,12 +363,6 @@ const BasicTablePendingBonusRequests = () => {
                 >
                   Zaman
                   </TableCell>
-                  <TableCell 
-                  isHeader 
-                  className="px-3 py-2 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400 cursor-pointer"
-                >
-                    Aksiyonlar
-                  </TableCell>
               </TableRow>
             </TableHeader>
 
@@ -447,11 +370,11 @@ const BasicTablePendingBonusRequests = () => {
               {loading ? (
                 <>
                   {Array.from({ length: rowsPerPage }).map((_, i) => (
-                    <SkeletonRow key={i} columns={14} />
+                    <SkeletonRow key={i} columns={12} />
                   ))}
                 </>
               ) : (
-                bonusRequests.map((t:BonusData) => (
+                bonusRequests.filter((r) => r.status !== 0).map((t:BonusData) => (
                   <TableRow key={t.id}>
                     <TableCell className="px-5 py-4 sm:px-6 text-start">
                       <div>
@@ -471,7 +394,7 @@ const BasicTablePendingBonusRequests = () => {
                       {t.playerName}
                     </TableCell>
                     <TableCell className="px-4 py-3 text-gray-900 text-start text-theme-sm dark:text-gray-400">
-                      {bonusTypes.find((p) => p.id === t.type)?.name}
+                      {t.clientName}
                     </TableCell>
                     <TableCell className="px-4 py-3 text-gray-900 text-start text-theme-sm dark:text-gray-400">
                         {t.percentage ? `${t.percentage}% ${t.bonusName}` : t.bonusName}
@@ -497,17 +420,6 @@ const BasicTablePendingBonusRequests = () => {
                     <TableCell className="px-4 py-3 text-gray-900 text-start text-theme-sm dark:text-gray-400">
                       {t.updatedAt === undefined ? " - " : formatDateToDDMMYYYYHHMMSS(t.updatedAt)}
                     </TableCell>
-                    <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                        
-                        <div className='flex flex-row items-start justify-start gap-2'>
-                            <button disabled={isSendingResponse || t.status !== 0} onClick={() => handleActionClick(t.id, t.playerId, 'accept')} className='px-2 py-1 text-green-600 border-[1px] border-green-600 bg-white hover:green-700 hover:bg-gray-200 hover:test-semibold disabled:bg-gray-300 rounded-md'>
-                                Kabul
-                            </button>
-                            <button disabled={isSendingResponse || t.status !== 0} onClick={() => handleActionClick(t.id, t.playerId, 'reject')} className='px-2 py-1 text-red-600 border-[1px] border-red-600 bg-white hover:green-700 hover:bg-gray-200 hover:test-semibold disabled:bg-gray-300 rounded-md'>
-                                Reddet
-                            </button>
-                        </div>
-                    </TableCell>
                   </TableRow>
                 ))
               )}
@@ -519,7 +431,7 @@ const BasicTablePendingBonusRequests = () => {
   {/* Pagination Controls */}
 <div className="flex items-center justify-end w-full px-4 py-2 space-x-3 border-t border-[#c8c9cb]">
   <div className="text-sm text-gray-700 dark:text-gray-300 px-2 border-r border-[#c8c9cb]">
-          Showing {bonusRequests.length} of {pagination.totalCount} transactions
+          Showing {bonusRequests.filter((r) => r.status !== 0).length} of {pagination.totalCount} transactions
         </div>
     <div className="flex items-center gap-2">
           <label htmlFor="rowsPerPage" className="text-sm text-gray-700 dark:text-gray-300">
@@ -562,4 +474,4 @@ const BasicTablePendingBonusRequests = () => {
   )
 }
 
-export default BasicTablePendingBonusRequests
+export default BasicTableBonusRequests

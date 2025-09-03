@@ -17,8 +17,7 @@ const BasicTableWithdrawals = () => {
      const endOfToday = new Date(today.setHours(23, 59, 59, 999)).toISOString();
      const [dateFrom, setDateFrom] = useState<string | undefined>(startOfToday);
      const [dateTo, setDateTo] = useState<string | undefined>(endOfToday); 
-     const [isDateModified, setIsDateModified] = useState(true); // ✅ start true
-         //Date range picker automaticaly picks today as default on page load END
+     const [isDateModified, setIsDateModified] = useState(true); 
  
     const [playerFullName, setPlayerFullName] = useState<string | undefined>(undefined)
     const [playerId, setPlayerId] = useState<string | undefined>(undefined)

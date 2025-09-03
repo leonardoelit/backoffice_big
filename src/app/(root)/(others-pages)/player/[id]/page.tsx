@@ -8,6 +8,8 @@ import { Player } from "@/components/constants/types";
 import { getPlayerDataId } from "@/components/lib/api";
 import PlayerTransactionsTable from "@/components/player-profile/PlayerTransactionsTable";
 import PlayerBonusTable from "@/components/player-profile/PlayerBonusTable";
+import Link from "next/link";
+import PlayerSettings from "@/components/player-profile/PlayerSettings";
 
 export default function PlayerProfile() {
   const router = useRouter();
@@ -16,6 +18,14 @@ export default function PlayerProfile() {
 
   const id = params.id; // from /player/[id]
   const tabFromUrl = searchParams.get("tab") || "overview";
+
+  const subTabFromUrl = searchParams.get("subtab") || "Profile"; // default subtab
+  const [activeSubTab, setActiveSubTab] = useState(subTabFromUrl);
+
+  // Sync subtab from URL
+  useEffect(() => {
+    setActiveSubTab(subTabFromUrl);
+  }, [subTabFromUrl]);
 
   const [activeTab, setActiveTab] = useState(tabFromUrl);
   const [playerData, setPlayerData] = useState<Player>();
@@ -40,14 +50,21 @@ export default function PlayerProfile() {
     fetchData();
   }, [id]);
 
-  const handleTabClick = (tabKey: string) => {
-    setActiveTab(tabKey);
+  const handleTabClick = (tabKey: string, subTabKey?: string) => {
+  setActiveTab(tabKey);
 
-    const newParams = new URLSearchParams(searchParams.toString());
-    newParams.set("tab", tabKey);
+  const newParams = new URLSearchParams(searchParams.toString());
+  newParams.set("tab", tabKey);
 
-    router.push(`${window.location.pathname}?${newParams.toString()}`, { scroll: false });
-  };
+  if (subTabKey) {
+    newParams.set("subtab", subTabKey);
+  } else {
+    newParams.delete("subtab");
+  }
+
+  router.push(`${window.location.pathname}?${newParams.toString()}`, { scroll: false });
+};
+
     
   const renderTabContent = () => {
     switch (activeTab) {
@@ -60,11 +77,11 @@ export default function PlayerProfile() {
       case "Raporlar":
         return <PlayerTransactionsTable playerId={id} />;
       case "ayarlar":
-        return (
-          <div className="text-center p-10 text-gray-500 dark:text-gray-400">
-            Ayarlar sekmesi içeriği yakında eklenecek.
-          </div>
-        );
+        return <PlayerSettings
+      playerId={id}
+      activeSubTab={activeSubTab}
+      onSubTabChange={(subtab) => handleTabClick("ayarlar", subtab)}
+    />;
       default:
         return null;
     }
@@ -74,19 +91,19 @@ export default function PlayerProfile() {
     <div className="w-full">
     {/* Breadcrumb */}
     <div className="flex items-center text-sm text-gray-500 dark:text-gray-400 mb-3">
-    <a 
+    <Link
   href="/" 
   className="hover:text-blue-500 cursor-pointer"
 >
   Dashboard
-</a>  
+</Link>  
       <span className="mx-2">/</span>
-      <a 
+      <Link
   href="/players/all-players" 
   className="hover:text-blue-500 cursor-pointer"
 >
   Players
-</a>      <span className="mx-2">/</span>
+</Link>      <span className="mx-2">/</span>
       <span className="text-gray-900 dark:text-white font-medium">
         {playerData?.username || "Yükleniyor..."}
       </span>

@@ -69,7 +69,7 @@ const navItems: NavItem[] = [
     name: "Bonus Talep",
     subItems: [
       { name: "Bonus Talepleri", path: "/bonus-requests", pro: false },
-      { name: "Talep Geçmişi", path: "/bonus-requests-history", pro: false },
+      { name: "Talep Geçmişi", path: "/bonus-requests/history", pro: false },
     ],
   },
   {

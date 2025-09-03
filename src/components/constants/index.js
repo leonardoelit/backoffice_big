@@ -1,33 +1,33 @@
 export const bonusTypes = [
     {
-        id: 1,
+        id: 0,
         name: 'Freespin'
     },
     {
-        id: 2,
+        id: 1,
         name: 'Casino'
     },
     {
-        id: 3,
+        id: 2,
         name: 'Sport'
     },
 ]
 
 export const bonusRequestStatusEnum = [
     {
-        id: 1,
+        id: 0,
         name: 'Pending'
     },
     {
-        id: 2,
+        id: 1,
         name: 'Processing'
     },
     {
-        id: 3,
+        id: 2,
         name: 'Accepted'
     },
     {
-        id: 4,
+        id: 3,
         name: 'Rejected'
     },
 ]

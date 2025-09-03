@@ -419,8 +419,13 @@ export async function getBonusRequests(
     if (filter.bonusName) queryParams.set('bonusName', filter.bonusName);
     if (filter.defId) queryParams.set('defId', filter.defId);
 
-    if (filter.type) queryParams.set('type', filter.type.toString());
-    if (filter.status) queryParams.set('status', filter.status.toString());
+    if (filter.type !== undefined) {
+      queryParams.set('type', filter.type.toString());
+    }
+
+    if (filter.status !== undefined) {
+      queryParams.set('status', filter.status.toString());
+    }
 
 
 
@@ -450,7 +455,7 @@ export async function getBonusRequests(
     return {
       isSuccess: false,
       message: error instanceof Error ? error.message : 'Failed to fetch players',
-      financialTransactions: [],
+      bonusRequestList: [],
       currentPage: 1,
       totalPages: 1,
       totalCount: 0
