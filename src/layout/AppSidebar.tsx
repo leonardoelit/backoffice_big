@@ -19,6 +19,7 @@ import {
   UserIcon
 } from "../icons/index";
 import { useNotifications } from "@/context/NotificationContext";
+import { NotificationCounts } from "@/components/constants/types";
 
 type NavItem = {
   name: string;
@@ -137,6 +138,35 @@ const AppSidebar: React.FC = () => {
     if (pathname.includes("/bonus-requests")) reset("bonusRequest");
   }, [pathname, reset]);
 
+  const getBadgeCountForNavItem = (nav: NavItem, counts: NotificationCounts) => {
+  if (nav.subItems) {
+    // Sum counts for all subitems automatically
+    return nav.subItems.reduce((sum, subItem) => {
+      switch (subItem.path) {
+        case "/financial/deposit":
+          return sum + counts.depositRequest;
+        case "/financial/withdrawal":
+          return sum + counts.withdrawRequest;
+        case "/bonus-requests":
+          return sum + counts.bonusRequest;
+        default:
+          return sum;
+      }
+    }, 0);
+  } else {
+    // Single main nav items without subItems
+    switch (nav.path) {
+      case "/financial":
+        return counts.depositRequest + counts.withdrawRequest;
+      case "/bonus-requests":
+        return counts.bonusRequest;
+      default:
+        return 0;
+    }
+  }
+};
+
+
 
   const renderMenuItems = (
     navItems: NavItem[],
@@ -144,9 +174,7 @@ const AppSidebar: React.FC = () => {
   ) => (
     <ul className="flex flex-col gap-4">
       {navItems.map((nav, index) => {
-        let badgeCount = 0;
-        if (nav.path === "/financial") badgeCount = counts.depositRequest + counts.withdrawRequest;
-        if (nav.path === "/bonus-requests") badgeCount = counts.bonusRequest;
+        const badgeCount = getBadgeCountForNavItem(nav, counts);
         return (
         <li key={nav.name}>
           {nav.subItems ? (
