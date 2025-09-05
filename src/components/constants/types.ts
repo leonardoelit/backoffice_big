@@ -168,7 +168,7 @@ export interface PlayerTransactionFilter{
   pageNumber?: number;
   pageSize?: number;
   playerId: string;
-  eventType?: string;
+  eventTypes?: string[];
   type?: string;
   timeStampFrom?: string;
   timeStampTo?: string;

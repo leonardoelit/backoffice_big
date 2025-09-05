@@ -22,7 +22,7 @@ const PlayerTransactionsTable = ({ playerId }: { playerId: string }) => {
   const [isDateModified, setIsDateModified] = useState(true);
 
   const [type, setType] = useState<string | undefined>(undefined);
-  const [eventType, setEventType] = useState<string | undefined>(undefined);
+  const [eventType, setEventType] = useState<string[]>([]);
   const [isFilterOn, setIsFilterOn] = useState(false);
 
   const [showPopup, setShowPopup] = useState(false);
@@ -58,13 +58,18 @@ const PlayerTransactionsTable = ({ playerId }: { playerId: string }) => {
   });
 
   const [open, setOpen] = useState(false)
+  const [openSelect, setOpenSelect] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
+  const selectRef = useRef<HTMLDivElement>(null)
 
   // Close dropdown on outside click
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
         setOpen(false)
+      }
+      if (selectRef.current && !selectRef.current.contains(e.target as Node)) {
+        setOpenSelect(false)
       }
     }
     document.addEventListener('mousedown', handleClickOutside)
@@ -104,14 +109,14 @@ const PlayerTransactionsTable = ({ playerId }: { playerId: string }) => {
       pageSize: rowsPerPage,
       playerId,
       type: type || undefined,
-      eventType: eventType || undefined,
+       eventTypes: eventType?.length ? eventType : undefined,
       timeStampFrom: dateFrom,
       timeStampTo: dateTo,
     };
 
     const isAnyFilterActive =
       Boolean(type) ||
-      Boolean(eventType) ||
+      Boolean(eventType.length > 0) ||
       isDateModified
 
     setIsFilterOn(isAnyFilterActive);
@@ -125,7 +130,7 @@ const PlayerTransactionsTable = ({ playerId }: { playerId: string }) => {
 
   const removeFilter = () => {
     setType('');
-    setEventType('');
+    setEventType([]);
     setDateFrom(startOfToday);
     setDateTo(endOfToday);
     setIsDateModified(true);
@@ -269,28 +274,58 @@ const PlayerTransactionsTable = ({ playerId }: { playerId: string }) => {
         <option value="Dec">Alt</option>
       </select>
 
-      {/* Event Type Select */}
-      <select
-        value={eventType}
-        onChange={(e) => setEventType(e.target.value)}
-        className="flex-1 min-w-[200px] rounded-md border border-gray-300 dark:border-gray-600 
-                  bg-white dark:bg-gray-700 text-sm text-gray-700 dark:text-gray-200 
-                  px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-      >
-        <option value="">Select Event</option>
-        <option value="Deposit">Deposit</option>
-        <option value="Withdrawal">Withdrawal</option>
-        <option value="Withdrawal Cancel">Withdrawal Cancel</option>
-        <option value="Bonus">Bonus</option>
-        <option value="Win">Win</option>
-        {/* <option value="Lose">Lose</option> */}
-        <option value="BetPlacing">Bet</option>
-        <option value="BetPayedAbort">BetPayedAbort</option>
-        <option value="BetPlacingAbort">BetPlacingAbort</option>
-        <option value="PromoWin">PromoWin</option>
-        <option value="DropAndWin">DropAndWin</option>
-        <option value="FreeBet">FreeBet</option>
-      </select>
+      {/* Event Type Multi-Select */}
+      <div className="relative flex-1 min-w-[200px]" ref={selectRef}>
+        <button
+          type="button"
+          onClick={() => setOpenSelect(!openSelect)}
+          className="w-full text-left px-3 py-2 border rounded-md 
+                    bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600
+                    text-sm text-gray-700 dark:text-gray-200
+                    flex items-center justify-between
+                    h-10"  // ✅ enforce same height as other inputs
+        >
+          <span className="truncate">
+            {eventType.length > 0 ? eventType.join(", ") : "Select Event"}
+          </span>
+          <svg
+            className="w-4 h-4 ml-2 text-gray-500 dark:text-gray-300"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+
+        {openSelect && (
+          <div className="absolute z-50 mt-1 w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg max-h-60 overflow-auto">
+            {["Deposit","Withdrawal","Withdrawal Cancel","Bonus","Win","BetPlacing","BetPayedAbort","BetPlacingAbort","PromoWin","DropAndWin","FreeBet"].map((event) => (
+              <label
+                key={event}
+                className="flex items-center px-3 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 text-sm"
+              >
+                <input
+                  type="checkbox"
+                  className="mr-2 h-4 w-4"
+                  checked={eventType.includes(event)}
+                  onChange={() => {
+                    if (eventType.includes(event)) {
+                      setEventType(eventType.filter(e => e !== event));
+                    } else {
+                      setEventType([...eventType, event]);
+                    }
+                  }}
+                />
+                {event}
+              </label>
+            ))}
+          </div>
+        )}
+      </div>
+
+
+
 
       {/* Date Picker */}
       <div className="flex-1 min-w-[250px]">

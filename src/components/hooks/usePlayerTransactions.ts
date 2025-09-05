@@ -1,5 +1,4 @@
-// hooks/usePlayers.ts
-"use client"
+"use client";
 
 import { useEffect, useState } from "react";
 import { GetPlayersTransactionHistoryResponse, PlayerTransactionFilter } from "../constants/types";
@@ -11,11 +10,10 @@ export function usePlayerTransactions(initialFilter: PlayerTransactionFilter) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Merge initialFilter with defaults for pagination
   const [filter, setFilter] = useState<PlayerTransactionFilter>({
     pageNumber: 1,
     pageSize: 25,
-    eventType: undefined,
+    eventTypes: [],
     timeStampFrom: undefined,
     timeStampTo: undefined,
     type: undefined,
@@ -29,7 +27,7 @@ export function usePlayerTransactions(initialFilter: PlayerTransactionFilter) {
 
     try {
       const result = await getPlayerTransactions(effectiveFilter);
-      
+
       if (!result.isSuccess) {
         throw new Error(result.message || 'Failed to fetch players');
       }
@@ -47,7 +45,6 @@ export function usePlayerTransactions(initialFilter: PlayerTransactionFilter) {
 
   useEffect(() => {
     fetchPlayerTransactions();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filter]);
 
   return {

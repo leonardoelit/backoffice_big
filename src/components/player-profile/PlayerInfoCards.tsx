@@ -1,9 +1,9 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { PencilIcon } from "@/icons";
+import { PencilIcon, UserCircleIcon } from "@/icons";
 import { showToast } from "@/utils/toastUtil";
 import { Player } from "../constants/types";
 import { formatDateToDDMMYYYY } from "@/utils/utils";
-import { updatePlayersData } from "../lib/api";
+import { loginAsPlayer, updatePlayersData } from "../lib/api";
 import RiskPopUp from "@/components/player-profile/RiskPopUp";
 
 // ---------- helpers ----------
@@ -256,6 +256,7 @@ interface PlayerInfoCardsProps {
 
 const PlayerInfoCards: React.FC<PlayerInfoCardsProps> = ({ playerData, isLoadingData }) => {
   const [isRiskOpen, setRiskOpen] = useState(false); // Risk popup state
+  const [isLoggingToPlayerAccount, setIsLoggingToPlayerAccount] = useState(false)
   // Collect unsaved changes here
   const [draft, setDraft] = useState<Partial<Record<UpdatableKey, any>>>({});
   // Persist saved overrides so UI reflects successful save even if parent hasn't refetched yet
@@ -299,6 +300,31 @@ const PlayerInfoCards: React.FC<PlayerInfoCardsProps> = ({ playerData, isLoading
     setDraft({});
     showToast("Değişiklikler geri alındı.", "info");
   };
+
+    const handleLoginAsUser = async () => {
+      if (!playerData) return;
+
+      try {
+        const result = await loginAsPlayer(playerData.playerId.toString());
+        if (!result.isSuccess) {
+          showToast(result.message || "Login failed", "error");
+          return;
+        }
+
+        // Open the login endpoint in a new tab
+        window.open(
+          `${process.env.NEXT_PUBLIC_CASINO_URL}/api/login?token=${result.token}`,
+          "_blank"
+        );
+
+        showToast(`Oyuncu hesabına giriş yapılıyor: ${playerData.username}`, "success");
+      } catch (err) {
+        showToast("Oyuncu hesabına giriş yaparken hata", "error");
+        console.error(err);
+      }
+    };
+
+
 
   if (!playerData && !isLoadingData) {
     return <div className="p-6 text-gray-500 dark:text-gray-400">Oyuncu bilgisi bulunamadı.</div>;
@@ -360,10 +386,12 @@ const PlayerInfoCards: React.FC<PlayerInfoCardsProps> = ({ playerData, isLoading
         </svg>
       </button>
       <button
-        aria-label="Edit"
-        className="bg-white dark:bg-gray-800 p-3 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors"
+        title="Login As User"
+        disabled={isLoggingToPlayerAccount}
+        onClick={handleLoginAsUser}
+        className="bg-white dark:bg-gray-800 p-3 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 dark:disabled:bg-gray-700 hover:bg-gray-50 disabled:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
       >
-        <PencilIcon className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+        <UserCircleIcon className="text-blue-600" />
       </button>
     </div>
        {/* Risk Popup */}

@@ -72,7 +72,7 @@ export default function PlayerProfile() {
         return <PlayerInfoCards playerData={playerData} isLoadingData={isLoading} />;
       case "istatistik":
         return <Statistic playerData={playerData} isLoadingData={isLoading} />;
-      case "islemler":
+      case "bonuslar":
         return <PlayerBonusTable playerId={id} />
       case "Raporlar":
         return <PlayerTransactionsTable playerId={id} />;
@@ -132,7 +132,7 @@ export default function PlayerProfile() {
           { key: "overview", label: "Genel Bakış" },
           { key: "istatistik", label: "İstatistikler" },
           { key: "Raporlar", label: "Raporlar" },
-          { key: "islemler", label: "İşlemler" },
+          { key: "bonuslar", label: "Bonuslar" },
           { key: "notes", label: "Notlar" },
           { key: "communications", label: "İletişim" },
           { key: "verification", label: "Doğrulama" },

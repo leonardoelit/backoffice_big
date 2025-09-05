@@ -1,4 +1,4 @@
-import { ActionResponse, BonusResponse, ChangePlayersBonusSettingRequest, CreateBonusRequest, CreateUserRequest, DashboardStatsRequestDto, DashboardStatsResponseDto, GetAllFinancialTransactionsResponse, GetAllPlayersResponse, GetBonusRequestsResponse, GetPlayersDataWithIdResponse, GetPlayersTransactionHistoryResponse, ManageBonusRequest, ManagePlayerBalanceDto, PaymentResponse, PermissionRequest, PermissionResponse, PlayerBonusRequestFilter, PlayerBonusSettingsResponse, PlayerFilter, PlayerFinancialFilter, PlayerTransactionFilter, RolePermissionRequest, RoleRequest, RoleResponse, UpdateBonusRequest, UpdatePlayersDataRequest, UserResponse, UserRoleRequest } from "../constants/types";
+import { ActionResponse, AuthResponse, BonusResponse, ChangePlayersBonusSettingRequest, CreateBonusRequest, CreateUserRequest, DashboardStatsRequestDto, DashboardStatsResponseDto, GetAllFinancialTransactionsResponse, GetAllPlayersResponse, GetBonusRequestsResponse, GetPlayersDataWithIdResponse, GetPlayersTransactionHistoryResponse, ManageBonusRequest, ManagePlayerBalanceDto, PaymentResponse, PermissionRequest, PermissionResponse, PlayerBonusRequestFilter, PlayerBonusSettingsResponse, PlayerFilter, PlayerFinancialFilter, PlayerTransactionFilter, RolePermissionRequest, RoleRequest, RoleResponse, UpdateBonusRequest, UpdatePlayersDataRequest, UserResponse, UserRoleRequest } from "../constants/types";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -153,6 +153,36 @@ export async function getPlayerDataId(
   }
 }
 
+export async function loginAsPlayer(playerId: string): Promise<AuthResponse> {
+  try {
+    const token = localStorage.getItem("authToken");
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/api/Client/login-as-player`,
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          playerId: playerId
+        }),
+        cache: 'no-store'
+      }
+    );
+
+    const data: AuthResponse = await response.json();
+
+    return data;
+  } catch (error) {
+    console.error('Error updating player data:', error);
+    return {
+      isSuccess: false,
+      message: "Internal server error"
+    };
+  }
+}
+
 export async function updatePlayersData(requestBody: UpdatePlayersDataRequest): Promise<ActionResponse> {
   try {
     const token = localStorage.getItem("authToken");
@@ -181,32 +211,20 @@ export async function updatePlayersData(requestBody: UpdatePlayersDataRequest): 
   }
 }
 
-export async function getPlayerTransactions(
-  filter: PlayerTransactionFilter
-): Promise<GetPlayersTransactionHistoryResponse> {
+export async function getPlayerTransactions(filter: PlayerTransactionFilter): Promise<GetPlayersTransactionHistoryResponse> {
   try {
     const token = localStorage.getItem("authToken");
-    
-    // Convert filter to query params
-    const queryParams = new URLSearchParams();
-    
-    if (filter.pageNumber) queryParams.set('pageNumber', filter.pageNumber.toString());
-    if (filter.pageSize) queryParams.set('pageSize', filter.pageSize.toString());
-    if (filter.playerId) queryParams.set('playerId', filter.playerId.toString());
-    if (filter.eventType) queryParams.set('eventType', filter.eventType);
-    if (filter.type) queryParams.set('type', filter.type);
-    if (filter.timeStampFrom) queryParams.set('timeStampFrom', filter.timeStampFrom);
-    if (filter.timeStampTo) queryParams.set('timeStampTo', filter.timeStampTo);
 
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/api/Client/getPlayersTransactionHistory?${queryParams.toString()}`,
+      `${process.env.NEXT_PUBLIC_API_URL}/api/Client/getPlayersTransactionHistory`,
       {
-        method: 'GET',
+        method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
-        cache: 'no-store'
+        body: JSON.stringify(filter),
+        cache: 'no-store',
       }
     );
 
@@ -223,10 +241,11 @@ export async function getPlayerTransactions(
       transactions: [],
       currentPage: 1,
       totalPages: 1,
-      totalCount: 0
+      totalCount: 0,
     };
   }
 }
+
 
 export async function getFinancialTransactions(
   filter: PlayerFinancialFilter

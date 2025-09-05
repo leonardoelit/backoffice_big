@@ -46,7 +46,7 @@ const PlayerBonusTable = ({ playerId }: { playerId:string }) => {
           pageNumber: currentPage,
           pageSize: rowsPerPage,
           playerId,
-          eventType: 'Bonus'
+          eventTypes: ['Bonus']
         }
       );
 
@@ -123,7 +123,7 @@ const PlayerBonusTable = ({ playerId }: { playerId:string }) => {
           pageNumber: 1,
           pageSize: rowsPerPage,
           playerId: playerId,
-          eventType: "Bonus",
+          eventTypes: ["Bonus"],
           type: type || undefined
         };
       
