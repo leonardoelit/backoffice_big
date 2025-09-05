@@ -300,7 +300,7 @@ const PlayerTransactionsTable = ({ playerId }: { playerId: string }) => {
 
         {openSelect && (
           <div className="absolute z-50 mt-1 w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg max-h-60 overflow-auto">
-            {["Deposit","Withdrawal","Withdrawal Cancel","Bonus","Win","BetPlacing","BetPayedAbort","BetPlacingAbort","PromoWin","DropAndWin","FreeBet"].map((event) => (
+            {["Deposit", "Withdrawal Request", "Withdrawal","Withdrawal Cancel","Bonus","Win","BetPlacing","BetPayedAbort","BetPlacingAbort","PromoWin","DropAndWin","FreeBet"].map((event) => (
               <label
                 key={event}
                 className="flex items-center px-3 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 text-sm"
