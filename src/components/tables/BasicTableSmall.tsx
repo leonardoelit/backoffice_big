@@ -8,26 +8,17 @@ import {
 } from "../ui/table";
 
 import Image from "next/image";
-import { EnrichedClientData } from "@/context/AuthContext";
 import Link from "next/link";
+import { DashboardPlayerData } from "../constants/types";
 
-export default function BsicTableSmall({ list, type }: { list: EnrichedClientData[]; type: string }) {
-  const [currentList, setCurrentList] = useState<EnrichedClientData[]>([]);
+export default function BsicTableSmall({ list, type }: { list: DashboardPlayerData[]; type: string }) {
+  const [currentList, setCurrentList] = useState<DashboardPlayerData[]>([]);
 
   useEffect(() => {
     if (list) {
       setCurrentList(list);
     }
   }, [list]);
-
-  function fixName(name: string): string {
-    const parts = name.trim().split(/\s+/);
-    if (parts.length < 2) return name;
-
-    const lastName = parts[0];
-    const firstAndMiddle = parts.slice(1).join(" ");
-    return `${firstAndMiddle} ${lastName}`;
-  }
 
   return (
     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">
@@ -55,27 +46,25 @@ export default function BsicTableSmall({ list, type }: { list: EnrichedClientDat
             {/* Table Body */}
             <TableBody className="divide-y divide-gray-100 dark:divide-white/[0.05]">
               {currentList.map((player) => (
-                <TableRow key={player.ClientId} className="h-16">
+                <TableRow key={player.playerId} className="h-16">
                   <TableCell className="px-5 py-2 sm:px-6 text-start align-middle">
-                    <Link href={`/player/${player.ClientId}`}>
+                    <Link href={`/player/${player.playerId}`}>
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 overflow-hidden rounded-full">
                           <Image
                             width={40}
                             height={40}
-                            src={`https://api.dicebear.com/7.x/personas/png?seed=${encodeURIComponent(player.Login)}`}
-                            alt={player.Login}
+                            src={`https://api.dicebear.com/7.x/personas/png?seed=${encodeURIComponent(player.playerName)}`}
+                            alt={player.playerName}
                             className="object-cover w-10 h-10"
                           />
                         </div>
                         <div>
                           <span className="block font-medium text-gray-800 text-theme-sm dark:text-white/90">
-                            {fixName(String(player.Name))}
+                            {player.playerName}
                           </span>
                           <span className="block text-gray-500 text-theme-xs dark:text-gray-400">
-                            {player.Login}
-                            <br />
-                            {player.ClientId}
+                            {player.playerId}
                           </span>
                         </div>
                       </div>
@@ -85,28 +74,15 @@ export default function BsicTableSmall({ list, type }: { list: EnrichedClientDat
                     <div className="flex items-center gap-3">
                       <div>
                         <span className="block font-medium text-gray-800 text-theme-sm dark:text-white/90">
-                          {type === "deposit"
-                            ? player.DepositAmount
-                            : type === "withdrawal"
-                            ? player.WithdrawalAmount
-                            : player.DepositAmount - player.WithdrawalAmount}{" "}
+                          {player.amount}{" "}
                           TL
                         </span>
                         <span className="block text-gray-500 text-theme-xs dark:text-gray-400">
                           {type === "deposit"
-                            ? `${player.DepositCount} Yatırım`
+                            ? `${player.count} Yatırım`
                             : type === "withdrawal"
-                            ? `${player.WithdrawalCount} Çekim`
-                            : player.DepositAmount > 0
-                            ? parseFloat(
-                                (
-                                  ((player.DepositAmount - player.WithdrawalAmount) /
-                                    player.DepositAmount) *
-                                  100
-                                ).toFixed(2)
-                              )
+                            ? `${player.count} Çekim`
                             : 0}
-                          {type === "contribution" && "%"}
                         </span>
                       </div>
                     </div>

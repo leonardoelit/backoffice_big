@@ -14,7 +14,7 @@ interface DateRangePickerProps {
   onModifiedChange?: (modified: boolean) => void
   initialStartDate?: Date
   initialEndDate?: Date
-  isChanged: boolean;
+  isChanged: boolean
 }
 
 export default function DateRangePicker({
@@ -25,18 +25,16 @@ export default function DateRangePicker({
   isChanged
 }: DateRangePickerProps) {
   const [dropdownOpen, setDropdownOpen] = useState(false)
-  const [customRange, setCustomRange] = useState<{ startDate: Date | null; endDate: Date | null }>({
-    startDate: null,
-    endDate: null
+  const [customRange, setCustomRange] = useState<{ startDate: Date; endDate: Date }>({
+    startDate: initialStartDate,
+    endDate: initialEndDate
   })
   const [isUpdated, setIsUpdated] = useState(false)
-
   const dropdownRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     setIsUpdated(isChanged)
   }, [isChanged])
-  
 
   const startOfDayISO = (date: Date) => {
     const d = new Date(date)
@@ -50,8 +48,8 @@ export default function DateRangePicker({
     return d.toISOString()
   }
 
-  const formatDisplayDate = (date: Date | null) => {
-    return date ? format(date, 'dd.MM.yyyy') : '00.00.00'
+  const formatDisplayDate = (date: Date) => {
+    return format(date, 'dd.MM.yyyy')
   }
 
   const handleCustomRangeChange = (ranges: any) => {
@@ -61,35 +59,23 @@ export default function DateRangePicker({
   }
 
   const handleApply = () => {
-    if (customRange.startDate && customRange.endDate) {
-      onChange({
-        MinCreatedLocal: startOfDayISO(customRange.startDate),
-        MaxCreatedLocal: endOfDayISO(customRange.endDate)
-      })
-    } else {
-      // Clear the dates if none selected
-      onChange({
-        MinCreatedLocal: '',
-        MaxCreatedLocal: ''
-      })
-    }
+    onChange({
+      MinCreatedLocal: startOfDayISO(customRange.startDate),
+      MaxCreatedLocal: endOfDayISO(customRange.endDate)
+    })
     setDropdownOpen(false)
   }
 
   const handleClear = () => {
-    setCustomRange({ startDate: null, endDate: null })
+    const defaultStart = initialStartDate
+    const defaultEnd = initialEndDate
+    setCustomRange({ startDate: defaultStart, endDate: defaultEnd })
     if (onModifiedChange) onModifiedChange(true)
+    onChange({
+      MinCreatedLocal: startOfDayISO(defaultStart),
+      MaxCreatedLocal: endOfDayISO(defaultEnd)
+    })
   }
-
-  useEffect(() => {
-    // Initialize with default dates if not set
-    if (!customRange.startDate && !customRange.endDate) {
-      setCustomRange({
-        startDate: initialStartDate,
-        endDate: initialEndDate
-      })
-    }
-  }, [initialStartDate, initialEndDate])
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -107,17 +93,21 @@ export default function DateRangePicker({
         onClick={() => setDropdownOpen(!dropdownOpen)}
         className="border border-gray-300 bg-white rounded-md px-4 py-2 text-sm flex items-center gap-2 hover:bg-gray-50 w-[190px] justify-between"
       >
-        {isUpdated ? `${formatDisplayDate(customRange.startDate)} - ${formatDisplayDate(customRange.endDate)}` : '00.00.00 - 00.00.00'}
+        {isUpdated
+          ? `${formatDisplayDate(customRange.startDate)} - ${formatDisplayDate(customRange.endDate)}`
+          : '00.00.00 - 00.00.00'}
       </button>
 
       {dropdownOpen && (
         <div className="absolute top-0 right-full mr-2 w-auto bg-white border border-gray-200 rounded-md shadow-md z-10 p-2">
           <DateRange
-            ranges={[{
-              startDate: customRange.startDate || initialStartDate,
-              endDate: customRange.endDate || initialEndDate,
-              key: 'selection'
-            }]}
+            ranges={[
+              {
+                startDate: customRange.startDate,
+                endDate: customRange.endDate,
+                key: 'selection'
+              }
+            ]}
             onChange={handleCustomRangeChange}
             maxDate={new Date()}
             rangeColors={['#3b82f6']}

@@ -1,9 +1,49 @@
-import { ActionResponse, BonusResponse, ChangePlayersBonusSettingRequest, CreateBonusRequest, CreateUserRequest, GetAllFinancialTransactionsResponse, GetAllPlayersResponse, GetBonusRequestsResponse, GetPlayersDataWithIdResponse, GetPlayersTransactionHistoryResponse, ManageBonusRequest, ManagePlayerBalanceDto, PaymentResponse, PermissionRequest, PermissionResponse, PlayerBonusRequestFilter, PlayerBonusSettingsResponse, PlayerFilter, PlayerFinancialFilter, PlayerTransactionFilter, RolePermissionRequest, RoleRequest, RoleResponse, UpdateBonusRequest, UpdatePlayersDataRequest, UserResponse, UserRoleRequest } from "../constants/types";
+import { ActionResponse, BonusResponse, ChangePlayersBonusSettingRequest, CreateBonusRequest, CreateUserRequest, DashboardStatsRequestDto, DashboardStatsResponseDto, GetAllFinancialTransactionsResponse, GetAllPlayersResponse, GetBonusRequestsResponse, GetPlayersDataWithIdResponse, GetPlayersTransactionHistoryResponse, ManageBonusRequest, ManagePlayerBalanceDto, PaymentResponse, PermissionRequest, PermissionResponse, PlayerBonusRequestFilter, PlayerBonusSettingsResponse, PlayerFilter, PlayerFinancialFilter, PlayerTransactionFilter, RolePermissionRequest, RoleRequest, RoleResponse, UpdateBonusRequest, UpdatePlayersDataRequest, UserResponse, UserRoleRequest } from "../constants/types";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 async function getToken(): Promise<string> {
   return localStorage.getItem("authToken") || "";
+}
+
+export async function getDashboardStats(
+  requestTimes: DashboardStatsRequestDto
+): Promise<DashboardStatsResponseDto> {
+  try {
+    const token = await getToken();
+
+    if (!requestTimes.from || !requestTimes.to) {
+      return {
+        isSuccess: false,
+        message: "Lütfen geçerli tarih aralığı giriniz"
+      }
+    }
+
+    const queryParams = new URLSearchParams({
+      from: requestTimes.from,
+      to: requestTimes.to
+    });
+
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/api/Client/getDashboardStats?${queryParams.toString()}`,
+      {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        cache: 'no-store'
+      }
+    );
+
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching dashboard stats:', error);
+    return {
+      isSuccess: false,
+      message: error instanceof Error ? error.message : 'Failed to fetch dashboard stats',
+    };
+  }
 }
 
 export async function getPlayers(

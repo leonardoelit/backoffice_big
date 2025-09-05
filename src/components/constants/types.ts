@@ -128,7 +128,6 @@ export interface Player {
   isOnline?: boolean;
 }
 
-
 export interface GetAllPlayersResponse {
   isSuccess: boolean;
   message?: string;
@@ -433,4 +432,37 @@ export interface NotificationCounts {
   withdrawRequest: number;
   depositRequest: number;
   bonusRequest: number;
+}
+
+export interface DashboardStatsResponseDto {
+  isSuccess: boolean;
+  message?: string;
+  stats?: DashboardStatsDto;
+}
+
+export interface DashboardStatsRequestDto {
+  from: string; //timestamp
+  to: string; // timestamp
+}
+
+export interface DashboardStatsDto {
+  totalDepositAmount: number;
+  totalDepositCount: number;
+  totalWithdrawalAmount: number;
+  totalWithdrawalCount: number;
+  netProfit: number;
+  totalBonus: number;
+  ggr: number;
+  totalCasinoBet: number;
+  totalCasinoWin: number;
+  totalPlayerCount: number;
+  playersWithMostWithdrawal?: DashboardPlayerData[];
+  playersWithMostDeposit?: DashboardPlayerData[];
+}
+
+export interface DashboardPlayerData {
+  playerId: number;
+  playerName: string;
+  amount: number;
+  count: number;
 }
