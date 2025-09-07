@@ -1,9 +1,9 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { PencilIcon, UserCircleIcon } from "@/icons";
 import { showToast } from "@/utils/toastUtil";
-import { Player } from "../constants/types";
+import { Player, RiskOrFavorite } from "../constants/types";
 import { formatDateToDDMMYYYY } from "@/utils/utils";
-import { loginAsPlayer, updatePlayersData } from "../lib/api";
+import { loginAsPlayer, markPlayer, updatePlayersData } from "../lib/api";
 import RiskPopUp from "@/components/player-profile/RiskPopUp";
 
 // ---------- helpers ----------
@@ -257,6 +257,8 @@ interface PlayerInfoCardsProps {
 const PlayerInfoCards: React.FC<PlayerInfoCardsProps> = ({ playerData, isLoadingData }) => {
   const [isRiskOpen, setRiskOpen] = useState(false); // Risk popup state
   const [isLoggingToPlayerAccount, setIsLoggingToPlayerAccount] = useState(false)
+  const [isAddingToFavorites, setIsAddingToFavorites] = useState(false)
+  const [isMarkingPlayer, setIsMarkingPlayer] = useState(false)
   // Collect unsaved changes here
   const [draft, setDraft] = useState<Partial<Record<UpdatableKey, any>>>({});
   // Persist saved overrides so UI reflects successful save even if parent hasn't refetched yet
@@ -303,6 +305,7 @@ const PlayerInfoCards: React.FC<PlayerInfoCardsProps> = ({ playerData, isLoading
 
     const handleLoginAsUser = async () => {
       if (!playerData) return;
+      setIsLoggingToPlayerAccount(true)
 
       try {
         const result = await loginAsPlayer(playerData.playerId.toString());
@@ -322,9 +325,36 @@ const PlayerInfoCards: React.FC<PlayerInfoCardsProps> = ({ playerData, isLoading
         showToast("Oyuncu hesabına giriş yaparken hata", "error");
         console.error(err);
       }
+      setIsLoggingToPlayerAccount(false)
     };
 
+    const handleMarkPlayer = async (type:RiskOrFavorite, note:string) => {
+      if(!playerData?.playerId) return;
+      setIsMarkingPlayer(true)
 
+      const result = await markPlayer({ playerId: playerData.playerId.toString(), type: type, note: note });
+
+      if(result.isSuccess){
+        showToast("Oyuncu risk listesine eklendi", "success")
+      }else{
+        showToast(result.message ? result.message : "Oyuncuyu risk listesine eklerken hata", "error")
+      }
+      setRiskOpen(false);
+      setIsMarkingPlayer(false);
+    }
+
+    const handleAddToFavorites = async () => {
+      if(!playerData?.playerId) return;
+      setIsAddingToFavorites(true)
+
+      const res = await markPlayer({ playerId: playerData.playerId.toString(), type: RiskOrFavorite.Favorite })
+      if(res.isSuccess){
+        showToast("Oyuncu favorilere eklendi", "success")
+      }else{
+        showToast(res.message ? res.message : "Oyuncuyu favorilere eklerken hata")
+      }
+      setIsAddingToFavorites(false)
+    }
 
   if (!playerData && !isLoadingData) {
     return <div className="p-6 text-gray-500 dark:text-gray-400">Oyuncu bilgisi bulunamadı.</div>;
@@ -350,7 +380,9 @@ const PlayerInfoCards: React.FC<PlayerInfoCardsProps> = ({ playerData, isLoading
       {/* Add to Favorites button */}
       <button
         title="Add to Favorites"
-        className="bg-white dark:bg-gray-800 p-3 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 hover:bg-yellow-50 dark:hover:bg-yellow-900 transition-colors"
+        disabled={isAddingToFavorites}
+        onClick={handleAddToFavorites}
+        className="bg-white dark:bg-gray-800 p-3 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 hover:bg-yellow-50 disabled:bg-yellow-200 dark:hover:bg-yellow-900 dark:disabled:bg-yellow-900 transition-colors"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -368,7 +400,8 @@ const PlayerInfoCards: React.FC<PlayerInfoCardsProps> = ({ playerData, isLoading
       <button
         title="Risk Analysis"
         onClick={() => setRiskOpen(true)}
-        className="bg-white dark:bg-gray-800 p-3 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 hover:bg-purple-50 dark:hover:bg-purple-900 transition-colors"
+        disabled={isMarkingPlayer}
+        className="bg-white dark:bg-gray-800 p-3 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 hover:bg-purple-50 disabled:bg-purple-300 dark:hover:bg-purple-900 dark:disabled:bg-purple-900 transition-colors"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -398,7 +431,8 @@ const PlayerInfoCards: React.FC<PlayerInfoCardsProps> = ({ playerData, isLoading
        <RiskPopUp
         isOpen={isRiskOpen}
         onClose={() => setRiskOpen(false)}
-        onSubmit={(value) => console.log("Risk input:", value)}
+        isMarking={isMarkingPlayer}
+        onSubmit={(value) => handleMarkPlayer(RiskOrFavorite.Risk, value)}
       />
   </div>
 

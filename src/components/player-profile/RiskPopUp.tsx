@@ -3,10 +3,11 @@ import { useEffect } from "react";
 interface RiskPopUpProps {
   isOpen: boolean;
   onClose: () => void;
+  isMarking: boolean;
   onSubmit: (value: string) => void;
 }
 
-export default function RiskPopUp({ isOpen, onClose, onSubmit }: RiskPopUpProps) {
+export default function RiskPopUp({ isOpen, onClose, isMarking, onSubmit }: RiskPopUpProps) {
   // Close popup on Escape key
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -22,7 +23,6 @@ export default function RiskPopUp({ isOpen, onClose, onSubmit }: RiskPopUpProps)
     e.preventDefault();
     const inputValue = (e.currentTarget.elements.namedItem("riskInput") as HTMLTextAreaElement).value;
     onSubmit(inputValue);
-    onClose();
   };
 
   return (
@@ -52,9 +52,10 @@ export default function RiskPopUp({ isOpen, onClose, onSubmit }: RiskPopUpProps)
 
           <button
             type="submit"
+            disabled={isMarking}
             className="w-full py-2 px-4 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition-colors"
           >
-            Send to risk check
+            {isMarking ? (<span className="loading-dots">Gönderiliyor</span>) : "Gönder"}
           </button>
         </form>
       </div>

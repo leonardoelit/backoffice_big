@@ -1,4 +1,4 @@
-import { ActionResponse, AuthResponse, BonusResponse, ChangePlayersBonusSettingRequest, CreateBonusRequest, CreateUserRequest, DashboardStatsRequestDto, DashboardStatsResponseDto, GetAllFinancialTransactionsResponse, GetAllPlayersResponse, GetBonusRequestsResponse, GetPlayersDataWithIdResponse, GetPlayersTransactionHistoryResponse, ManageBonusRequest, ManagePlayerBalanceDto, PaymentResponse, PermissionRequest, PermissionResponse, PlayerBonusRequestFilter, PlayerBonusSettingsResponse, PlayerFilter, PlayerFinancialFilter, PlayerTransactionFilter, RolePermissionRequest, RoleRequest, RoleResponse, UpdateBonusRequest, UpdatePlayersDataRequest, UserResponse, UserRoleRequest } from "../constants/types";
+import { ActionResponse, AuthResponse, BonusResponse, ChangePlayersBonusSettingRequest, CreateBonusRequest, CreateUserRequest, DashboardStatsRequestDto, DashboardStatsResponseDto, GetAllFinancialTransactionsResponse, GetAllPlayersResponse, GetBonusRequestsResponse, GetPlayersDataWithIdResponse, GetPlayersTransactionHistoryResponse, GetTaggedPlayersRequest, GetTaggedPlayersResponse, ManageBonusRequest, ManagePlayerBalanceDto, MarkPlayerRequest, PaymentResponse, PermissionRequest, PermissionResponse, PlayerBonusRequestFilter, PlayerBonusSettingsResponse, PlayerFilter, PlayerFinancialFilter, PlayerTransactionFilter, RolePermissionRequest, RoleRequest, RoleResponse, UpdateBonusRequest, UpdatePlayersDataRequest, UserResponse, UserRoleRequest } from "../constants/types";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -245,7 +245,6 @@ export async function getPlayerTransactions(filter: PlayerTransactionFilter): Pr
     };
   }
 }
-
 
 export async function getFinancialTransactions(
   filter: PlayerFinancialFilter
@@ -775,5 +774,109 @@ export async function createUser(requestBody: CreateUserRequest): Promise<Action
   } catch (error) {
     console.error('Error creating user:', error);
     return { isSuccess: false, message: 'Internal server error' };
+  }
+}
+
+export async function markPlayer(requestBody: MarkPlayerRequest): Promise<ActionResponse> {
+  try {
+    const token = localStorage.getItem("authToken");
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/api/Client/markPlayer`,
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(requestBody),
+        cache: 'no-store'
+      }
+    );
+
+    const data: ActionResponse = await response.json();
+
+    return data;
+  } catch (error) {
+    console.error('Error updating player data:', error);
+    return {
+      isSuccess: false,
+      message: "Internal server error"
+    };
+  }
+}
+
+export async function removePlayerMark(tagId: number): Promise<ActionResponse> {
+  try {
+    const token = localStorage.getItem("authToken");
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/api/Client/removePlayersTag`,
+      {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          id: tagId
+        }),
+        cache: 'no-store'
+      }
+    );
+
+    const data: ActionResponse = await response.json();
+
+    return data;
+  } catch (error) {
+    console.error('Error updating player data:', error);
+    return {
+      isSuccess: false,
+      message: "Internal server error"
+    };
+  }
+}
+
+export async function getTaggedPlayers(
+  filter: GetTaggedPlayersRequest
+): Promise<GetTaggedPlayersResponse> {
+  try {
+    const token = localStorage.getItem("authToken");
+    
+    // Convert filter to query params
+    const queryParams = new URLSearchParams();
+    
+    if (filter.pageNumber) queryParams.set('pageNumber', filter.pageNumber.toString());
+    if (filter.pageSize) queryParams.set('pageSize', filter.pageSize.toString());
+    if (filter.playerId) queryParams.set('playerId', filter.playerId.toString());
+    if (filter.playerUsername) queryParams.set('playerUsername', filter.playerUsername);
+    if (filter.whoMarked) queryParams.set('whoMarked', filter.whoMarked);
+    if (filter.type) queryParams.set('type', filter.type.toString());
+
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/api/Client/getPlayerTags?${queryParams.toString()}`,
+      {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        cache: 'no-store'
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching players:', error);
+    return {
+      isSuccess: false,
+      message: error instanceof Error ? error.message : 'Failed to fetch players',
+      data: [],
+      currentPage: 1,
+      totalPages: 1,
+      totalCount: 0
+    };
   }
 }

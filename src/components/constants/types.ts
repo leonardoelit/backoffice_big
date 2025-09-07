@@ -466,3 +466,48 @@ export interface DashboardPlayerData {
   amount: number;
   count: number;
 }
+
+export interface MarkPlayerRequest {
+  playerId: string;
+  type: RiskOrFavorite;
+  note?: string;
+}
+
+export enum RiskOrFavorite {
+  Risk = 0,
+  Favorite = 1
+}
+
+export interface GetTaggedPlayersRequest {
+  pageNumber?: number;
+  pageSize?: number;
+  type: RiskOrFavorite;
+  playerId?: string;
+  playerUsername?: string;
+  whoMarked?: string;
+}
+
+export interface GetTaggedPlayersResponse {
+  isSuccess: boolean;
+  message?: string;
+  data?: TaggedPlayer[];
+  currentPage: number;
+  totalPages: number;
+  totalCount: number;
+}
+
+export interface TaggedPlayer {
+  id: number;
+  whoMarked?: string;
+  playerId: number;
+  playerFullName: string;
+  playerUsername: string;
+  totalDepositAmount: number;
+  totalWithdrawalAmount: number;
+  lastDepositAmount?: number;
+  lastDepositDate?: string;
+  lastWithdrawalAmount?: number;
+  lastWithdrawalDate?: string;
+  note?: string;
+  createdAt: string;
+}

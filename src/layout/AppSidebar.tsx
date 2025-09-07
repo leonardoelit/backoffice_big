@@ -38,14 +38,18 @@ const navItems: NavItem[] = [
     icon: <UserIcon />,
     name: "Oyuncular",
     path: "/players/all-players", 
+    subItems: [
+      { name: "Tüm Oyuncular", path: "/players/all-players", pro: false },
+      { name: "Favori Oyuncular", path: "/players/favorite-players", pro: false },
+      { name: "Risk Listesi", path: "/players/risk-list", pro: false },
+    ],
   },
   {
     icon: <DocsIcon />,
     name: "Finansal",
     subItems: [
       { name: "Yatırım Talepleri", path: "/financial/deposit", pro: false },
-      { name: "Çekim Talepleri", path: "/financial/withdrawal", pro: false },
-      { name: "Risk Talepleri", path: "/financial/risk", pro: false },
+      { name: "Çekim Talepleri", path: "/financial/withdrawal", pro: false }
     ],
   },
   {
