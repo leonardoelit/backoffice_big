@@ -213,7 +213,7 @@ const PlayerBonusTable = ({ playerId }: { playerId:string }) => {
     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">
           {/* Popup modal */}
       {showPopup && (
-  <div className="absolute inset-0 bg-black/30 flex items-center justify-center z-[9999999]">
+  <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-[9999999]">
     <div
       ref={popupRef}
       className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 w-96"
