@@ -4,7 +4,7 @@ import Label from "@/components/form/Label";
 import Button from "@/components/ui/button/Button";
 import { EyeCloseIcon, EyeIcon } from "@/icons";
 import { authenticateUser } from "@/server/userActions";
-import React, { startTransition, useState } from "react";
+import React, { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { setCookie } from "cookies-next";
@@ -18,32 +18,32 @@ export default function SignInForm() {
   const { login, isLoadingSignIn } = useAuth();
   const router = useRouter()
 
-  const handleLogin = () => {
-    setLoading(true);
-    setError('');
+  const handleLogin = async () => {
+  setLoading(true);
+  setError('');
 
-    startTransition(async () => {
-      const response = await authenticateUser(email, password);
+  try {
+    const response = await authenticateUser(email, password);
 
-      if (response.isSuccess) {
-        setCookie('authToken', response.token, { 
-        maxAge: 60 * 60 * 24, 
+    if (response.isSuccess) {
+      setCookie('authToken', response.token, {
+        maxAge: 60 * 60 * 24,
         path: '/',
-        sameSite: 'lax'
+        sameSite: 'lax',
       });
-        login(response);
-        setPassword('');
-        setLoading(false);
-        router.push('/')
-      } else {
-        setError(response.message);
-        setLoading(false);
-      }
 
+      login(response, router); // pass router in
+      setPassword('');
+    } else {
+      setError(response.message);
+    }
+  } catch (err) {
+    setError('Unexpected error occurred.');
+  } finally {
+    setTimeout(() => setLoading(false), 3000);
+  }
+};
 
-      setLoading(false); // 🔁 Moved inside the transition!
-    });
-  };
 
   return (
     <div className="flex flex-col flex-1 lg:w-1/2 w-full">

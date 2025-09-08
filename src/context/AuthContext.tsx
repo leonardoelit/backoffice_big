@@ -23,7 +23,7 @@ interface AuthContextType {
   userInfo: User;
   allPlayerData: Player[];
   playerBalanceData: PlayerBalanceResponse;
-  login: (response: AuthResponse) => void;
+  login: (response: AuthResponse, router:any) => void;
   logout: () => void;
   logoutAdmin: (response: LoginResponse) => void;
 }
@@ -161,18 +161,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     });
   }, []);
 
-const login = useCallback((response: AuthResponse) => {
+const login = useCallback((response: AuthResponse, router?: any) => {
   if (!response.isSuccess) {
     console.warn('Invalid credentials — login blocked.');
     setIsAuthenticated(false);
     return;
   }
 
-  const userDetail:JwtPayload = parseJwt(response.token!)
-
-  console.log(userDetail);
-
-  if(userDetail === null){
+  const userDetail: JwtPayload = parseJwt(response.token!);
+  if (!userDetail) {
     logout();
     return;
   }
@@ -187,20 +184,21 @@ const login = useCallback((response: AuthResponse) => {
     lastname: lastname,
     email: userDetail.email,
     role: userDetail.role,
-  })
+  });
 
-  setIsLoadingSignIn(true);
+  setIsLoadingSignIn(false); // ⚠️ should be false after login is done, not true
   localStorage.setItem('authToken', response.token!);
 
   setToken(response.token!);
   setIsAuthenticated(true);
   setIsAdmin(userDetail.role.includes("SuperAdmin"));
-  //setIsAdmin(response.role === 'admin');
 
-  //const parsed = parseJwt(response.token);
-
-
+  // ✅ Redirect safely after state is set
+  if (router) {
+    router.push('/');
+  }
 }, []);
+
 
   const logout = useCallback(() => {
     localStorage.removeItem('authToken');
