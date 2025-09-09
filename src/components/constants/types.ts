@@ -511,3 +511,9 @@ export interface TaggedPlayer {
   note?: string;
   createdAt: string;
 }
+
+export interface CancelOrValidateWithdrawalRequest{
+  playerId: string;
+  id: number;
+  result: boolean;
+}

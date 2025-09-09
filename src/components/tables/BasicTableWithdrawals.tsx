@@ -6,6 +6,9 @@ import { Table, TableBody, TableCell, TableHeader, TableRow } from '../ui/table'
 import { formatDateToDDMMYYYYHHMMSS } from '@/utils/utils';
 import DateRangePickerWithTime from '../player-profile/DateRangePickerWithTime';
 import Link from 'next/link';
+import { showToast } from '@/utils/toastUtil';
+import { cancelOrValidateWithdrawal } from '../lib/api';
+import ConfirmationModal from './ConfirmationModal';
 
 const BasicTableWithdrawals = () => {
     const [currentPage, setCurrentPage] = useState(1);
@@ -29,6 +32,18 @@ const BasicTableWithdrawals = () => {
     const [cryptoType, setCryptoType] = useState<string | undefined>(undefined)
     const [playerUsername, setPlayerUsername] = useState<string | undefined>(undefined)
 
+    const [modalState, setModalState] = useState<{
+        isOpen: boolean;
+        id: number | null;
+        playerId: string | null;
+        action: 'accept' | 'reject' | 'onay' | 'red' | null;
+      }>({
+        isOpen: false,
+        id: null,
+        playerId: null,
+        action: null
+      });
+
 
     const [isFilterOn, setIsFilterOn] = useState(false);
 
@@ -39,7 +54,8 @@ const BasicTableWithdrawals = () => {
           typeName: 'withdraw'
         }
       );
-
+    
+    const [isAction, setIsAction] = useState(false)
     const [open, setOpen] = useState(false)
     const dropdownRef = useRef<HTMLDivElement>(null)
     
@@ -168,6 +184,34 @@ const BasicTableWithdrawals = () => {
       handleRefetch();
     }, []);
 
+    const handleActionClick = (id: number, playerId: string, action: 'onay' | 'red') => {
+    setModalState({
+      isOpen: true,
+      id,
+      playerId,
+      action
+    });
+  };
+
+    const handleConfirmedAction = async () => {
+      if(modalState.id === null || modalState.playerId === null || modalState.action == null){
+        showToast("İşlem bilgisi alırken hata lütfen tekrar deneyiniz", "error")
+        return;
+      }
+
+      setIsAction(true)
+
+      const res = await cancelOrValidateWithdrawal({ id: modalState.id, playerId: modalState.playerId, result: modalState.action === "onay" ? true : false  })
+
+      if(res.hasError){
+        showToast(res.description, "error")
+      }else{
+        showToast(res.description, "success")
+        handleRefetch();
+      }
+      setIsAction(false)
+    } 
+
     const SkeletonRow = ({ columns }: { columns: number }) => (
       <TableRow>
         {Array.from({ length: columns }).map((_, index) => (
@@ -184,6 +228,12 @@ const BasicTableWithdrawals = () => {
   }
   return (
     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">
+          <ConfirmationModal
+            isOpen={modalState.isOpen}
+            onClose={() => setModalState({ isOpen: false, id: null, playerId: null, action: null })}
+            onConfirm={handleConfirmedAction}
+            action={modalState.action || 'accept'}
+          />
           <div className="relative" ref={dropdownRef}>
           {/* Toggle button */}
           <button
@@ -425,6 +475,12 @@ const BasicTableWithdrawals = () => {
                   >
                     Time
                   </TableCell>
+                  <TableCell 
+                    isHeader 
+                    className="px-4 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400 cursor-pointer" 
+                  >
+                    Aksiyonlar
+                  </TableCell>
               </TableRow>
             </TableHeader>
 
@@ -432,7 +488,7 @@ const BasicTableWithdrawals = () => {
               {loading ? (
                 <>
                   {Array.from({ length: rowsPerPage }).map((_, i) => (
-                    <SkeletonRow key={i} columns={10} />
+                    <SkeletonRow key={i} columns={11} />
                   ))}
                 </>
               ) : (
@@ -482,6 +538,18 @@ const BasicTableWithdrawals = () => {
                     </TableCell>
                     <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
                         {formatDateToDDMMYYYYHHMMSS(t.createdAt)}
+                    </TableCell>
+                    <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                        {t.status === "Çekim Aktarılıyor" ? (
+                          <div className='flex flex-row items-start justify-start gap-2'>
+                            <button disabled={isAction} onClick={() => handleActionClick(t.id, t.playerID, "onay")} className='px-2 py-1 text-green-600 border-[1px] border-green-600 bg-white hover:green-700 hover:bg-gray-200 hover:test-semibold disabled:bg-gray-400 rounded-md'>
+                                Onay
+                            </button>
+                            <button disabled={isAction} onClick={() => handleActionClick(t.id, t.playerID, "red")} className='px-2 py-1 text-red-600 border-[1px] border-red-600 bg-white hover:green-700 hover:bg-gray-200 hover:test-semibold disabled:bg-gray-400 rounded-md'>
+                                Red
+                            </button>
+                        </div>
+                        ) : "-"}
                     </TableCell>
                   </TableRow>
                 ))

@@ -40,7 +40,7 @@ export default function SignInForm() {
   } catch (err) {
     setError('Unexpected error occurred.');
   } finally {
-    setTimeout(() => setLoading(false), 3000);
+    setTimeout(() => setLoading(false), 5000);
   }
 };
 

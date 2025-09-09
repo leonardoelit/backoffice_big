@@ -1,4 +1,4 @@
-import { ActionResponse, AuthResponse, BonusResponse, ChangePlayersBonusSettingRequest, CreateBonusRequest, CreateUserRequest, DashboardStatsRequestDto, DashboardStatsResponseDto, GetAllFinancialTransactionsResponse, GetAllPlayersResponse, GetBonusRequestsResponse, GetPlayersDataWithIdResponse, GetPlayersTransactionHistoryResponse, GetTaggedPlayersRequest, GetTaggedPlayersResponse, ManageBonusRequest, ManagePlayerBalanceDto, MarkPlayerRequest, PaymentResponse, PermissionRequest, PermissionResponse, PlayerBonusRequestFilter, PlayerBonusSettingsResponse, PlayerFilter, PlayerFinancialFilter, PlayerTransactionFilter, RolePermissionRequest, RoleRequest, RoleResponse, UpdateBonusRequest, UpdatePlayersDataRequest, UserResponse, UserRoleRequest } from "../constants/types";
+import { ActionResponse, AuthResponse, BonusResponse, CancelOrValidateWithdrawalRequest, ChangePlayersBonusSettingRequest, CreateBonusRequest, CreateUserRequest, DashboardStatsRequestDto, DashboardStatsResponseDto, GetAllFinancialTransactionsResponse, GetAllPlayersResponse, GetBonusRequestsResponse, GetPlayersDataWithIdResponse, GetPlayersTransactionHistoryResponse, GetTaggedPlayersRequest, GetTaggedPlayersResponse, ManageBonusRequest, ManagePlayerBalanceDto, MarkPlayerRequest, PaymentResponse, PermissionRequest, PermissionResponse, PlayerBonusRequestFilter, PlayerBonusSettingsResponse, PlayerFilter, PlayerFinancialFilter, PlayerTransactionFilter, RolePermissionRequest, RoleRequest, RoleResponse, UpdateBonusRequest, UpdatePlayersDataRequest, UserResponse, UserRoleRequest } from "../constants/types";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -338,6 +338,36 @@ export async function managePendingFinancialRequest(id:number, playerId:string, 
       description: error instanceof Error ? error.message : 'Failed to fetch players',
       data: "",
       id: 900,
+    };
+  }
+}
+
+export async function cancelOrValidateWithdrawal(requestBody: CancelOrValidateWithdrawalRequest): Promise<PaymentResponse> {
+  try {
+    const token = localStorage.getItem("authToken");
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/api/Client/cancelOrValidateWithdrawalRequest`,
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(requestBody),
+        cache: 'no-store'
+      }
+    );
+
+    const data: PaymentResponse = await response.json();
+
+    return data;
+  } catch (error) {
+    console.error('Error updating player data:', error);
+    return {
+      hasError: true,
+      description: "Internal server error",
+      data: "",
+      id: 800
     };
   }
 }

@@ -9,8 +9,10 @@ import CountUp from "react-countup";
 import { getDashboardStats } from "@/components/lib/api";
 import { showToast } from "@/utils/toastUtil";
 import { DashboardPlayerData } from "@/components/constants/types";
+import { useAuth } from "@/context/AuthContext";
 
 export default function Ecommerce() {
+  const { token, isAuthenticated } = useAuth();
 
   const [profit, setProfit] = useState<number | undefined>();
   const [prevProfit, setPrevProfit] = useState<number | undefined>();
@@ -68,8 +70,10 @@ export default function Ecommerce() {
   }
   // 🔑 Populate metrics
   useEffect(() => {
-  getStats(range);
-}, [range]);
+  if (isAuthenticated && token) {
+    getStats(range);
+  }
+}, [range, isAuthenticated, token]);
 
 
   return (
