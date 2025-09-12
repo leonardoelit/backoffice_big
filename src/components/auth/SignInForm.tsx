@@ -38,6 +38,7 @@ export default function SignInForm() {
       setError(response.message);
     }
   } catch (err) {
+    console.log(err)
     setError('Unexpected error occurred.');
   } finally {
     setTimeout(() => setLoading(false), 5000);

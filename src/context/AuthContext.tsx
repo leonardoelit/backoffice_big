@@ -191,7 +191,7 @@ const login = useCallback((response: AuthResponse, router?: any) => {
 
   setToken(response.token!);
   setIsAuthenticated(true);
-  setIsAdmin(userDetail.role.includes("SuperAdmin"));
+  //setIsAdmin(userDetail.role.includes("SuperAdmin"));
 
   // ✅ Redirect safely after state is set
   if (router) {
