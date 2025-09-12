@@ -4,10 +4,10 @@ import Label from "@/components/form/Label";
 import Button from "@/components/ui/button/Button";
 import { EyeCloseIcon, EyeIcon } from "@/icons";
 import { authenticateUser } from "@/server/userActions";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
-import { setCookie } from "cookies-next";
+import { getCookie, setCookie } from "cookies-next";
 
 export default function SignInForm() {
   const [loading, setLoading] = useState(false)
@@ -15,35 +15,51 @@ export default function SignInForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('')
-  const { login, isLoadingSignIn } = useAuth();
+  const { login, isLoadingSignIn, isAuthenticated } = useAuth();
   const router = useRouter()
 
+// Check if already authenticated on component mount
+  useEffect(() => {
+    const checkAuth = async () => {
+      const token = getCookie('authToken');
+      if (token && isAuthenticated) {
+        router.push('/');
+      }
+    };
+    
+    checkAuth();
+  }, [isAuthenticated, router]);
+
   const handleLogin = async () => {
-  setLoading(true);
-  setError('');
+    setLoading(true);
+    setError('');
 
-  try {
-    const response = await authenticateUser(email, password);
+    try {
+      const response = await authenticateUser(email, password);
 
-    if (response.isSuccess) {
-      setCookie('authToken', response.token, {
-        maxAge: 60 * 60 * 24,
-        path: '/',
-        sameSite: 'lax',
-      });
+      if (response.isSuccess) {
+        // Set cookie with proper options
+        setCookie('authToken', response.token, {
+          maxAge: 60 * 60 * 24,
+          path: '/',
+          sameSite: 'lax',
+        });
 
-      login(response, router); // pass router in
-      setPassword('');
-    } else {
-      setError(response.message);
+        // Update auth state
+        login(response);
+        setPassword('');
+        
+        // Force a reload to ensure middleware sees the cookie
+        window.location.href = '/';
+      } else {
+        setLoading(false);
+        setError(response.message);
+      }
+    } catch (err) {
+      console.log(err)
+      setError('Unexpected error occurred.');
     }
-  } catch (err) {
-    console.log(err)
-    setError('Unexpected error occurred.');
-  } finally {
-    setTimeout(() => setLoading(false), 5000);
-  }
-};
+  };
 
 
   return (

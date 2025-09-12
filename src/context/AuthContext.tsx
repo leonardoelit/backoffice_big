@@ -23,7 +23,7 @@ interface AuthContextType {
   userInfo: User;
   allPlayerData: Player[];
   playerBalanceData: PlayerBalanceResponse;
-  login: (response: AuthResponse, router:any) => void;
+  login: (response: AuthResponse) => void;
   logout: () => void;
   logoutAdmin: (response: LoginResponse) => void;
 }
@@ -161,7 +161,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     });
   }, []);
 
-const login = useCallback((response: AuthResponse, router?: any) => {
+const login = useCallback((response: AuthResponse) => {
   if (!response.isSuccess) {
     console.warn('Invalid credentials — login blocked.');
     setIsAuthenticated(false);
@@ -186,17 +186,12 @@ const login = useCallback((response: AuthResponse, router?: any) => {
     role: userDetail.role,
   });
 
-  setIsLoadingSignIn(false); // ⚠️ should be false after login is done, not true
+  setIsLoadingSignIn(false);
   localStorage.setItem('authToken', response.token!);
 
   setToken(response.token!);
   setIsAuthenticated(true);
   //setIsAdmin(userDetail.role.includes("SuperAdmin"));
-
-  // ✅ Redirect safely after state is set
-  if (router) {
-    router.push('/');
-  }
 }, []);
 
 
