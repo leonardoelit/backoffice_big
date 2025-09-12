@@ -21,6 +21,7 @@ export function middleware(request: NextRequest) {
 
   // If no token and not public path, redirect to signin
   if (!token) {
+    console.log("PROBLEM IS MIDDLEWARE")
     return NextResponse.redirect(new URL('/signin', request.url));
   }
 
