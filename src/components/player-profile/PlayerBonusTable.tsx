@@ -210,6 +210,26 @@ const PlayerBonusTable = ({ playerId }: { playerId:string }) => {
   }
 
   return (
+  <div className="space-y-4">
+    <div className="flex justify-end">
+      <button
+        onClick={() => {
+          setFormData({
+            result: true,
+            note: "",
+            direction: "Inc",
+            defId: "",
+            amount: "",
+            playerId: playerId,
+          });
+          setShowPopup(true);
+        }}
+        className="px-10 py-2 bg-green-500 text-white text-sm rounded hover:bg-blue-700 flex items-center gap-2"
+      >
+        Add Bonus
+      </button>
+    </div>
+    
     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">
           {/* Popup modal */}
       {showPopup && (
@@ -311,6 +331,7 @@ const PlayerBonusTable = ({ playerId }: { playerId:string }) => {
   </div>
 )}
 
+
           <div className="relative flex flex-row items-center justify-between" ref={dropdownRef}>
           {/* Toggle button */}
           <button
@@ -321,33 +342,13 @@ const PlayerBonusTable = ({ playerId }: { playerId:string }) => {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4h18M3 12h18M3 20h18" />
             </svg>
             Filters
-          </button>
-
-           <button
-            onClick={() => {
-              // reset form data before opening
-              setFormData({
-                result: true,
-                note: "",
-                direction: "Inc",
-                defId: "",
-                amount: "",
-                playerId: playerId,
-              });
-              setShowPopup(true);
-            }}
-            className="px-4 py-2 bg-blue-600 text-white text-sm rounded-tr-md hover:bg-blue-700 flex items-center gap-2"
-          >
-            Add Bonus
-          </button>
-
-    
+          </button>    
           {/* Dropdown panel */}
           {open && (
   <div
     className="absolute mt-2 w-full md:w-[80vw] max-w-4xl right-0 
                bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 
-               rounded-lg shadow-lg z-50 p-4"
+               rounded-lg shadow-lg z-50 p-4 mt-52"
   >
     {/* Filter row */}
     <div className="flex flex-col md:flex-row gap-4 mb-4">
@@ -545,6 +546,7 @@ const PlayerBonusTable = ({ playerId }: { playerId:string }) => {
     </button>
     </div>
   </div>
+</div>
 </div>
   )
 }
