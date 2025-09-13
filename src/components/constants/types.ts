@@ -517,3 +517,10 @@ export interface CancelOrValidateWithdrawalRequest{
   id: number;
   result: boolean;
 }
+
+export interface LoginAsUserResponse {
+    isSuccess: boolean;
+    message?: string;
+    url?: string;
+    token?: string;
+}

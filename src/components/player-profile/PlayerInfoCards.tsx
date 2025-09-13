@@ -316,7 +316,7 @@ const PlayerInfoCards: React.FC<PlayerInfoCardsProps> = ({ playerData, isLoading
 
         // Open the login endpoint in a new tab
         window.open(
-          `${process.env.NEXT_PUBLIC_CASINO_URL}/api/login?token=${result.token}`,
+          `${result.url}`,
           "_blank"
         );
 
