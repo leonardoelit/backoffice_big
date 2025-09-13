@@ -4,6 +4,7 @@ import * as signalR from "@microsoft/signalr";
 import React, { createContext, useCallback, useEffect, useRef } from "react";
 import { showToast } from "@/utils/toastUtil";
 import { useNotifications } from "@/context/NotificationContext";
+import { useAuth } from "@/context/AuthContext";
 
 interface HubContextType {
   connection: signalR.HubConnection | null;
@@ -13,6 +14,7 @@ const HubContext = createContext<HubContextType | undefined>(undefined);
 
 export const NotificationHubProvider = ({ children }: { children: React.ReactNode }) => {
   const { increment } = useNotifications();
+  const { clientId } = useAuth();
   const connectionRef = useRef<signalR.HubConnection | null>(null);
   const listenersRegisteredRef = useRef(false);
   const isConnectingRef = useRef(false); // Track connection status
@@ -66,58 +68,63 @@ export const NotificationHubProvider = ({ children }: { children: React.ReactNod
   }, []);
 
   useEffect(() => {
-    // Only create connection if it doesn't exist
-    if (!connectionRef.current) {
-      const connection = new signalR.HubConnectionBuilder()
-        .withUrl(`${process.env.NEXT_PUBLIC_API_URL}/notificationHub`, { withCredentials: true })
-        .withAutomaticReconnect()
-        .build();
+  if (!clientId) return; // Wait until clientId is set
 
-      connectionRef.current = connection;
-    }
+  // Only create connection if it doesn't exist
+  if (!connectionRef.current) {
+    const connection = new signalR.HubConnectionBuilder()
+      .withUrl(
+        `${process.env.NEXT_PUBLIC_API_URL}/notificationHub?clientId=${encodeURIComponent(clientId)}`,
+        { withCredentials: true }
+      )
+      .withAutomaticReconnect()
+      .build();
 
-    const connection = connectionRef.current;
+    connectionRef.current = connection;
+  }
 
-    // Only register listeners once
-    if (!listenersRegisteredRef.current) {
-      const playSound = () => {
-        if (audioRef.current) {
-          audioRef.current.play().catch((err) => console.warn("Unable to play sound:", err));
-        }
-      };
+  const connection = connectionRef.current;
 
-      connection.on("WithdrawalRequest", (msg: string) => {
-        increment("withdrawRequest");
-        showToast(msg, "info");
-        playSound();
-      });
-
-      connection.on("DepositRequest", (msg: string) => {
-        increment("depositRequest");
-        showToast(msg, "info");
-        playSound();
-      });
-
-      connection.on("BonusRequest", (msg: string) => {
-        increment("bonusRequest");
-        showToast(msg, "info");
-        playSound();
-      });
-
-      listenersRegisteredRef.current = true;
-    }
-
-    // Only attempt to start if disconnected
-    if (connection.state === signalR.HubConnectionState.Disconnected) {
-      startConnectionWithRetry(connection);
-    }
-
-    // Cleanup function
-    return () => {
-      // Don't disconnect as we want to maintain the connection
-      // This cleanup only runs if the provider unmounts completely
+  // Only register listeners once
+  if (!listenersRegisteredRef.current) {
+    const playSound = () => {
+      if (audioRef.current) {
+        audioRef.current.play().catch((err) => console.warn("Unable to play sound:", err));
+      }
     };
-  }, [increment, startConnectionWithRetry]); // Add dependencies
+
+    connection.on("WithdrawalRequest", (msg: string) => {
+      increment("withdrawRequest");
+      showToast(msg, "info");
+      playSound();
+    });
+
+    connection.on("DepositRequest", (msg: string) => {
+      increment("depositRequest");
+      showToast(msg, "info");
+      playSound();
+    });
+
+    connection.on("BonusRequest", (msg: string) => {
+      increment("bonusRequest");
+      showToast(msg, "info");
+      playSound();
+    });
+
+    listenersRegisteredRef.current = true;
+  }
+
+  // Only attempt to start if disconnected
+  if (connection.state === signalR.HubConnectionState.Disconnected) {
+    startConnectionWithRetry(connection);
+  }
+
+  // Cleanup function (optional)
+  return () => {
+    // don't disconnect here
+  };
+}, [clientId, increment, startConnectionWithRetry]); // include clientId in deps
+
 
   return <HubContext.Provider value={{ connection: connectionRef.current }}>{children}</HubContext.Provider>;
 };

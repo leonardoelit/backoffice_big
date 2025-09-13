@@ -1,4 +1,4 @@
-import { ActionResponse, AuthResponse, BonusResponse, CancelOrValidateWithdrawalRequest, ChangePlayersBonusSettingRequest, CreateBonusRequest, CreateUserRequest, DashboardStatsRequestDto, DashboardStatsResponseDto, GetAllFinancialTransactionsResponse, GetAllPlayersResponse, GetBonusRequestsResponse, GetPlayersDataWithIdResponse, GetPlayersTransactionHistoryResponse, GetTaggedPlayersRequest, GetTaggedPlayersResponse, LoginAsUserResponse, ManageBonusRequest, ManagePlayerBalanceDto, MarkPlayerRequest, PaymentResponse, PermissionRequest, PermissionResponse, PlayerBonusRequestFilter, PlayerBonusSettingsResponse, PlayerFilter, PlayerFinancialFilter, PlayerTransactionFilter, RolePermissionRequest, RoleRequest, RoleResponse, UpdateBonusRequest, UpdatePlayersDataRequest, UserResponse, UserRoleRequest } from "../constants/types";
+import { ActionResponse, AuthResponse, BonusResponse, CancelOrValidateWithdrawalRequest, ChangePlayersBonusSettingRequest, CreateBonusRequest, CreateUserRequest, DashboardStatsRequestDto, DashboardStatsResponseDto, GetAllFinancialTransactionsResponse, GetAllPlayersResponse, GetBonusRequestsResponse, GetPermissionResponse, GetPlayersDataWithIdResponse, GetPlayersTransactionHistoryResponse, GetRoleResponse, GetTaggedPlayersRequest, GetTaggedPlayersResponse, GetUsersResponse, LoginAsUserResponse, ManageBonusRequest, ManagePlayerBalanceDto, MarkPlayerRequest, PaymentResponse, PermissionRequest, PermissionResponse, PlayerBonusRequestFilter, PlayerBonusSettingsResponse, PlayerFilter, PlayerFinancialFilter, PlayerTransactionFilter, RolePermissionRequest, RoleRequest, RoleResponse, UpdateBonusRequest, UpdatePlayersDataRequest, UserResponse, UserRoleRequest } from "../constants/types";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -746,37 +746,43 @@ export async function assignRolesToUser(requestBody: UserRoleRequest): Promise<A
   }
 }
 
-export async function getUsers(): Promise<UserResponse[]> {
+export async function getUsers(): Promise<GetUsersResponse> {
   try {
     const token = await getToken();
     const res = await fetch(`${API_URL}/api/Client/roles/get-users`, {
       headers: { 'Authorization': `Bearer ${token}` },
       cache: 'no-store'
     });
-    return await res.json();
+
+    const data:GetUsersResponse = await res.json();
+
+    return data;
   } catch (error) {
     console.error('Error fetching users:', error);
-    return [];
+    return { isSuccess: false, message: 'Internal server error' };
   }
 }
 
 // Get all roles
-export async function getRoles(): Promise<RoleResponse[]> {
+export async function getRoles(): Promise<GetRoleResponse> {
   try {
     const token = await getToken();
     const res = await fetch(`${API_URL}/api/Client/roles/get-roles`, {
       headers: { 'Authorization': `Bearer ${token}` },
       cache: 'no-store'
     });
-    return await res.json();
+
+    const data:GetRoleResponse = await res.json();
+
+    return data;
   } catch (error) {
     console.error('Error fetching roles:', error);
-    return [];
+    return { isSuccess: false, message: 'Internal server error' };
   }
 }
 
 // Get all permissions
-export async function getPermissions(): Promise<PermissionResponse[]> {
+export async function getPermissions(): Promise<GetPermissionResponse> {
   try {
     const token = await getToken();
     const res = await fetch(`${API_URL}/api/Client/roles/get-permissions`, {
@@ -786,7 +792,7 @@ export async function getPermissions(): Promise<PermissionResponse[]> {
     return await res.json();
   } catch (error) {
     console.error('Error fetching permissions:', error);
-    return [];
+    return { isSuccess: false, message: 'Internal server error' };
   }
 }
 

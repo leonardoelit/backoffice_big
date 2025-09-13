@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { UserData } from '@/components/constants/types';
 import { Table, TableBody, TableCell, TableHeader, TableRow } from '@/components/ui/table';
 import { getUsers } from '@/components/lib/api';
+import { showToast } from '@/utils/toastUtil';
 
 const SkeletonRow = ({ columns }: { columns: number }) => (
   <TableRow>
@@ -26,8 +27,12 @@ const UsersPage = () => {
 useEffect(() => {
   setLoading(true);
   getUsers()
-  .then((allUsers) => {
-    const mapped = allUsers.map(u => ({
+  .then((data) => {
+    if(!data.isSuccess){
+      showToast(data.message ? data.message : "Kullanıcı bilgilerini alırken hata", "error")
+      return;
+    }
+    const mapped = data.data!.map(u => ({
       ...u,
       role: u.roles, // map API Roles to frontend role
     }));

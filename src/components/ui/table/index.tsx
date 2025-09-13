@@ -62,7 +62,7 @@ const TableCell: React.FC<TableCellProps> = ({
   onClick,
 }) => {
   const CellTag = isHeader ? "th" : "td";
-  return <CellTag title={`${title}`} className={` ${className}`} onClick={onClick ? onClick : () => {}}>{children}</CellTag>;
+  return <CellTag title={`${title === undefined ? "" : title}`} className={` ${className}`} onClick={onClick ? onClick : () => {}}>{children}</CellTag>;
 };
 
 export { Table, TableHeader, TableBody, TableRow, TableCell };

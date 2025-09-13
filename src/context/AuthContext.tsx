@@ -19,6 +19,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   isAdmin: boolean;
   token: string | null;
+  clientId: string | null;
   isLoadingSignIn: boolean;
   userInfo: User;
   allPlayerData: Player[];
@@ -111,6 +112,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [token, setToken] = useState<string | null>(null);
+  const [clientId, setClientId] = useState<string | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isLoadingSignIn, setIsLoadingSignIn] = useState(false);
@@ -177,6 +179,8 @@ const login = useCallback((response: AuthResponse) => {
   const nameParts = userDetail.unique_name.trim().split(/\s+/);
   const firstname = nameParts[0] || '';
   const lastname = nameParts.slice(1).join(' ') || '';
+
+  setClientId(userDetail.clientId)
 
   setUserInfo({
     id: userDetail.sub,
@@ -264,11 +268,12 @@ const login = useCallback((response: AuthResponse) => {
     userInfo,
     allPlayerData,
     playerBalanceData,
+    clientId,
     login,
     logout,
     logoutAdmin
   }), [
-    isAuthenticated, isAdmin, token, isLoadingSignIn,
+    isAuthenticated, isAdmin, token, clientId, isLoadingSignIn,
     userInfo,
     allPlayerData, playerBalanceData,
     login, logout, logoutAdmin

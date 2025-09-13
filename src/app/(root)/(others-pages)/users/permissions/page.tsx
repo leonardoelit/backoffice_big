@@ -26,9 +26,27 @@ const PermissionsPage = () => {
   // Load roles, permissions, users on mount
   useEffect(() => {
     const fetchData = async () => {
-      setRoles(await getRoles());
-      setPermissions(await getPermissions());
-      setUsers(await getUsers());
+      const rolesRes = await getRoles();
+      if (rolesRes.isSuccess && rolesRes.data) {
+        setRoles(rolesRes.data);
+      } else {
+        setRoles([]);
+        showToast(rolesRes.message ?? "Failed to load roles", "error");
+      }
+      const permissionsRes = await getPermissions();
+      if (permissionsRes.isSuccess && permissionsRes.data) {
+        setPermissions(permissionsRes.data);
+      } else {
+        setPermissions([]);
+        showToast(permissionsRes.message ?? "Failed to load permissions", "error");
+      }
+      const userRes = await getUsers();
+      if (userRes.isSuccess && userRes.data) {
+        setUsers(userRes.data);
+      } else {
+        setUsers([]);
+        showToast(userRes.message ?? "Failed to load users", "error");
+      }
     };
     fetchData();
   }, []);
@@ -38,7 +56,13 @@ const PermissionsPage = () => {
     if (!newRoleName) return;
     const res = await createRole({ roleName: newRoleName });
     if (res.isSuccess) {
-      setRoles(await getRoles());
+      const rolesRes = await getRoles();
+      if (rolesRes.isSuccess && rolesRes.data) {
+        setRoles(rolesRes.data);
+      } else {
+        setRoles([]);
+        showToast(rolesRes.message ?? "Failed to load roles", "error");
+      }
       setNewRoleName('');
       showToast(res.message === undefined ? "Rol oluşturuldu" : res.message, "success");
     } else showToast(res.message === undefined ? "Rol oluşturulurken hata" : res.message, "error");
@@ -71,7 +95,13 @@ const PermissionsPage = () => {
     });
     if (res.isSuccess) {
       showToast(res.message === undefined ? "Kullanıcı başarılı bir şekilde oluşturuldu" : res.message, "success");
-      setUsers(await getUsers());
+      const userRes = await getUsers();
+      if (userRes.isSuccess && userRes.data) {
+        setUsers(userRes.data);
+      } else {
+        setUsers([]);
+        showToast(userRes.message ?? "Failed to load users", "error");
+      }
       setNewUser({ firstName: '', lastName: '', email: '', password: '', role: '' });
     } else showToast(res.message === undefined ? "Kullanıcı oluşturulurken hata" : res.message, "error");
   };

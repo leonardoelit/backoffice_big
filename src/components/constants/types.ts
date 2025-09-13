@@ -30,6 +30,7 @@ export interface JwtPayload {
   iat: number;
   iss: string;
   unique_name: string;
+  clientId: string;
   sub: string;  // User ID
   nbf: number;
   role: string[];  // <-- multiple roles
@@ -368,6 +369,12 @@ export interface CreateUserRequest {
   roles?: string[];
 }
 
+export interface GetUsersResponse {
+  isSuccess: boolean;
+  message?: string;
+  data?: UserResponse[];
+}
+
 export interface UserResponse {
   id: string;
   firstName: string;
@@ -377,9 +384,21 @@ export interface UserResponse {
   roles: string[];
 }
 
+export interface GetRoleResponse {
+  isSuccess: boolean;
+  message?: string;
+  data?: RoleResponse[];
+}
+
 export interface RoleResponse {
   id: string;
   name: string;
+}
+
+export interface GetPermissionResponse {
+  isSuccess: boolean;
+  message?: string;
+  data?: PermissionResponse[];
 }
 
 export interface PermissionResponse {
