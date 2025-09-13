@@ -68,62 +68,52 @@ export const NotificationHubProvider = ({ children }: { children: React.ReactNod
   }, []);
 
   useEffect(() => {
-  if (!clientId) return; // Wait until clientId is set
+  if (!clientId) return; // Wait until clientId exists
 
-  // Only create connection if it doesn't exist
-  if (!connectionRef.current) {
-    const connection = new signalR.HubConnectionBuilder()
-      .withUrl(
-        `${process.env.NEXT_PUBLIC_API_URL}/notificationHub?clientId=${encodeURIComponent(clientId)}`,
-        { withCredentials: true }
-      )
-      .withAutomaticReconnect()
-      .build();
+  // Always create a new connection when clientId changes
+  const connection = new signalR.HubConnectionBuilder()
+    .withUrl(
+      `${process.env.NEXT_PUBLIC_API_URL}/notificationHub?clientId=${encodeURIComponent(clientId)}`,
+      { withCredentials: true }
+    )
+    .withAutomaticReconnect()
+    .build();
 
-    connectionRef.current = connection;
-  }
+  connectionRef.current = connection;
 
-  const connection = connectionRef.current;
-
-  // Only register listeners once
-  if (!listenersRegisteredRef.current) {
-    const playSound = () => {
-      if (audioRef.current) {
-        audioRef.current.play().catch((err) => console.warn("Unable to play sound:", err));
-      }
-    };
-
-    connection.on("WithdrawalRequest", (msg: string) => {
-      increment("withdrawRequest");
-      showToast(msg, "info");
-      playSound();
-    });
-
-    connection.on("DepositRequest", (msg: string) => {
-      increment("depositRequest");
-      showToast(msg, "info");
-      playSound();
-    });
-
-    connection.on("BonusRequest", (msg: string) => {
-      increment("bonusRequest");
-      showToast(msg, "info");
-      playSound();
-    });
-
-    listenersRegisteredRef.current = true;
-  }
-
-  // Only attempt to start if disconnected
-  if (connection.state === signalR.HubConnectionState.Disconnected) {
-    startConnectionWithRetry(connection);
-  }
-
-  // Cleanup function (optional)
-  return () => {
-    // don't disconnect here
+  // Register listeners
+  const playSound = () => {
+    if (audioRef.current) audioRef.current.play().catch(() => {});
   };
-}, [clientId, increment, startConnectionWithRetry]); // include clientId in deps
+
+  connection.on("WithdrawalRequest", (msg: string) => {
+    increment("withdrawRequest");
+    showToast(msg, "info");
+    playSound();
+  });
+
+  connection.on("DepositRequest", (msg: string) => {
+    increment("depositRequest");
+    showToast(msg, "info");
+    playSound();
+  });
+
+  connection.on("BonusRequest", (msg: string) => {
+    increment("bonusRequest");
+    showToast(msg, "info");
+    playSound();
+  });
+
+  // Start connection with retry
+  startConnectionWithRetry(connection);
+
+  // Cleanup on unmount or clientId change
+  return () => {
+    connection.stop().catch(() => {});
+    listenersRegisteredRef.current = false;
+  };
+}, [clientId, increment, startConnectionWithRetry]);
+
 
 
   return <HubContext.Provider value={{ connection: connectionRef.current }}>{children}</HubContext.Provider>;

@@ -145,6 +145,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       const firstname = nameParts[0] || '';
       const lastname = nameParts.slice(1).join(' ') || '';
       if (userDetail) {
+        setClientId(userDetail.clientId)
         setUserInfo({
           id: userDetail.sub,
           fullname: firstname,
