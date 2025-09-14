@@ -9,10 +9,11 @@ import React, { useState ,useEffect} from "react";
 
 const AppHeader: React.FC = () => {
   const [isApplicationMenuOpen, setApplicationMenuOpen] = useState(false);
+  const [isImgError, setIsImgError] = useState(false)
   const [searchValue, setSearchValue] = useState("")
 
   const { isMobileOpen, toggleSidebar, toggleMobileSidebar } = useSidebar();
-  const { userInfo } = useAuth()
+  const { userInfo, clientName } = useAuth()
 
   const handleToggle = () => {
     if (window.innerWidth >= 1024) {
@@ -83,7 +84,7 @@ const AppHeader: React.FC = () => {
             {/* Cross Icon */}
           </button>
 
-          <Link href={`${userInfo && userInfo.role === 'admin' ? '/admin' : '/'}`} className="lg:hidden">
+          <Link href={`${userInfo && (userInfo.role && userInfo.role.includes('Admin')) ? '/admin' : '/'}`} className="lg:hidden">
             <Image
               width={154}
               height={32}
@@ -119,7 +120,7 @@ const AppHeader: React.FC = () => {
               />
             </svg>
           </button>
-          <div className={`hidden ${userInfo && userInfo.role === 'admin' ? 'lg:hidden' : 'lg:block'}`}>
+          <div className={`hidden ${userInfo && (userInfo.role && userInfo.role.includes('Admin')) ? 'lg:hidden' : 'lg:block'}`}>
             <form>
               <div className="relative">
                 <span className="absolute -translate-y-1/2 left-4 top-1/2 pointer-events-none">
@@ -161,11 +162,25 @@ const AppHeader: React.FC = () => {
           } items-center justify-between w-full gap-4 px-5 py-4 lg:flex shadow-theme-md lg:justify-end lg:px-0 lg:shadow-none`}
         >
           <div className="flex items-center gap-2 2xsm:gap-3">
-            {/* <!-- Dark Mode Toggler --> */}
+            <div className="px-4 py-2 w-full h-auto max-w-[150px] min-w-[150px] min-h-[40px] bg-gray-dark dark:bg-transparent rounded-xl flex items-center justify-center">
+              {clientName !== null && !isImgError ? (
+                <Image
+                  src={`/images/client_icons/${clientName}.png`}
+                  alt={clientName}
+                  width={2500}
+                  height={800}
+                  className="object-contain w-full h-full"
+                  onError={() => setIsImgError(true)}
+                />
+              ) : (
+                <span className="text-white text-center text-xl break-words">{clientName}</span>
+              )}
+            </div>
+
+            {/* Dark Mode Toggler */}
             <ThemeToggleButton />
-            {/* <!-- Dark Mode Toggler --> */} 
-            {/* <!-- Notification Menu Area --> */}
           </div>
+
           {/* <!-- User Area --> */}
           <UserDropdown /> 
     

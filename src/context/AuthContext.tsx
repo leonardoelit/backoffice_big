@@ -20,6 +20,7 @@ interface AuthContextType {
   isAdmin: boolean;
   token: string | null;
   clientId: string | null;
+  clientName: string | null;
   isLoadingSignIn: boolean;
   userInfo: User;
   allPlayerData: Player[];
@@ -113,6 +114,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [token, setToken] = useState<string | null>(null);
   const [clientId, setClientId] = useState<string | null>(null);
+  const [clientName, setClientName] = useState<string | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isLoadingSignIn, setIsLoadingSignIn] = useState(false);
@@ -146,6 +148,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       const lastname = nameParts.slice(1).join(' ') || '';
       if (userDetail) {
         setClientId(userDetail.clientId)
+        setClientName(userDetail.clientName)
         setUserInfo({
           id: userDetail.sub,
           fullname: firstname,
@@ -156,7 +159,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         //if (userDetail.role === 'User') getAllAffiliates(storedToken);
         setIsAuthenticated(true);
         setToken(storedToken);
-        setIsAdmin(userDetail.role.includes("SuperAdmin"));
+        //setIsAdmin(userDetail.role.includes("SuperAdmin"));
       }else{
         logout()
         router.push('/signin')
@@ -182,6 +185,7 @@ const login = useCallback((response: AuthResponse) => {
   const lastname = nameParts.slice(1).join(' ') || '';
 
   setClientId(userDetail.clientId)
+  setClientName(userDetail.clientName)
 
   setUserInfo({
     id: userDetail.sub,
@@ -270,11 +274,12 @@ const login = useCallback((response: AuthResponse) => {
     allPlayerData,
     playerBalanceData,
     clientId,
+    clientName,
     login,
     logout,
     logoutAdmin
   }), [
-    isAuthenticated, isAdmin, token, clientId, isLoadingSignIn,
+    isAuthenticated, isAdmin, token, clientId, clientName, isLoadingSignIn,
     userInfo,
     allPlayerData, playerBalanceData,
     login, logout, logoutAdmin

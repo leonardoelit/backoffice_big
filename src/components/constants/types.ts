@@ -31,6 +31,7 @@ export interface JwtPayload {
   iss: string;
   unique_name: string;
   clientId: string;
+  clientName: string;
   sub: string;  // User ID
   nbf: number;
   role: string[];  // <-- multiple roles
