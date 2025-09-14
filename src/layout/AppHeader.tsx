@@ -162,14 +162,14 @@ const AppHeader: React.FC = () => {
           } items-center justify-between w-full gap-4 px-5 py-4 lg:flex shadow-theme-md lg:justify-end lg:px-0 lg:shadow-none`}
         >
           <div className="flex items-center gap-2 2xsm:gap-3">
-            <div className="px-4 py-2 w-full h-auto max-w-[150px] min-w-[150px] min-h-[40px] bg-gray-dark dark:bg-transparent rounded-xl flex items-center justify-center">
+            <div className="px-4 py-2 w-full h-auto max-w-[150px] min-w-[150px] min-h-[30px] bg-gray-dark dark:bg-transparent rounded-xl flex items-center justify-center">
               {clientName !== null && !isImgError ? (
                 <Image
                   src={`/images/client_icons/${clientName.toLowerCase()}.png`}
                   alt={clientName}
                   width={2500}
                   height={800}
-                  className="object-contain w-full h-full"
+                  className="object-contain w-full h-full max-h-[30px]"
                   onError={() => setIsImgError(true)}
                 />
               ) : (
