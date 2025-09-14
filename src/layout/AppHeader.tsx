@@ -165,7 +165,7 @@ const AppHeader: React.FC = () => {
             <div className="px-4 py-2 w-full h-auto max-w-[150px] min-w-[150px] min-h-[40px] bg-gray-dark dark:bg-transparent rounded-xl flex items-center justify-center">
               {clientName !== null && !isImgError ? (
                 <Image
-                  src={`/images/client_icons/${clientName}.png`}
+                  src={`/images/client_icons/${clientName.toLowerCase()}.png`}
                   alt={clientName}
                   width={2500}
                   height={800}
