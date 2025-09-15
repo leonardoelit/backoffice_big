@@ -29,12 +29,12 @@ export function usePlayerTransactions(initialFilter: PlayerTransactionFilter) {
       const result = await getPlayerTransactions(effectiveFilter);
 
       if (!result.isSuccess) {
-        throw new Error(result.message || 'Failed to fetch players');
+        throw new Error(result.message || 'Failed to fetch player transactions');
       }
 
       setData(result);
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch players';
+      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch player transactions';
       setError(errorMessage);
       showToast(errorMessage, 'error');
       setData(null);

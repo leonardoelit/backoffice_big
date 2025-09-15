@@ -20,7 +20,7 @@ interface DateRangePickerProps {
 export default function DateRangePicker({
   onChange,
   onModifiedChange,
-  initialStartDate = subDays(new Date(), 3),
+  initialStartDate = new Date(),
   initialEndDate = new Date(),
   isChanged
 }: DateRangePickerProps) {
@@ -35,6 +35,13 @@ export default function DateRangePicker({
   useEffect(() => {
     setIsUpdated(isChanged)
   }, [isChanged])
+
+  useEffect(() => {
+  setCustomRange({
+    startDate: initialStartDate,
+    endDate: initialEndDate
+  })
+}, [initialStartDate?.getTime(), initialEndDate?.getTime()])
 
   const startOfDayISO = (date: Date) => {
     const d = new Date(date)

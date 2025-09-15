@@ -6,59 +6,44 @@ import { Table, TableBody, TableCell, TableHeader, TableRow } from '../ui/table'
 import { formatDateToDDMMYYYYHHMMSS } from '@/utils/utils';
 import DateRangePickerWithTime from '../player-profile/DateRangePickerWithTime';
 import Link from 'next/link';
-import { showToast } from '@/utils/toastUtil';
-import { cancelOrValidateWithdrawal } from '../lib/api';
-import ConfirmationModal from './ConfirmationModal';
 
 const BasicTableWithdrawals = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const [rowsPerPage, setRowsPerPage] = useState(25);
+    //Date range picker automaticaly picks today as default on page load part START
+    const today = new Date();
+    const startOfToday = new Date(today.setHours(0, 0, 0, 0)).toISOString();
+    const endOfToday = new Date(today.setHours(23, 59, 59, 999)).toISOString();
+    const [dateFrom, setDateFrom] = useState<string | undefined>(startOfToday);
+    const [dateTo, setDateTo] = useState<string | undefined>(endOfToday); 
+    const [isDateModified, setIsDateModified] = useState(true); 
 
-     //Date range picker automaticaly picks today as default on page load part START
-     const today = new Date();
-     const startOfToday = new Date(today.setHours(0, 0, 0, 0)).toISOString();
-     const endOfToday = new Date(today.setHours(23, 59, 59, 999)).toISOString();
-     const [dateFrom, setDateFrom] = useState<string | undefined>(startOfToday);
-     const [dateTo, setDateTo] = useState<string | undefined>(endOfToday); 
-     const [isDateModified, setIsDateModified] = useState(true); 
- 
     const [playerFullName, setPlayerFullName] = useState<string | undefined>(undefined)
     const [playerId, setPlayerId] = useState<string | undefined>(undefined)
     const [amountFrom, setAmountFrom] = useState<string | undefined>(undefined)
     const [amountTo, setAmountTo] = useState<string | undefined>(undefined)
-    const [status, setStatus] = useState<string | undefined>(undefined)
     const [paymentName, setPaymentName] = useState<string | undefined>(undefined)
     const [accountNumber, setAccountNumber] = useState<string | undefined>(undefined)
     const [cryptoType, setCryptoType] = useState<string | undefined>(undefined)
     const [playerUsername, setPlayerUsername] = useState<string | undefined>(undefined)
 
-    const [modalState, setModalState] = useState<{
-        isOpen: boolean;
-        id: number | null;
-        playerId: string | null;
-        action: 'accept' | 'reject' | 'onay' | 'red' | null;
-      }>({
-        isOpen: false,
-        id: null,
-        playerId: null,
-        action: null
-      });
-
 
     const [isFilterOn, setIsFilterOn] = useState(false);
-
     const { financialTransactions, loading, error, pagination, filter, setFilter } = useFinancialTransactions(
-        {
-          pageNumber: currentPage,
-          pageSize: rowsPerPage,
-          typeName: 'withdraw'
-        }
-      );
-    
-    const [isAction, setIsAction] = useState(false)
+      {
+        pageNumber: currentPage,
+        pageSize: rowsPerPage,
+        typeName: 'withdrawal',
+        status: "Success",
+        timeStampFrom: dateFrom,
+        timeStampTo: dateTo
+      }
+  );
+  
+
     const [open, setOpen] = useState(false)
     const dropdownRef = useRef<HTMLDivElement>(null)
-    
+
     useEffect(() => {
         const handleClickOutside = (e: MouseEvent) => {
           if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
@@ -74,6 +59,7 @@ const BasicTableWithdrawals = () => {
           setCurrentPage(newPage);
           setFilter({ ...filter, pageNumber: newPage });
         }
+
       };
 
       const handleRowsPerPageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -93,28 +79,26 @@ const BasicTableWithdrawals = () => {
           pageNumber: 1, // Reset to first page when sorting
         }));
       };
+      const handleRefetch = () => {
+        setCurrentPage(1);
 
+        const newFilter: PlayerFinancialFilter = {
+          pageNumber: 1,
+          pageSize: rowsPerPage,
+          playerId: playerId || undefined,
+          typeName: 'withdrawal',
+          accountNumber: accountNumber || undefined,
+          amountFrom: amountFrom || undefined,
+          amountTo: amountTo || undefined,
+          cryptoType: cryptoType || undefined,
+          paymentName: paymentName || undefined,
+          playerFullName: playerFullName || undefined,
+          playerUsername: playerUsername || undefined,
+          status: status || undefined,
+        };
 
-
-    const handleRefetch = () => {
-      setCurrentPage(1);
-      
-      const newFilter:PlayerFinancialFilter  = {
-        pageNumber: 1,
-        pageSize: rowsPerPage,
-        playerId: playerId || undefined,
-        typeName: 'withdraw',
-        accountNumber: accountNumber || undefined,
-        amountFrom: amountFrom || undefined,
-        amountTo: amountTo || undefined,
-        cryptoType: cryptoType || undefined,
-        paymentName: paymentName || undefined,
-        playerFullName: playerFullName || undefined,
-        playerUsername: playerUsername || undefined,
-        status: status || undefined
-      };
-        //Date range picker automaticaly picks today as default on page load part START
-        if (isDateModified) {
+    //Date range picker automaticaly picks today as default on page load part START
+    if (isDateModified) {
           newFilter.timeStampFrom = dateFrom;
           newFilter.timeStampTo = dateTo;
         } else {
@@ -125,14 +109,8 @@ const BasicTableWithdrawals = () => {
           newFilter.timeStampFrom = todayStart.toISOString();
           newFilter.timeStampTo = todayEnd.toISOString();
         }
-        
     //Date range picker automaticaly picks today as default on page load part END
-      // Only include dates that were modified
-      if (isDateModified) {
-        newFilter.timeStampFrom = dateFrom;
-        newFilter.timeStampTo = dateTo;
-      }
-    
+
       const isAnyFilterActive = 
         Boolean(playerId) ||
         Boolean(playerFullName) ||
@@ -142,27 +120,30 @@ const BasicTableWithdrawals = () => {
         Boolean(cryptoType) ||
         Boolean(paymentName) ||
         Boolean(playerUsername) ||
-        Boolean(status) ||
         isDateModified
     
       setIsFilterOn(isAnyFilterActive);
     
       setFilter(newFilter);
     };
-    
+    //Date range picker automaticaly picks today as default on page load part START
+    useEffect(() => {
+          handleRefetch();
+      }, []);
+      //Date range picker automaticaly picks today as default on page load part END
+
     const removeFilter = () => {
       // Reset all input states
-      setPlayerId('');
-      setPlayerUsername('')
-      setPlayerFullName('')
-      setAmountFrom('')
-      setAmountTo('')
-      setStatus('')
-      setPaymentName('')
-      setCryptoType('')
-      setAccountNumber('')
-      setDateFrom('')
-      setDateTo('')
+      setPlayerId(undefined);
+      setPlayerUsername(undefined)
+      setPlayerFullName(undefined)
+      setAmountFrom(undefined)
+      setAmountTo(undefined)
+      setPaymentName(undefined)
+      setCryptoType(undefined)
+      setAccountNumber(undefined)
+      setDateFrom(undefined)
+      setDateTo(undefined)
       setIsDateModified(false)
       
       // Reset to first page
@@ -172,46 +153,14 @@ const BasicTableWithdrawals = () => {
       const defaultFilter = {
         pageNumber: 1,
         pageSize: rowsPerPage,
-        typeName: 'withdraw'
+        typeName: 'withdrawal',
+        status: 'Success'
       };
-  
+      
       // Apply the default filter
       setFilter(defaultFilter);
       setIsFilterOn(false);
     };
-
-    useEffect(() => {
-      handleRefetch();
-    }, []);
-
-    const handleActionClick = (id: number, playerId: string, action: 'onay' | 'red') => {
-    setModalState({
-      isOpen: true,
-      id,
-      playerId,
-      action
-    });
-  };
-
-    const handleConfirmedAction = async () => {
-      if(modalState.id === null || modalState.playerId === null || modalState.action == null){
-        showToast("İşlem bilgisi alırken hata lütfen tekrar deneyiniz", "error")
-        return;
-      }
-
-      setIsAction(true)
-
-      const res = await cancelOrValidateWithdrawal({ id: modalState.id, playerId: modalState.playerId, result: modalState.action === "onay" ? true : false  })
-
-      if(res.hasError){
-        showToast(res.description, "error")
-      }else{
-        showToast(res.description, "success")
-        handleRefetch();
-      }
-      setIsAction(false)
-    } 
-
     const SkeletonRow = ({ columns }: { columns: number }) => (
       <TableRow>
         {Array.from({ length: columns }).map((_, index) => (
@@ -228,12 +177,6 @@ const BasicTableWithdrawals = () => {
   }
   return (
     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">
-          <ConfirmationModal
-            isOpen={modalState.isOpen}
-            onClose={() => setModalState({ isOpen: false, id: null, playerId: null, action: null })}
-            onConfirm={handleConfirmedAction}
-            action={modalState.action || 'accept'}
-          />
           <div className="relative" ref={dropdownRef}>
           {/* Toggle button */}
           <button
@@ -245,184 +188,149 @@ const BasicTableWithdrawals = () => {
             </svg>
             Filters
           </button>
-    
+
           {/* Dropdown panel */}
-          {/* Dropdown panel */}
-{open && (
-  <div
-    className="absolute mt-2 w-full md:w-[80vw] max-w-4xl right-0 
-               bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 
-               rounded-lg shadow-lg z-50 p-4"
-  >
-    {/* Filter row 1 */}
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-      {/* Player ID */}
-      <input
-        type="text"
-        value={playerId || ""}
-        onChange={(e) => setPlayerId(e.target.value)}
-        placeholder="Player ID"
-        className="w-full rounded-md border border-gray-300 dark:border-gray-600 
-                   bg-white dark:bg-gray-700 text-sm text-gray-700 dark:text-gray-200 
-                   px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-      />
+          {open && (
+            <div
+              className="absolute mt-2 w-full md:w-[80vw] max-w-4xl right-0 
+                        bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 
+                        rounded-lg shadow-lg z-50 p-4"
+            >
+              {/* Filter row 1 */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                {/* Player ID */}
+                <input
+                  type="text"
+                  value={playerId || ""}
+                  onChange={(e) => setPlayerId(e.target.value)}
+                  placeholder="Player ID"
+                  className="w-full rounded-md border border-gray-300 dark:border-gray-600 
+                            bg-white dark:bg-gray-700 text-sm text-gray-700 dark:text-gray-200 
+                            px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
 
-      {/* Username */}
-      <input
-        type="text"
-        value={playerUsername || ""}
-        onChange={(e) => setPlayerUsername(e.target.value)}
-        placeholder="Username"
-        className="w-full rounded-md border border-gray-300 dark:border-gray-600 
-                   bg-white dark:bg-gray-700 text-sm text-gray-700 dark:text-gray-200 
-                   px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-      />
+                {/* Username */}
+                <input
+                  type="text"
+                  value={playerUsername || ""}
+                  onChange={(e) => setPlayerUsername(e.target.value)}
+                  placeholder="Username"
+                  className="w-full rounded-md border border-gray-300 dark:border-gray-600 
+                            bg-white dark:bg-gray-700 text-sm text-gray-700 dark:text-gray-200 
+                            px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
 
-      {/* Fullname */}
-      <input
-        type="text"
-        value={playerFullName || ""}
-        onChange={(e) => setPlayerFullName(e.target.value)}
-        placeholder="Full Name"
-        className="w-full rounded-md border border-gray-300 dark:border-gray-600 
-                   bg-white dark:bg-gray-700 text-sm text-gray-700 dark:text-gray-200 
-                   px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-      />
-    </div>
+                {/* Fullname */}
+                <input
+                  type="text"
+                  value={playerFullName || ""}
+                  onChange={(e) => setPlayerFullName(e.target.value)}
+                  placeholder="Full Name"
+                  className="w-full rounded-md border border-gray-300 dark:border-gray-600 
+                            bg-white dark:bg-gray-700 text-sm text-gray-700 dark:text-gray-200 
+                            px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
 
-    {/* Filter row 2 */}
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-      {/* Amount From */}
-      <input
-        type="number"
-        value={amountFrom || ""}
-        onChange={(e) => setAmountFrom(e.target.value)}
-        placeholder="Amount From"
-        className="w-full rounded-md border border-gray-300 dark:border-gray-600 
-                   bg-white dark:bg-gray-700 text-sm text-gray-700 dark:text-gray-200 
-                   px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-      />
+              {/* Filter row 2 */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                {/* Amount From */}
+                <input
+                  type="number"
+                  value={amountFrom || ""}
+                  onChange={(e) => setAmountFrom(e.target.value)}
+                  placeholder="Amount From"
+                  className="w-full rounded-md border border-gray-300 dark:border-gray-600 
+                            bg-white dark:bg-gray-700 text-sm text-gray-700 dark:text-gray-200 
+                            px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
 
-      {/* Amount To */}
-      <input
-        type="number"
-        value={amountTo || ""}
-        onChange={(e) => setAmountTo(e.target.value)}
-        placeholder="Amount To"
-        className="w-full rounded-md border border-gray-300 dark:border-gray-600 
-                   bg-white dark:bg-gray-700 text-sm text-gray-700 dark:text-gray-200 
-                   px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-      />
+                {/* Amount To */}
+                <input
+                  type="number"
+                  value={amountTo || ""}
+                  onChange={(e) => setAmountTo(e.target.value)}
+                  placeholder="Amount To"
+                  className="w-full rounded-md border border-gray-300 dark:border-gray-600 
+                            bg-white dark:bg-gray-700 text-sm text-gray-700 dark:text-gray-200 
+                            px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
 
-      {/* Account Number */}
-      <input
-        type="text"
-        value={accountNumber || ""}
-        onChange={(e) => setAccountNumber(e.target.value)}
-        placeholder="Account Number"
-        className="w-full rounded-md border border-gray-300 dark:border-gray-600 
-                   bg-white dark:bg-gray-700 text-sm text-gray-700 dark:text-gray-200 
-                   px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-      />
-    </div>
+                {/* Account Number */}
+                <input
+                  type="text"
+                  value={accountNumber || ""}
+                  onChange={(e) => setAccountNumber(e.target.value)}
+                  placeholder="Account Number"
+                  className="w-full rounded-md border border-gray-300 dark:border-gray-600 
+                            bg-white dark:bg-gray-700 text-sm text-gray-700 dark:text-gray-200 
+                            px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
 
-    {/* Filter row 3 */}
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-        <select 
-            value={paymentName} 
-            onChange={(e) => setPaymentName(e.target.value)} 
-            className="flex-1 min-w-[200px] rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm text-gray-700 dark:text-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" 
-        >
-            <option value="">Select Payment Method</option> 
-            <option value="Banka">Bank</option> 
-            <option value="Havale">Havale</option> 
-            <option value="Kredi Karti Cekim">Kart Çekim</option> 
-            <option value="PayPay">PayPay</option> 
-            <option value="Kredi Karti">Kredi Kartı</option> 
-            <option value="Papara">Papara</option> 
-            <option value="Popy">Popy</option> 
-            <option value="Parola">Parola</option> 
-            <option value="Papel">Papel</option> 
-            <option value="Kripto">Kripto</option> 
-            <option value="QR">QR</option> 
-            <option value="Manuel">Manuel</option> 
-        </select>
-      {/* Crypto Type */}
-      <select
-        value={status || ""}
-        onChange={(e) => setStatus(e.target.value)}
-        className="w-full rounded-md border border-gray-300 dark:border-gray-600 
-                   bg-white dark:bg-gray-700 text-sm text-gray-700 dark:text-gray-200 
-                   px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-      >
-        <option value="">Select Crypto Type</option>
-        <option value="BTC">BTC</option>
-        <option value="TRC20">TRC20</option>
-      </select>
+              {/* Filter row 3 */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                {/* Crypto Type */}
+                <select
+                  value={cryptoType || ""}
+                  onChange={(e) => setCryptoType(e.target.value)}
+                  className="w-full rounded-md border border-gray-300 dark:border-gray-600 
+                            bg-white dark:bg-gray-700 text-sm text-gray-700 dark:text-gray-200 
+                            px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="">Select Crypto Type</option>
+                  <option value="BTC">BTC</option>
+                  <option value="TRC20">TRC20</option>
+                </select>
 
-      {/* Status */}
-      <select
-        value={status || ""}
-        onChange={(e) => setStatus(e.target.value)}
-        className="w-full rounded-md border border-gray-300 dark:border-gray-600 
-                   bg-white dark:bg-gray-700 text-sm text-gray-700 dark:text-gray-200 
-                   px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-      >
-        <option value="">Select Status</option>
-        <option value="Pending">Pending</option>
-        <option value="Success">Success</option>
-        <option value="Failed">Failed</option>
-        <option value="Cancelled">Cancelled</option>
-      </select>
+                {/* Date Picker */}
+                <div className="w-full">
+                  <div className="rounded-md border border-gray-300 dark:border-gray-600 
+                                  px-2 py-1 bg-white dark:bg-gray-700">
+                    <DateRangePickerWithTime
+                      initialStartDate={dateFrom ? new Date(dateFrom) : undefined}
+                      initialEndDate={dateTo ? new Date(dateTo) : undefined}
+                      onChange={({ MinCreatedLocal, MaxCreatedLocal }) => {
+                        setDateFrom(MinCreatedLocal || undefined)
+                        setDateTo(MaxCreatedLocal || undefined)
+                        setIsDateModified(true)
+                      }}
+                      onModifiedChange={(modified) => setIsDateModified(modified)}
+                      isChanged={isDateModified}
+                    />
 
-      {/* Date Picker */}
-      <div className="w-full">
-  <div className="rounded-md border border-gray-300 dark:border-gray-600 
-                  px-2 py-1 bg-white dark:bg-gray-700">
-<DateRangePickerWithTime
-  initialStartDate={new Date(dateFrom!)}
-  initialEndDate={new Date(dateTo!)}
-  onChange={({ MinCreatedLocal, MaxCreatedLocal }) => {
-    setDateFrom(MinCreatedLocal)
-    setDateTo(MaxCreatedLocal)
-    setIsDateModified(true)
-  }}
-  onModifiedChange={(modified) => setIsDateModified(modified)}
-  isChanged={isDateModified}
-/>
+                  </div>
+                </div>
+              </div>
 
-  </div>
-</div>
-    </div>
+              {/* Existing Payment + Event selectors can stay above or below as you want */}
 
-    {/* Existing Payment + Event selectors can stay above or below as you want */}
-
-    {/* Footer Buttons */}
-    <div className="flex justify-end gap-3">
-      {isFilterOn && (
-        <button
-          onClick={removeFilter}
-          className="px-4 py-2 bg-red-600 text-white text-sm rounded 
-                    hover:bg-red-700 transition-colors"
-        >
-          Clear Filters
-        </button>
-      )}
-      <button
-        onClick={() => {
-          handleRefetch()
-          setOpen(false)
-        }}
-        className="px-4 py-2 bg-blue-600 text-white text-sm rounded 
-                  hover:bg-blue-700 transition-colors"
-      >
-        Apply Filters
-      </button>
-    </div>
-  </div>
-)}
-
+              {/* Footer Buttons */}
+              <div className="flex justify-end gap-3">
+                {isFilterOn && (
+                  <button
+                    onClick={removeFilter}
+                    className="px-4 py-2 bg-red-600 text-white text-sm rounded 
+                              hover:bg-red-700 transition-colors"
+                  >
+                    Clear Filters
+                  </button>
+                )}
+                <button
+                  onClick={() => {
+                    handleRefetch()
+                    setOpen(false)
+                  }}
+                  className="px-4 py-2 bg-blue-600 text-white text-sm rounded 
+                            hover:bg-blue-700 transition-colors"
+                >
+                  Apply Filters
+                </button>
+              </div>
+            </div>
+          )}
         </div>
+         
       <div className="w-full overflow-x-auto">
         <div className="min-w-[1102px] min-h-[600px]">
           <Table>
@@ -475,12 +383,6 @@ const BasicTableWithdrawals = () => {
                   >
                     Time
                   </TableCell>
-                  <TableCell 
-                    isHeader 
-                    className="px-4 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400 cursor-pointer" 
-                  >
-                    Aksiyonlar
-                  </TableCell>
               </TableRow>
             </TableHeader>
 
@@ -488,7 +390,7 @@ const BasicTableWithdrawals = () => {
               {loading ? (
                 <>
                   {Array.from({ length: rowsPerPage }).map((_, i) => (
-                    <SkeletonRow key={i} columns={11} />
+                    <SkeletonRow key={i} columns={9} />
                   ))}
                 </>
               ) : (
@@ -514,7 +416,6 @@ const BasicTableWithdrawals = () => {
                     <TableCell className="px-4 py-3 text-gray-900 text-start text-theme-sm dark:text-gray-400">
                       {t.playerFullName}
                     </TableCell>
-
                     <TableCell className="px-4 py-3 text-gray-900 text-start text-theme-sm dark:text-gray-400">
                       {t.paymentName}
                     </TableCell>
@@ -539,18 +440,6 @@ const BasicTableWithdrawals = () => {
                     <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
                         {formatDateToDDMMYYYYHHMMSS(t.createdAt)}
                     </TableCell>
-                    <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                        {t.status === "Çekim Aktarılıyor" ? (
-                          <div className='flex flex-row items-start justify-start gap-2'>
-                            <button disabled={isAction} onClick={() => handleActionClick(t.id, t.playerID, "onay")} className='px-2 py-1 text-green-600 border-[1px] border-green-600 bg-white hover:green-700 hover:bg-gray-200 hover:test-semibold disabled:bg-gray-400 rounded-md'>
-                                Onay
-                            </button>
-                            <button disabled={isAction} onClick={() => handleActionClick(t.id, t.playerID, "red")} className='px-2 py-1 text-red-600 border-[1px] border-red-600 bg-white hover:green-700 hover:bg-gray-200 hover:test-semibold disabled:bg-gray-400 rounded-md'>
-                                Red
-                            </button>
-                        </div>
-                        ) : "-"}
-                    </TableCell>
                   </TableRow>
                 ))
               )}
@@ -558,12 +447,10 @@ const BasicTableWithdrawals = () => {
           </Table>
         </div>
       </div>
-
-
-  {/* Pagination Controls */}
-<div className="flex items-center justify-end w-full px-4 py-2 space-x-3 border-t border-[#c8c9cb]">
+ {/* Pagination Controls */}
+ <div className="flex items-center justify-end w-full px-4 py-2 space-x-3 border-t border-[#c8c9cb]">
   <div className="text-sm text-gray-700 dark:text-gray-300 px-2 border-r border-[#c8c9cb]">
-          Showing {financialTransactions.length} of {pagination.totalCount} transactions
+          Showing {financialTransactions.length} of {pagination.totalCount} withdrawals
         </div>
     <div className="flex items-center gap-2">
           <label htmlFor="rowsPerPage" className="text-sm text-gray-700 dark:text-gray-300">
@@ -602,7 +489,7 @@ const BasicTableWithdrawals = () => {
     </button>
     </div>
   </div>
-</div>
+  </div>
   )
 }
 

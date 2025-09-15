@@ -98,7 +98,12 @@ export default function Ecommerce() {
               </div>
             </div>
           <div className="w-full md:w-auto flex items-center justify-center mt-5 md:mt-0">
-            <DateRangePicker onChange={handleDateChange} isChanged={!!range.MinCreatedLocal && !!range.MaxCreatedLocal} />
+            <DateRangePicker
+              onChange={handleDateChange}
+              isChanged={!!range.MinCreatedLocal && !!range.MaxCreatedLocal}
+              initialStartDate={new Date(range.MinCreatedLocal)}
+              initialEndDate={new Date(range.MaxCreatedLocal)}
+            />
           </div>
           </div>
         </div>

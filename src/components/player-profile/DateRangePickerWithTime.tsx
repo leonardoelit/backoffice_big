@@ -97,30 +97,23 @@ export default function DateRangePickerWithTime({
   }
 
   useEffect(() => {
-    // if no start/end set yet → initialize with today
-    if (!customRange.startDate && !customRange.endDate) {
-      const todayStart = new Date()
-      todayStart.setHours(0, 0, 0, 0)
-  
-      const todayEnd = new Date()
-      todayEnd.setHours(23, 59, 59, 999)
-  
-      setCustomRange((prev) => ({
-        ...prev,
-        startDate: todayStart,
-        endDate: todayEnd
-      }))
-  
-      // fire onChange immediately so parent gets values
-      onChange({
-        MinCreatedLocal: todayStart.toISOString(),
-        MaxCreatedLocal: todayEnd.toISOString()
-      })
-  
-      // mark as changed so button shows correct date
-      if (onModifiedChange) onModifiedChange(true)
-    }
-  }, [])
+  if (
+    customRange.startDate?.getTime() !== initialStartDate?.getTime() ||
+    customRange.endDate?.getTime() !== initialEndDate?.getTime()
+  ) {
+    setCustomRange((prev) => ({
+      ...prev,
+      startDate: initialStartDate || null,
+      endDate: initialEndDate || null,
+      startHour: initialStartDate ? String(initialStartDate.getHours()).padStart(2,'0') : '00',
+      startMinute: initialStartDate ? String(initialStartDate.getMinutes()).padStart(2,'0') : '00',
+      endHour: initialEndDate ? String(initialEndDate.getHours()).padStart(2,'0') : '23',
+      endMinute: initialEndDate ? String(initialEndDate.getMinutes()).padStart(2,'0') : '59'
+    }))
+  }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, [initialStartDate?.getTime(), initialEndDate?.getTime()])
+
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {

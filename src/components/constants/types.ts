@@ -169,7 +169,8 @@ export interface GetPlayersTransactionHistoryResponse{
 export interface PlayerTransactionFilter{
   pageNumber?: number;
   pageSize?: number;
-  playerId: string;
+  playerId?: string;
+  playerUsername?: string;
   eventTypes?: string[];
   type?: string;
   timeStampFrom?: string;

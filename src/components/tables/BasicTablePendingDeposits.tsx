@@ -14,16 +14,19 @@ const BasicTablePendingDeposits = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const [rowsPerPage, setRowsPerPage] = useState(25);
 
-    const [dateFrom, setDateFrom] = useState<string | undefined>(undefined);
-    const [dateTo, setDateTo] = useState<string | undefined>(undefined);
-    const [isDateModified, setIsDateModified] = useState(false)
+    const today = new Date();
+     const startOfToday = new Date(today.setHours(0, 0, 0, 0)).toISOString();
+     const endOfToday = new Date(today.setHours(23, 59, 59, 999)).toISOString();
+    const [dateFrom, setDateFrom] = useState<string | undefined>(startOfToday);
+    const [dateTo, setDateTo] = useState<string | undefined>(endOfToday);
+    const [isDateModified, setIsDateModified] = useState(true)
     const [playerFullName, setPlayerFullName] = useState<string | undefined>(undefined)
     const [playerId, setPlayerId] = useState<string | undefined>(undefined)
     const [amountFrom, setAmountFrom] = useState<string | undefined>(undefined)
     const [amountTo, setAmountTo] = useState<string | undefined>(undefined)
-    const [status, setStatus] = useState<string>("Pending")
     const [paymentName, setPaymentName] = useState<string | undefined>(undefined)
     const [accountNumber, setAccountNumber] = useState<string | undefined>(undefined)
+    const [status, setStatus] = useState<string | undefined>(undefined)
     const [cryptoType, setCryptoType] = useState<string | undefined>(undefined)
     const [playerUsername, setPlayerUsername] = useState<string | undefined>(undefined)
 
@@ -42,14 +45,15 @@ const BasicTablePendingDeposits = () => {
     const [isSendingResponse, setIsSendingResponse] = useState(false);
 
 
-    const [isFilterOn, setIsFilterOn] = useState(false);
+    const [isFilterOn, setIsFilterOn] = useState(true);
 
     const { financialTransactions, loading, error, pagination, filter, setFilter } = useFinancialTransactions(
         {
           pageNumber: currentPage,
           pageSize: rowsPerPage,
           typeName: 'deposit',
-          status: 'Pending'
+          timeStampFrom: dateFrom,
+          timeStampTo: dateTo
         }
       );
 
@@ -106,7 +110,7 @@ const BasicTablePendingDeposits = () => {
         paymentName: paymentName || undefined,
         playerFullName: playerFullName || undefined,
         playerUsername: playerUsername || undefined,
-        status: 'Pending'
+        status: status || undefined
       };
     
       // Only include dates that were modified
@@ -134,16 +138,17 @@ const BasicTablePendingDeposits = () => {
     
     const removeFilter = () => {
       // Reset all input states
-      setPlayerId('');
-      setPlayerUsername('')
-      setPlayerFullName('')
-      setAmountFrom('')
-      setAmountTo('')
-      setPaymentName('')
-      setCryptoType('')
-      setAccountNumber('')
-      setDateFrom('')
-      setDateTo('')
+      setStatus(undefined)
+      setPlayerId(undefined);
+      setPlayerUsername(undefined)
+      setPlayerFullName(undefined)
+      setAmountFrom(undefined)
+      setAmountTo(undefined)
+      setPaymentName(undefined)
+      setCryptoType(undefined)
+      setAccountNumber(undefined)
+      setDateFrom(undefined)
+      setDateTo(undefined)
       setIsDateModified(false)
       
       // Reset to first page
@@ -153,8 +158,7 @@ const BasicTablePendingDeposits = () => {
       const defaultFilter = {
         pageNumber: 1,
         pageSize: rowsPerPage,
-        typeName: 'deposit',
-        status: 'Pending'
+        typeName: 'deposit'
       };
       
       // Apply the default filter
@@ -217,8 +221,7 @@ const BasicTablePendingDeposits = () => {
         onConfirm={handleConfirmedAction}
         action={modalState.action || 'accept'}
       />
-          <div className="relative" ref={dropdownRef}>
-          {/* Toggle button */}
+        <div className='relative flex flex-row items-center justify-between' ref={dropdownRef}>
           <button
             onClick={() => setOpen(!open)}
             className="px-4 py-2 bg-blue-600 text-white text-sm rounded-tl-md hover:bg-blue-700 flex items-center gap-2"
@@ -230,146 +233,183 @@ const BasicTablePendingDeposits = () => {
           </button>
     
           {/* Dropdown panel */}
-          {/* Dropdown panel */}
-        {open && (
-        <div
-            className="absolute mt-2 w-full md:w-[80vw] max-w-4xl right-0 
-                    bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 
-                    rounded-lg shadow-lg z-50 p-4"
-        >
-            {/* Filter row 1 */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-            {/* Player ID */}
-            <input
-                type="text"
-                value={playerId || ""}
-                onChange={(e) => setPlayerId(e.target.value)}
-                placeholder="Player ID"
-                className="w-full rounded-md border border-gray-300 dark:border-gray-600 
-                        bg-white dark:bg-gray-700 text-sm text-gray-700 dark:text-gray-200 
-                        px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
+          {open && (
+          <div
+              className="absolute w-full md:w-[80vw] max-w-4xl right-0 top-0
+                      bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 
+                      rounded-lg shadow-lg z-50 p-4"
+          >
+              {/* Filter row 1 */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+              {/* Player ID */}
+              <input
+                  type="text"
+                  value={playerId || ""}
+                  onChange={(e) => setPlayerId(e.target.value)}
+                  placeholder="Player ID"
+                  className="w-full rounded-md border border-gray-300 dark:border-gray-600 
+                          bg-white dark:bg-gray-700 text-sm text-gray-700 dark:text-gray-200 
+                          px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
 
-            {/* Username */}
-            <input
-                type="text"
-                value={playerUsername || ""}
-                onChange={(e) => setPlayerUsername(e.target.value)}
-                placeholder="Username"
-                className="w-full rounded-md border border-gray-300 dark:border-gray-600 
-                        bg-white dark:bg-gray-700 text-sm text-gray-700 dark:text-gray-200 
-                        px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
+              {/* Username */}
+              <input
+                  type="text"
+                  value={playerUsername || ""}
+                  onChange={(e) => setPlayerUsername(e.target.value)}
+                  placeholder="Username"
+                  className="w-full rounded-md border border-gray-300 dark:border-gray-600 
+                          bg-white dark:bg-gray-700 text-sm text-gray-700 dark:text-gray-200 
+                          px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
 
-            {/* Fullname */}
-            <input
-                type="text"
-                value={playerFullName || ""}
-                onChange={(e) => setPlayerFullName(e.target.value)}
-                placeholder="Full Name"
-                className="w-full rounded-md border border-gray-300 dark:border-gray-600 
-                        bg-white dark:bg-gray-700 text-sm text-gray-700 dark:text-gray-200 
-                        px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-            </div>
+              {/* Fullname */}
+              <input
+                  type="text"
+                  value={playerFullName || ""}
+                  onChange={(e) => setPlayerFullName(e.target.value)}
+                  placeholder="Full Name"
+                  className="w-full rounded-md border border-gray-300 dark:border-gray-600 
+                          bg-white dark:bg-gray-700 text-sm text-gray-700 dark:text-gray-200 
+                          px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              </div>
 
-            {/* Filter row 2 */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-            {/* Amount From */}
-            <input
-                type="number"
-                value={amountFrom || ""}
-                onChange={(e) => setAmountFrom(e.target.value)}
-                placeholder="Amount From"
-                className="w-full rounded-md border border-gray-300 dark:border-gray-600 
-                        bg-white dark:bg-gray-700 text-sm text-gray-700 dark:text-gray-200 
-                        px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
+              {/* Filter row 2 */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+              {/* Amount From */}
+              <input
+                  type="number"
+                  value={amountFrom || ""}
+                  onChange={(e) => setAmountFrom(e.target.value)}
+                  placeholder="Amount From"
+                  className="w-full rounded-md border border-gray-300 dark:border-gray-600 
+                          bg-white dark:bg-gray-700 text-sm text-gray-700 dark:text-gray-200 
+                          px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
 
-            {/* Amount To */}
-            <input
-                type="number"
-                value={amountTo || ""}
-                onChange={(e) => setAmountTo(e.target.value)}
-                placeholder="Amount To"
-                className="w-full rounded-md border border-gray-300 dark:border-gray-600 
-                        bg-white dark:bg-gray-700 text-sm text-gray-700 dark:text-gray-200 
-                        px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
+              {/* Amount To */}
+              <input
+                  type="number"
+                  value={amountTo || ""}
+                  onChange={(e) => setAmountTo(e.target.value)}
+                  placeholder="Amount To"
+                  className="w-full rounded-md border border-gray-300 dark:border-gray-600 
+                          bg-white dark:bg-gray-700 text-sm text-gray-700 dark:text-gray-200 
+                          px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
 
-            {/* Account Number */}
-            <input
-                type="text"
-                value={accountNumber || ""}
-                onChange={(e) => setAccountNumber(e.target.value)}
-                placeholder="Account Number"
-                className="w-full rounded-md border border-gray-300 dark:border-gray-600 
-                        bg-white dark:bg-gray-700 text-sm text-gray-700 dark:text-gray-200 
-                        px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-            </div>
+              {/* Account Number */}
+              <input
+                  type="text"
+                  value={accountNumber || ""}
+                  onChange={(e) => setAccountNumber(e.target.value)}
+                  placeholder="Account Number"
+                  className="w-full rounded-md border border-gray-300 dark:border-gray-600 
+                          bg-white dark:bg-gray-700 text-sm text-gray-700 dark:text-gray-200 
+                          px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              </div>
 
-            {/* Filter row 3 */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-            {/* Crypto Type */}
-            <select
+              {/* Filter row 3 */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+              {/* Crypto Type */}
+              <select
+                  value={cryptoType || ""}
+                  onChange={(e) => setCryptoType(e.target.value)}
+                  className="w-full rounded-md border border-gray-300 dark:border-gray-600 
+                          bg-white dark:bg-gray-700 text-sm text-gray-700 dark:text-gray-200 
+                          px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                  <option value="">Select Crypto Type</option>
+                  <option value="BTC">BTC</option>
+                  <option value="TRC20">TRC20</option>
+              </select>
+
+              {/* Status */}
+              <select
                 value={status || ""}
-                onChange={(e) => setCryptoType(e.target.value)}
+                onChange={(e) => setStatus(e.target.value)}
                 className="w-full rounded-md border border-gray-300 dark:border-gray-600 
-                        bg-white dark:bg-gray-700 text-sm text-gray-700 dark:text-gray-200 
-                        px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-                <option value="">Select Crypto Type</option>
-                <option value="BTC">BTC</option>
-                <option value="TRC20">TRC20</option>
-            </select>
+                          bg-white dark:bg-gray-700 text-sm text-gray-700 dark:text-gray-200 
+                          px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">Select Status</option>
+                <option value="Pending">Pending</option>
+                <option value="Success">Success</option>
+                <option value="Failed">Failed</option>
+                <option value="Cancelled">Cancelled</option>
+              </select>
 
-            {/* Date Picker */}
-            <div className="w-full">
-        <div className="rounded-md border border-gray-300 dark:border-gray-600 
-                        px-2 py-1 bg-white dark:bg-gray-700">
-            <DateRangePickerWithTime
-            onChange={({ MinCreatedLocal, MaxCreatedLocal }) => {
-                setDateFrom(MinCreatedLocal)
-                setDateTo(MaxCreatedLocal)
-            }}
-            onModifiedChange={(modified) => setIsDateModified(modified)}
-            isChanged={isDateModified}
-            />
+              {/* Date Picker */}
+              <div className="w-full">
+                <div className="rounded-md border border-gray-300 dark:border-gray-600 
+                          px-2 py-1 bg-white dark:bg-gray-700">
+                  <DateRangePickerWithTime
+                    initialStartDate={dateFrom ? new Date(dateFrom) : undefined}
+                    initialEndDate={dateTo ? new Date(dateTo) : undefined}
+                    onChange={({ MinCreatedLocal, MaxCreatedLocal }) => {
+                      setDateFrom(MinCreatedLocal || undefined)
+                      setDateTo(MaxCreatedLocal || undefined)
+                      setIsDateModified(true)
+                    }}
+                    onModifiedChange={(modified) => setIsDateModified(modified)}
+                    isChanged={isDateModified}
+                  />
+              </div>
+            </div>
         </div>
-        </div>
-    </div>
 
-    {/* Existing Payment + Event selectors can stay above or below as you want */}
-
-    {/* Footer Buttons */}
-    <div className="flex justify-end gap-3">
-      {isFilterOn && (
-        <button
-          onClick={removeFilter}
-          className="px-4 py-2 bg-red-600 text-white text-sm rounded 
-                    hover:bg-red-700 transition-colors"
-        >
-          Clear Filters
-        </button>
-      )}
-      <button
-        onClick={() => {
-          handleRefetch()
-          setOpen(false)
-        }}
-        className="px-4 py-2 bg-blue-600 text-white text-sm rounded 
-                  hover:bg-blue-700 transition-colors"
-      >
-        Apply Filters
-      </button>
-    </div>
-  </div>
+      {/* Footer Buttons */}
+      <div className="flex justify-end gap-3">
+        {isFilterOn && (
+          <button
+            onClick={removeFilter}
+            className="px-4 py-2 bg-red-600 text-white text-sm rounded 
+                      hover:bg-red-700 transition-colors"
+          >
+            Clear Filters
+          </button>
         )}
-        </div>
+        <button
+          onClick={() => {
+            handleRefetch()
+            setOpen(false)
+          }}
+          className="px-4 py-2 bg-blue-600 text-white text-sm rounded 
+                    hover:bg-blue-700 transition-colors"
+        >
+          Apply Filters
+        </button>
+      </div>
+    </div>
+          )}
+        {/* Refresh button */}
+        <button
+          onClick={handleRefetch}
+          title="Refresh Table"
+          className="p-2 bg-blue-500 text-white rounded hover:bg-blue-600 flex items-center justify-center"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth={2}
+            stroke="currentColor"
+            className="w-5 h-5"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M4 4v5h.582M20 20v-5h-.581M4.582 9a8 8 0 0111.836-1.414M19.418 15a8 8 0 01-11.836 1.414"
+            />
+          </svg>
+        </button>
+      </div>
+      <div className='w-full h-[1px] bg-gray-100' />
 
       <div className="w-full overflow-x-auto">
-        <div className="min-w-[1102px] min-h-[200px] h-auto">
+        <div className="min-w-[1102px] min-h-[600px] h-auto">
           <Table>
             <TableHeader className="border-b border-gray-100 dark:border-white/[0.05]">
               <TableRow>
@@ -486,11 +526,11 @@ const BasicTablePendingDeposits = () => {
                     </TableCell>
                     <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
                         <div className='flex flex-row items-start justify-start gap-2'>
-                            <button disabled={isSendingResponse} onClick={() => handleActionClick(t.id, t.playerID, 'accept')} className='px-2 py-1 text-green-600 border-[1px] border-green-600 bg-white hover:green-700 hover:bg-gray-200 hover:test-semibold disabled:bg-gray-400 rounded-md'>
-                                Accept
+                            <button disabled={isSendingResponse || t.status != "Pending"} onClick={() => handleActionClick(t.id, t.playerID, 'accept')} className='px-2 py-1 text-green-600 border-[1px] border-green-600 bg-white hover:green-700 hover:bg-gray-200 hover:test-semibold disabled:bg-gray-200 dark:disabled:bg-gray-700 disabled:border-green-600/25 disabled:text-green-600/25 rounded-md'>
+                                Onayla
                             </button>
-                            <button disabled={isSendingResponse} onClick={() => handleActionClick(t.id, t.playerID, 'reject')} className='px-2 py-1 text-red-600 border-[1px] border-red-600 bg-white hover:green-700 hover:bg-gray-200 hover:test-semibold disabled:bg-gray-400 rounded-md'>
-                                Reject
+                            <button disabled={isSendingResponse || t.status != "Pending"} onClick={() => handleActionClick(t.id, t.playerID, 'reject')} className='px-2 py-1 text-red-600 border-[1px] border-red-600 bg-white hover:green-700 hover:bg-gray-200 hover:test-semibold disabled:bg-gray-200 dark:disabled:bg-gray-700 disabled:border-red-600/25 disabled:text-red-600/25 rounded-md'>
+                                Reddet
                             </button>
                         </div>
                     </TableCell>
