@@ -457,7 +457,7 @@ const BasicTableWithdrawals = () => {
                 ))
               )}
             </TableBody>
-            {totalAmount && (
+            {financialTransactions.length > 0 && totalAmount && totalAmount > 0 && (
               <tfoot>
                 <TableRow className="bg-gray-50 dark:bg-gray-900">
                   <TableCell colSpan={5} className="px-5 py-3 text-end font-medium text-gray-700 dark:text-gray-300">
