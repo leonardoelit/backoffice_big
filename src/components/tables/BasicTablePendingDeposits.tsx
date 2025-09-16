@@ -474,7 +474,7 @@ const BasicTablePendingDeposits = () => {
               {loading ? (
                 <>
                   {Array.from({ length: rowsPerPage }).map((_, i) => (
-                    <SkeletonRow key={i} columns={11} />
+                    <SkeletonRow key={i} columns={10} />
                   ))}
                 </>
               ) : (

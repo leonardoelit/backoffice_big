@@ -29,7 +29,7 @@ const BasicTableDeposits = () => {
 
 
     const [isFilterOn, setIsFilterOn] = useState(false);
-    const { financialTransactions, loading, error, pagination, filter, setFilter } = useFinancialTransactions(
+    const { financialTransactions, loading, error, pagination, filter, totalAmount, setFilter } = useFinancialTransactions(
       {
         pageNumber: currentPage,
         pageSize: rowsPerPage,
@@ -94,22 +94,14 @@ const BasicTableDeposits = () => {
           paymentName: paymentName || undefined,
           playerFullName: playerFullName || undefined,
           playerUsername: playerUsername || undefined,
-          status: status || undefined,
+          status: 'Success',
         };
 
-    //Date range picker automaticaly picks today as default on page load part START
-    if (isDateModified) {
-          newFilter.timeStampFrom = dateFrom;
-          newFilter.timeStampTo = dateTo;
-        } else {
-          const todayStart = new Date();
-          todayStart.setHours(0, 0, 0, 0);
-          const todayEnd = new Date();
-          todayEnd.setHours(23, 59, 59, 999);
-          newFilter.timeStampFrom = todayStart.toISOString();
-          newFilter.timeStampTo = todayEnd.toISOString();
-        }
-    //Date range picker automaticaly picks today as default on page load part END
+      //Date range picker automaticaly picks today as default on page load part START
+      if (isDateModified) {
+        newFilter.timeStampFrom = dateFrom;
+        newFilter.timeStampTo = dateTo;
+      }
 
       const isAnyFilterActive = 
         Boolean(playerId) ||
@@ -177,8 +169,7 @@ const BasicTableDeposits = () => {
   }
   return (
     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">
-          <div className="relative" ref={dropdownRef}>
-          {/* Toggle button */}
+          <div className='relative flex flex-row items-center justify-between' ref={dropdownRef}>
           <button
             onClick={() => setOpen(!open)}
             className="px-4 py-2 bg-blue-600 text-white text-sm rounded-tl-md hover:bg-blue-700 flex items-center gap-2"
@@ -192,7 +183,7 @@ const BasicTableDeposits = () => {
           {/* Dropdown panel */}
           {open && (
             <div
-              className="absolute mt-2 w-full md:w-[80vw] max-w-4xl right-0 
+              className="absolute w-full md:w-[80vw] max-w-4xl right-0 top-0
                         bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 
                         rounded-lg shadow-lg z-50 p-4"
             >
@@ -329,7 +320,28 @@ const BasicTableDeposits = () => {
               </div>
             </div>
           )}
-        </div>
+        {/* Refresh button */}
+        <button
+          onClick={handleRefetch}
+          title="Refresh Table"
+          className="p-2 bg-blue-500 text-white rounded hover:bg-blue-600 flex items-center justify-center"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth={2}
+            stroke="currentColor"
+            className="w-5 h-5"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M4 4v5h.582M20 20v-5h-.581M4.582 9a8 8 0 0111.836-1.414M19.418 15a8 8 0 01-11.836 1.414"
+            />
+          </svg>
+        </button>
+      </div>
          
       <div className="w-full overflow-x-auto">
         <div className="min-w-[1102px] min-h-[600px]">
@@ -444,6 +456,17 @@ const BasicTableDeposits = () => {
                 ))
               )}
             </TableBody>
+            <tfoot>
+              <TableRow className="bg-gray-50 dark:bg-gray-900">
+                <TableCell colSpan={5} className="px-5 py-3 text-end font-medium text-gray-700 dark:text-gray-300">
+                  Total:
+                </TableCell>
+                <TableCell className="px-5 py-3 font-medium text-gray-700 dark:text-gray-300">
+                  ₺{totalAmount ? totalAmount.toLocaleString() : "-"}
+                </TableCell>
+                <TableCell colSpan={3}>{null}</TableCell>
+              </TableRow>
+            </tfoot>
           </Table>
         </div>
       </div>

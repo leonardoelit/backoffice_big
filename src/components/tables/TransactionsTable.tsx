@@ -139,49 +139,23 @@ const TransactionsTable = () => {
   }
   return (
     <div className="space-y-4">
-    {/* Top-right action buttons OUTSIDE the table */}
-    <div className="flex justify-end gap-2">
-
-      {/* Refresh button */}
-      <button
-        onClick={handleRefetch}
-        title="Refresh Table"
-        className="p-2 bg-blue-500 text-white rounded hover:bg-blue-600 flex items-center justify-center"
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 24 24"
-          strokeWidth={2}
-          stroke="currentColor"
-          className="w-5 h-5"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M4 4v5h.582M20 20v-5h-.581M4.582 9a8 8 0 0111.836-1.414M19.418 15a8 8 0 01-11.836 1.414"
-          />
-        </svg>
-      </button>
-    </div>
 
     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">
       
-      <div className="-mt-2 relative flex items-center justify-between" ref={dropdownRef}>
-  {/* Filter button */}
-  <button
-    onClick={() => setOpen(!open)}
-    className="px-4 py-2 bg-blue-600 mt-[8px] text-white text-sm rounded-tl-md hover:bg-blue-700 flex items-center gap-2"
-  >
-    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4h18M3 12h18M3 20h18" />
-    </svg>
-    Filters
-  </button>
+      <div className='relative flex flex-row items-center justify-between' ref={dropdownRef}>
+          <button
+            onClick={() => setOpen(!open)}
+            className="px-4 py-2 bg-blue-600 text-white text-sm rounded-tl-md hover:bg-blue-700 flex items-center gap-2"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4h18M3 12h18M3 20h18" />
+            </svg>
+            Filters
+          </button>
           {/* Dropdown panel */}
           {open && (
   <div
-  className="absolute mt-52 w-full md:w-[70vw] max-w-4xl right-0 
+  className="absolute w-full md:w-[70vw] max-w-4xl right-0 top-0 
   bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 
   rounded-lg shadow-lg z-[99999999] p-4"
 
@@ -310,8 +284,29 @@ const TransactionsTable = () => {
     </div>
     
   </div>
-)}
-        </div>
+          )}
+        {/* Refresh button */}
+        <button
+          onClick={handleRefetch}
+          title="Refresh Table"
+          className="p-2 bg-blue-500 text-white rounded hover:bg-blue-600 flex items-center justify-center"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth={2}
+            stroke="currentColor"
+            className="w-5 h-5"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M4 4v5h.582M20 20v-5h-.581M4.582 9a8 8 0 0111.836-1.414M19.418 15a8 8 0 01-11.836 1.414"
+            />
+          </svg>
+        </button>
+      </div>
 
 
       <div className="w-full overflow-x-auto">

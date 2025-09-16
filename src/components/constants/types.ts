@@ -218,6 +218,7 @@ export interface GetAllFinancialTransactionsResponse{
   currentPage: number;
   totalPages: number;
   totalCount: number;
+  totalAmount: number;
 }
 
 export interface PaymentResponse{

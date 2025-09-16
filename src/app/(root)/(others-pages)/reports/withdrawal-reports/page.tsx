@@ -7,7 +7,7 @@ export default function PlayerReportsPage() {
 
   return (
     <div>
-      <PageBreadcrumb pageTitle="Yatırım Raporları" />
+      <PageBreadcrumb pageTitle="Çekim Raporları" />
       <div className="space-y-6">
           <BasicTableWithdrawals />
       </div>

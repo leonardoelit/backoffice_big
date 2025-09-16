@@ -65,6 +65,7 @@ export function useFinancialTransactions(initialFilter: PlayerFinancialFilter) {
       totalCount: data?.totalCount || 0,
       pageSize: filter.pageSize || 25,
     },
+    totalAmount: data?.totalAmount,
     loading,
     error,
     filter,

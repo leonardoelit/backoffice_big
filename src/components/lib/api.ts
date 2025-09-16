@@ -300,7 +300,8 @@ export async function getFinancialTransactions(
       financialTransactions: [],
       currentPage: 1,
       totalPages: 1,
-      totalCount: 0
+      totalCount: 0,
+      totalAmount: 0
     };
   }
 }
