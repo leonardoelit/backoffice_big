@@ -457,17 +457,19 @@ const BasicTableWithdrawals = () => {
                 ))
               )}
             </TableBody>
-            <tfoot>
-              <TableRow className="bg-gray-50 dark:bg-gray-900">
-                <TableCell colSpan={5} className="px-5 py-3 text-end font-medium text-gray-700 dark:text-gray-300">
-                  Total:
-                </TableCell>
-                <TableCell className="px-5 py-3 font-medium text-gray-700 dark:text-gray-300">
-                  ₺{totalAmount ? totalAmount.toLocaleString() : "-"}
-                </TableCell>
-                <TableCell colSpan={3}>{null}</TableCell>
-              </TableRow>
-            </tfoot>
+            {totalAmount && (
+              <tfoot>
+                <TableRow className="bg-gray-50 dark:bg-gray-900">
+                  <TableCell colSpan={5} className="px-5 py-3 text-end font-medium text-gray-700 dark:text-gray-300">
+                    Total:
+                  </TableCell>
+                  <TableCell className="px-5 py-3 font-medium text-gray-700 dark:text-gray-300">
+                    ₺{totalAmount ? totalAmount.toLocaleString() : "-"}
+                  </TableCell>
+                  <TableCell colSpan={3}>{null}</TableCell>
+                </TableRow>
+              </tfoot>
+            )}
           </Table>
         </div>
       </div>
