@@ -52,7 +52,7 @@ export default function Ecommerce() {
         setCurrentTotalDeposit(data.totalDepositAmount)
         setCurrentTotalDepositCount(data.totalDepositCount)
         setCurrentTotalWithdrawal(Math.max(0, data.totalWithdrawalAmount))
-        setCurrentTotalWithdrawal(Math.max(0, data.totalWithdrawalCount))
+        setCurrentTotalWithdrawalCount(Math.max(0, data.totalWithdrawalCount))
         setPrevProfit(profit)
         setProfit(data.totalDepositAmount - Math.max(0, data.totalWithdrawalAmount))
         setCurrentTotalBonusAmount(data.totalBonus)
