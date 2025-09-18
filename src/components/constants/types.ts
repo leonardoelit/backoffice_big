@@ -546,3 +546,10 @@ export interface LoginAsUserResponse {
     url?: string;
     token?: string;
 }
+
+export interface GameData {
+  id: number;
+  name: string;
+  providerId: number;
+  providerName: string;
+}

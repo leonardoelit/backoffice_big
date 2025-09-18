@@ -7,8 +7,10 @@ import { formatDateToDDMMYYYYHHMMSS } from '@/utils/utils';
 import DateRangePickerWithTime from './DateRangePickerWithTime';
 import { managePlayerBalance } from '../lib/api';
 import { showToast } from '@/utils/toastUtil';
+import { useAuth } from '@/context/AuthContext';
 
 const PlayerTransactionsTable = ({ playerId }: { playerId: string }) => {
+  const { games } = useAuth();
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(25);
 
@@ -176,6 +178,11 @@ const PlayerTransactionsTable = ({ playerId }: { playerId: string }) => {
 
   setIsSubmitting(false);
 };
+
+const providerName = (gameId: number) => {
+    const game = games.find(g => g.id === gameId);
+    return game ? `${game.name} - ${game.providerName}` : gameId;
+  };
 
 
   const SkeletonRow = ({ columns }: { columns: number }) => (
@@ -522,7 +529,9 @@ const PlayerTransactionsTable = ({ playerId }: { playerId: string }) => {
                         ₺{t.balanceAfter.toLocaleString()}
                     </TableCell>
                     <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                      {t.name}
+                      {/^\d+$/.test(t.name) 
+                        ? providerName(Number(t.name)) 
+                        : t.name}
                     </TableCell>
                     <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
                       {t.status}

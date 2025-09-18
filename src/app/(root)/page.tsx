@@ -61,7 +61,7 @@ export default function Ecommerce() {
         setCurrentTotalCasinoWin(data.totalCasinoWin)
         setPlayerCount(data.totalPlayerCount)
         setTopTenTotalDeposit(data.playersWithMostDeposit ? data.playersWithMostDeposit : [])
-        setTopTenTotalWithdrawal(data.playersWithMostWithdrawal ? data.playersWithMostWithdrawal.filter((p) => p.amount > 0) : [])
+        setTopTenTotalWithdrawal(data.playersWithMostWithdrawal ? data.playersWithMostWithdrawal : [])
       })
     }else{
       showToast("Dashboard yüklenirken hata!", "error")

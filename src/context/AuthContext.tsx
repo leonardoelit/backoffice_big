@@ -13,7 +13,7 @@ import {
 
 import { deleteCookie } from 'cookies-next';
 import { useRouter } from 'next/navigation';
-import { AuthResponse, JwtPayload, Player, User } from '@/components/constants/types';
+import { AuthResponse, GameData, JwtPayload, Player, User } from '@/components/constants/types';
 
 interface AuthContextType {
   isAuthenticated: boolean;
@@ -24,6 +24,7 @@ interface AuthContextType {
   isLoadingSignIn: boolean;
   userInfo: User;
   allPlayerData: Player[];
+  games: GameData[];
   playerBalanceData: PlayerBalanceResponse;
   login: (response: AuthResponse) => void;
   logout: () => void;
@@ -115,6 +116,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [token, setToken] = useState<string | null>(null);
   const [clientId, setClientId] = useState<string | null>(null);
   const [clientName, setClientName] = useState<string | null>(null);
+  const [games, setGames] = useState<GameData[]>([]);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isLoadingSignIn, setIsLoadingSignIn] = useState(false);
@@ -138,6 +140,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     const storedToken = localStorage.getItem('authToken');
     if (!storedToken) return;
+
+    fetch('/data/games.json')
+    .then(res => res.json())
+    .then((data: GameData[]) => setGames(data))
+    .catch(err => console.error('Failed to load games.json', err));
 
     const userDetail:JwtPayload = parseJwt(storedToken) 
 
@@ -179,6 +186,11 @@ const login = useCallback((response: AuthResponse) => {
     logout();
     return;
   }
+
+  fetch('/data/games.json')
+    .then(res => res.json())
+    .then((data: GameData[]) => setGames(data))
+    .catch(err => console.error('Failed to load games.json', err));
 
   const nameParts = userDetail.unique_name.trim().split(/\s+/);
   const firstname = nameParts[0] || '';
@@ -275,11 +287,12 @@ const login = useCallback((response: AuthResponse) => {
     playerBalanceData,
     clientId,
     clientName,
+    games,
     login,
     logout,
     logoutAdmin
   }), [
-    isAuthenticated, isAdmin, token, clientId, clientName, isLoadingSignIn,
+    isAuthenticated, isAdmin, token, clientId, clientName, games, isLoadingSignIn,
     userInfo,
     allPlayerData, playerBalanceData,
     login, logout, logoutAdmin
