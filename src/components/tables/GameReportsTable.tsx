@@ -104,6 +104,35 @@ const GameReportsTable = () => {
     </TableRow>
   );
 
+  const providerColors = [
+  'text-orange-600 dark:text-orange-500', // orange
+  'text-cyan-600 dark:text-cyan-500',     // cyan/light blue
+  'text-lime-600 dark:text-lime-500',     // bright green (not dark green)
+  'text-gray-800 dark:text-gray-600',     // red/pinkish
+  'text-sky-600 dark:text-sky-500',       // sky blue
+  'text-amber-600 dark:text-amber-500',   // yellow/orange
+  'text-fuchsia-600 dark:text-fuchsia-500', // fuchsia (magenta)
+  'text-teal-600 dark:text-teal-500',     // teal
+  'text-orange-600 dark:text-orange-700', // darker orange for variety
+  'text-cyan-600 dark:text-cyan-700',     // darker cyan
+];
+
+// Function to get color for a provider
+const getProviderColor = (providerId: number | string) => {
+  const idStr = String(providerId);
+  const len = idStr.length;
+
+  // Take last two digits (or just the last if shorter)
+  const lastDigit = parseInt(idStr[len - 1] || '0', 10);
+  const secondLastDigit = parseInt(idStr[len - 2] || '0', 10);
+
+  // Combine them with a simple formula for more spread
+  const combined = (lastDigit * 3 + secondLastDigit * 7) % providerColors.length;
+
+  return providerColors[combined];
+};
+
+
   return (
     <div className="space-y-4">
       <div className="flex justify-end gap-2">
@@ -194,12 +223,12 @@ const GameReportsTable = () => {
                 ) : (
                   paginatedStats.map((t) => (
                     <TableRow key={`${t.providerId}-${t.gameName}`}>
-                      <TableCell className="px-5 py-4 text-md text-gray-800 dark:text-gray-300">{t.providerId}</TableCell>
-                      <TableCell className="px-4 py-3 text-md text-gray-800 dark:text-gray-300">{t.providerName}</TableCell>
+                      <TableCell className="px-4 py-3 text-md text-gray-800 dark:text-gray-300" >{t.providerId}</TableCell>
+                      <TableCell className={`px-5 py-4 text-md ${getProviderColor(t.providerId)} `}>{t.providerName}</TableCell>
                       <TableCell className="px-4 py-3 text-md text-gray-800 dark:text-gray-300">{t.gameName}</TableCell>
-                      <TableCell className="px-4 py-3 text-md text-gray-800 dark:text-gray-300">₺{t.totalBet.toLocaleString()}</TableCell>
-                      <TableCell className="px-4 py-3 text-md text-gray-800 dark:text-gray-300">₺{t.totalWin.toLocaleString()}</TableCell>
-                      <TableCell className="px-4 py-3 text-md text-gray-800 dark:text-gray-300">₺{t.profit.toLocaleString()}</TableCell>
+                      <TableCell className="px-4 py-3 text-md text-red-600 dark:text-red-300">₺{t.totalBet.toLocaleString()}</TableCell>
+                      <TableCell className="px-4 py-3 text-md text-green-600 dark:text-green-300">₺{t.totalWin.toLocaleString()}</TableCell>
+                      <TableCell className={`px-4 py-3 text-md ${t.profit < 0 ? "text-red-800 dark:text-red-700" : t.profit > 0 ? "text-green-700 dark:text-green-600" : "text-yellow-700 dark:bg-yellow-500"}`}>₺{t.profit.toLocaleString()}</TableCell>
                     </TableRow>
                   ))
                 )}
