@@ -15,10 +15,13 @@ const BasicTablePendingWithdrawals = () => {
     const [rowsPerPage, setRowsPerPage] = useState(25);
 
     const today = new Date();
-     const startOfToday = new Date(today.setHours(0, 0, 0, 0)).toISOString();
-     const endOfToday = new Date(today.setHours(23, 59, 59, 999)).toISOString();
+    const pad = (n: number) => n.toString().padStart(2, '0');
+
+    const startOfToday = `${today.getFullYear()}-${pad(today.getMonth()+1)}-${pad(today.getDate())} 00:00:00`;
+    const endOfToday = `${today.getFullYear()}-${pad(today.getMonth()+1)}-${pad(today.getDate())} 23:59:59`;
     const [dateFrom, setDateFrom] = useState<string | undefined>(startOfToday);
     const [dateTo, setDateTo] = useState<string | undefined>(endOfToday);
+    
     const [isDateModified, setIsDateModified] = useState(true)
     const [playerFullName, setPlayerFullName] = useState<string | undefined>(undefined)
     const [playerId, setPlayerId] = useState<string | undefined>(undefined)
@@ -349,10 +352,15 @@ const BasicTablePendingWithdrawals = () => {
             initialStartDate={dateFrom ? new Date(dateFrom) : undefined}
             initialEndDate={dateTo ? new Date(dateTo) : undefined}
             onChange={({ MinCreatedLocal, MaxCreatedLocal }) => {
-              setDateFrom(MinCreatedLocal || undefined)
-              setDateTo(MaxCreatedLocal || undefined)
-              setIsDateModified(true)
+              const formatLocal = (d?: Date) => d 
+                ? `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}` 
+                : undefined;
+            
+              setDateFrom(formatLocal(MinCreatedLocal));
+              setDateTo(formatLocal(MaxCreatedLocal));
+              setIsDateModified(true);
             }}
+            
             onModifiedChange={(modified) => setIsDateModified(modified)}
             isChanged={isDateModified}
           />
