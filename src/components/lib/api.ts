@@ -1,4 +1,4 @@
-import { ActionResponse, AuthResponse, BonusResponse, CancelOrValidateWithdrawalRequest, ChangePlayersBonusSettingRequest, CreateBonusRequest, CreateUserRequest, DashboardStatsRequestDto, DashboardStatsResponseDto, GetAllFinancialTransactionsResponse, GetAllPlayersResponse, GetBonusRequestsResponse, GetPermissionResponse, GetPlayersDataWithIdResponse, GetPlayersTransactionHistoryResponse, GetRoleResponse, GetTaggedPlayersRequest, GetTaggedPlayersResponse, GetUsersResponse, LoginAsUserResponse, ManageBonusRequest, ManagePlayerBalanceDto, MarkPlayerRequest, PaymentResponse, PermissionRequest, PermissionResponse, PlayerBonusRequestFilter, PlayerBonusSettingsResponse, PlayerFilter, PlayerFinancialFilter, PlayerTransactionFilter, RolePermissionRequest, RoleRequest, RoleResponse, UpdateBonusRequest, UpdatePlayersDataRequest, UserResponse, UserRoleRequest } from "../constants/types";
+import { ActionResponse, BonusResponse, CancelOrValidateWithdrawalRequest, ChangePlayersBonusSettingRequest, CreateBonusRequest, CreateUserRequest, DashboardStatsRequestDto, DashboardStatsResponseDto, GameStatsResponse, GetAllFinancialTransactionsResponse, GetAllPlayersResponse, GetBonusRequestsResponse, GetGameOrProviderStatsRequest, GetPermissionResponse, GetPlayersDataWithIdResponse, GetPlayersTransactionHistoryResponse, GetRoleResponse, GetTaggedPlayersRequest, GetTaggedPlayersResponse, GetUsersResponse, LoginAsUserResponse, ManageBonusRequest, ManagePlayerBalanceDto, MarkPlayerRequest, PaymentResponse, PermissionRequest, PermissionResponse, PlayerBonusRequestFilter, PlayerBonusSettingsResponse, PlayerFilter, PlayerFinancialFilter, PlayerTransactionFilter, ProviderStatResponse, RolePermissionRequest, RoleRequest, RoleResponse, UpdateBonusRequest, UpdatePlayersDataRequest, UserResponse, UserRoleRequest } from "../constants/types";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -42,6 +42,66 @@ export async function getDashboardStats(
     return {
       isSuccess: false,
       message: error instanceof Error ? error.message : 'Failed to fetch dashboard stats',
+    };
+  }
+}
+
+export async function getProviderStats(
+  requestTimes: GetGameOrProviderStatsRequest
+): Promise<ProviderStatResponse> {
+  try {
+    const token = await getToken();
+
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/api/Client/getProviderTransactionStats`,
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(requestTimes),
+        cache: 'no-store'
+      }
+    );
+
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching provider stats:', error);
+    return {
+      isSuccess: false,
+      message: error instanceof Error ? error.message : 'Failed to fetch provider stats',
+      providerStats: []
+    };
+  }
+}
+
+export async function getGameStats(
+  requestTimes: GetGameOrProviderStatsRequest
+): Promise<GameStatsResponse> {
+  try {
+    const token = await getToken();
+
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/api/Client/getGameTransactionStats`,
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(requestTimes),
+        cache: 'no-store'
+      }
+    );
+
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching game stats:', error);
+    return {
+      isSuccess: false,
+      message: error instanceof Error ? error.message : 'Failed to fetch game stats',
+      gameStats: []
     };
   }
 }

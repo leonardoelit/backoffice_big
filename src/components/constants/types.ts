@@ -553,3 +553,37 @@ export interface GameData {
   providerId: number;
   providerName: string;
 }
+
+export interface GetGameOrProviderStatsRequest{
+  timeStampFrom?: string;
+  timeStampTo?: string;
+}
+
+export interface GameStatsResponse {
+  isSuccess: boolean;
+  message?: string;
+  gameStats: GameStat[]
+}
+
+export interface GameStat{
+  providerId: number;
+  providerName: string;
+  gameName: string;
+  totalBet: number;
+  totalWin: number;
+  profit: number;
+}
+
+export interface ProviderStatResponse {
+  isSuccess: boolean;
+  message?: string;
+  providerStats: ProviderStat[]
+}
+
+export interface ProviderStat{
+  providerId: number;
+  providerName: string;
+  totalBet: number;
+  totalWin: number;
+  profit: number;
+}

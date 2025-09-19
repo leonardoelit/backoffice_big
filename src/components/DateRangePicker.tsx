@@ -98,7 +98,7 @@ export default function DateRangePicker({
     <div className="relative inline-block text-left" ref={dropdownRef}>
       <button
         onClick={() => setDropdownOpen(!dropdownOpen)}
-        className="border border-gray-300 bg-white rounded-md px-4 py-2 text-sm flex items-center gap-2 hover:bg-gray-50 w-[190px] justify-between"
+        className="border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-dark rounded-md px-4 py-2 text-sm text-black dark:text-gray-300 flex items-center gap-2 hover:bg-gray-50 w-[190px] justify-between"
       >
         {isUpdated
           ? `${formatDisplayDate(customRange.startDate)} - ${formatDisplayDate(customRange.endDate)}`
