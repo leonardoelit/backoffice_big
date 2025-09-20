@@ -487,9 +487,9 @@ const removeFilter = () => {
                 <TableCell isHeader className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400 cursor-pointer">
                   Durum
                 </TableCell>
-                {/* <TableCell isHeader className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400 cursor-pointer">
+                <TableCell isHeader className="px-4 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400 cursor-pointer">
                   Risk
-                </TableCell> */}
+                </TableCell>
               </TableRow>
             </TableHeader>
 
@@ -598,6 +598,18 @@ const removeFilter = () => {
                       </span>
                     </div>
                   </TableCell>
+                  <TableCell className="px-4 py-3">
+  <div className="flex items-center">
+    <div
+      className={`relative h-4 w-4 rounded-full
+        ${player.markedAsRisk
+          ? 'bg-purple-600 shadow-[0_0_8px_rgba(147,51,234,0.8)] soft-pulse-purple'
+          : 'bg-purple-300 shadow-[0_0_6px_rgba(192,132,252,0.7)]'
+        }`}
+    ></div>
+  </div>
+</TableCell>
+
 
                     {/* <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
                       <button

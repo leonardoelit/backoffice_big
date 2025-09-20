@@ -13,15 +13,12 @@ import Link from 'next/link';
 const BasicTablePendingWithdrawals = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const [rowsPerPage, setRowsPerPage] = useState(25);
-
     const today = new Date();
     const pad = (n: number) => n.toString().padStart(2, '0');
-
     const startOfToday = `${today.getFullYear()}-${pad(today.getMonth()+1)}-${pad(today.getDate())} 00:00:00`;
     const endOfToday = `${today.getFullYear()}-${pad(today.getMonth()+1)}-${pad(today.getDate())} 23:59:59`;
     const [dateFrom, setDateFrom] = useState<string | undefined>(startOfToday);
     const [dateTo, setDateTo] = useState<string | undefined>(endOfToday);
-    
     const [isDateModified, setIsDateModified] = useState(true)
     const [playerFullName, setPlayerFullName] = useState<string | undefined>(undefined)
     const [playerId, setPlayerId] = useState<string | undefined>(undefined)

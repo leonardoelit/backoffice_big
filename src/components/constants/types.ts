@@ -101,6 +101,8 @@ export interface Player {
   registrationDateTime: string;
   playerCategory: PlayerCategory;
   verificationStatus: boolean;
+  markedAsRisk: boolean,
+
 
   // 🔹 Deposit stats
   depositCount: number;
