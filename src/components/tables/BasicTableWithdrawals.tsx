@@ -343,157 +343,162 @@ const BasicTableWithdrawals = () => {
           </svg>
         </button>
       </div>
-         
       <div className="w-full overflow-x-auto">
-        <div className="min-w-[1102px] min-h-[600px]">
-          <Table>
-            <TableHeader className="border-b border-gray-100 dark:border-white/[0.05]">
-              <TableRow>
-                <TableCell 
-                  isHeader 
-                  className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400 cursor-pointer" 
-                  onClick={() => handleSort("id")}
-                >
-                  ID
-                </TableCell>
-                <TableCell isHeader className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400">
-                  Player ID
-                </TableCell>
-                <TableCell isHeader className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400">
-                  Username
-                </TableCell>
-                <TableCell isHeader className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400">
-                  Player Fullname
-                </TableCell>
-                <TableCell 
-                  isHeader 
-                  className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400 cursor-pointer" 
-                  onClick={() => handleSort("typeName")}
-                >
-                  Payment Method
-                </TableCell>
-                <TableCell 
-                  isHeader 
-                  className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400 cursor-pointer" 
-                  onClick={() => handleSort("amount")}
-                >
-                  Amount
-                </TableCell>
-                <TableCell isHeader className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400">
-                  Account Number
-                </TableCell>
-                <TableCell 
-                  isHeader 
-                  className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400 cursor-pointer" 
-                  onClick={() => handleSort("status")}
-                >
-                  Status
-                </TableCell>
-                  <TableCell 
-                    isHeader 
-                    className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400 cursor-pointer" 
-                    onClick={() => handleSort("timestamp")}
-                  >
-                    Time
-                  </TableCell>
-              </TableRow>
-            </TableHeader>
+  {/* Use flex-col so table grows and pushes total row down */}
+  <div className="flex flex-col min-w-[1102px] min-h-[600px]">
+    {/* Table */}
+    <div className="flex-grow">
+      <Table>
+        <TableHeader className="border-b border-gray-100 dark:border-white/[0.05]">
+          <TableRow>
+            <TableCell 
+              isHeader 
+              className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400 cursor-pointer" 
+              onClick={() => handleSort("id")}
+            >
+              ID
+            </TableCell>
+            <TableCell isHeader className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400">
+              Player ID
+            </TableCell>
+            <TableCell isHeader className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400">
+              Username
+            </TableCell>
+            <TableCell isHeader className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400">
+              Player Fullname
+            </TableCell>
+            <TableCell 
+              isHeader 
+              className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400 cursor-pointer" 
+              onClick={() => handleSort("typeName")}
+            >
+              Payment Method
+            </TableCell>
+            <TableCell 
+              isHeader 
+              className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400 cursor-pointer" 
+              onClick={() => handleSort("amount")}
+            >
+              Amount
+            </TableCell>
+            <TableCell isHeader className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400">
+              Account Number
+            </TableCell>
+            <TableCell 
+              isHeader 
+              className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400 cursor-pointer" 
+              onClick={() => handleSort("status")}
+            >
+              Status
+            </TableCell>
+            <TableCell 
+              isHeader 
+              className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400 cursor-pointer" 
+              onClick={() => handleSort("timestamp")}
+            >
+              Time
+            </TableCell>
+          </TableRow>
+        </TableHeader>
 
-            <TableBody className={`divide-y divide-gray-100 dark:divide-white/[0.05] transition-opacity duration-300 ${loading ? 'opacity-50' : 'opacity-100'}`}>
-              {loading ? (
-                <>
-                  {Array.from({ length: rowsPerPage }).map((_, i) => (
-                    <SkeletonRow key={i} columns={9} />
-                  ))}
-                </>
-              ) : (
-                financialTransactions.filter((t) => t.status !== 'Pending').map((t) => (
-                  <TableRow key={t.id}>
-                    <TableCell className="px-5 py-4 sm:px-6 text-start">
-                      <div>
-                          <span className="cursor-pointer block font-medium text-gray-800 text-theme-sm dark:text-white/90">
-                            {t.id}
-                          </span>
-                      </div>
-                    </TableCell>
-                    <TableCell className="px-4 py-3 text-gray-900 text-start text-theme-sm dark:text-gray-400">
-                      <Link href={`/player/${t.playerID}`}>
-                        <span className="cursor-pointer block font-medium text-blue-900 hover:underline text-theme-sm dark:text-white/90">
-                          {t.playerID}
-                        </span>
-                      </Link>
-                    </TableCell>
-                    <TableCell className="px-4 py-3 text-gray-900 text-start text-theme-sm dark:text-gray-400">
-                      {t.playerUsername}
-                    </TableCell>
-                    <TableCell className="px-4 py-3 text-gray-900 text-start text-theme-sm dark:text-gray-400">
-                      {t.playerFullName}
-                    </TableCell>
-                    <TableCell className="px-4 py-3 text-gray-900 text-start text-theme-sm dark:text-gray-400">
-                      {t.paymentName}
-                    </TableCell>
-                    <TableCell className="px-4 py-3 text-gray-900 text-start text-theme-sm dark:text-gray-400">
-                        ₺{t.amount.toLocaleString()}
-                    </TableCell>
-                      <TableCell className="px-4 py-3 text-start text-theme-sm">
-                      <div className="flex flex-col items-start gap-1">
-                        <span className="text-gray-900 dark:text-gray-300 font-medium">
-                          {t.accountNumber ? t.accountNumber : '-'}
-                        </span>
-                        {t.cryptoType || t.bankID && (
-                        <span className="text-xs text-gray-500 dark:text-gray-400">
-                          {t.cryptoType ? t.cryptoType : t.bankID}
-                        </span>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell className={`px-4 py-3 ${t.status === 'Pending' ? 'text-yellow-600' : t.status === 'Success' ? 'text-success-600' : t.status === 'Fail' || t.status === 'Cancel' || t.status === "Rejected" ? 'text-red-600' : 'text-gray-500 dark:text-gray-400'} text-start text-theme-sm`}>
-                      {t.status}
-                    </TableCell>
-                    <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                        {formatDateToDDMMYYYYHHMMSS(t.createdAt)}
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-            {financialTransactions.length > 0 && totalAmount && totalAmount > 0 && (
-              <tfoot>
-                <TableRow className="bg-gray-50 dark:bg-gray-900">
-                  <TableCell colSpan={5} className="px-5 py-3 text-end font-medium text-gray-700 dark:text-gray-300">
-                    Total:
-                  </TableCell>
-                  <TableCell className="px-5 py-3 font-medium text-gray-700 dark:text-gray-300">
-                    ₺{totalAmount ? totalAmount.toLocaleString() : "-"}
-                  </TableCell>
-                  <TableCell colSpan={3}>{null}</TableCell>
-                </TableRow>
-              </tfoot>
-            )}
-          </Table>
+        <TableBody className={`divide-y divide-gray-100 dark:divide-white/[0.05] transition-opacity duration-300 ${loading ? 'opacity-50' : 'opacity-100'}`}>
+          {loading ? (
+            <>
+              {Array.from({ length: rowsPerPage }).map((_, i) => (
+                <SkeletonRow key={i} columns={9} />
+              ))}
+            </>
+          ) : (
+            financialTransactions.filter((t) => t.status !== 'Pending').map((t) => (
+              <TableRow key={t.id}>
+                <TableCell className="px-5 py-4 sm:px-6 text-start">
+                  <span className="cursor-pointer block font-medium text-gray-800 text-theme-sm dark:text-white/90">
+                    {t.id}
+                  </span>
+                </TableCell>
+                <TableCell className="px-4 py-3 text-gray-900 text-start text-theme-sm dark:text-gray-400">
+                  <Link href={`/player/${t.playerID}`}>
+                    <span className="cursor-pointer block font-medium text-blue-900 hover:underline text-theme-sm dark:text-white/90">
+                      {t.playerID}
+                    </span>
+                  </Link>
+                </TableCell>
+                <TableCell className="px-4 py-3 text-gray-900 text-start text-theme-sm dark:text-gray-400">
+                  {t.playerUsername}
+                </TableCell>
+                <TableCell className="px-4 py-3 text-gray-900 text-start text-theme-sm dark:text-gray-400">
+                  {t.playerFullName}
+                </TableCell>
+                <TableCell className="px-4 py-3 text-gray-900 text-start text-theme-sm dark:text-gray-400">
+                  {t.paymentName}
+                </TableCell>
+                <TableCell className="px-4 py-3 text-gray-900 text-start text-theme-sm dark:text-gray-400">
+                  ₺{t.amount.toLocaleString()}
+                </TableCell>
+                <TableCell className="px-4 py-3 text-start text-theme-sm">
+                  <div className="flex flex-col items-start gap-1">
+                    <span className="text-gray-900 dark:text-gray-300 font-medium">
+                      {t.accountNumber ? t.accountNumber : '-'}
+                    </span>
+                    {(t.cryptoType || t.bankID) && (
+                      <span className="text-xs text-gray-500 dark:text-gray-400">
+                        {t.cryptoType ? t.cryptoType : t.bankID}
+                      </span>
+                    )}
+                  </div>
+                </TableCell>
+                <TableCell className={`px-4 py-3 ${t.status === 'Pending' ? 'text-yellow-600' : t.status === 'Success' ? 'text-success-600' : ['Fail','Cancel','Rejected'].includes(t.status) ? 'text-red-600' : 'text-gray-500 dark:text-gray-400'} text-start text-theme-sm`}>
+                  {t.status}
+                </TableCell>
+                <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                  {formatDateToDDMMYYYYHHMMSS(t.createdAt)}
+                </TableCell>
+              </TableRow>
+            ))
+          )}
+        </TableBody>
+      </Table>
+    </div>
+
+    {/* ✅ Sticky Total Row */}
+    {financialTransactions.length > 0 && totalAmount && totalAmount > 0 && (
+      <div className="mt-auto border-t border-gray-200 dark:border-white/[0.1]">
+        <div className="grid grid-cols-9 bg-gray-50 dark:bg-gray-900">
+          <div className="col-span-5 px-5 py-3 text-end font-medium text-gray-700 dark:text-gray-300">
+            Total:
+          </div>
+          <div className="px-5 py-3 font-medium text-gray-700 dark:text-gray-300">
+            ₺{totalAmount.toLocaleString()}
+          </div>
+          <div className="col-span-3"></div>
         </div>
       </div>
- {/* Pagination Controls */}
- <div className="flex items-center justify-end w-full px-4 py-2 space-x-3 border-t border-[#c8c9cb]">
+    )}
+
+  </div>
+</div>
+
+{/* Pagination Controls */}
+<div className="flex items-center justify-end w-full px-4 py-2 space-x-3 border-t border-[#c8c9cb]">
   <div className="text-sm text-gray-700 dark:text-gray-300 px-2 border-r border-[#c8c9cb]">
-          Showing {financialTransactions.length} of {pagination.totalCount} withdrawals
-        </div>
-    <div className="flex items-center gap-2">
-          <label htmlFor="rowsPerPage" className="text-sm text-gray-700 dark:text-gray-300">
-            Rows per page:
-          </label>
-          <select
-            id="rowsPerPage"
-            value={rowsPerPage}
-            onChange={handleRowsPerPageChange}
-            className="text-sm rounded-md border border-gray-300 px-2 py-1 dark:bg-gray-700 dark:text-white "
-          >
-            {[25, 50, 75, 100].map((val) => (
-              <option key={val} value={val}>{val}</option>
-            ))}
-          </select>
-        </div>
-      <span className="text-sm text-gray-700 dark:text-gray-300 px-2 border-l border-[#c8c9cb]">
+    Showing {financialTransactions.length} of {pagination.totalCount} withdrawals
+  </div>
+  <div className="flex items-center gap-2">
+    <label htmlFor="rowsPerPage" className="text-sm text-gray-700 dark:text-gray-300">
+      Rows per page:
+    </label>
+    <select
+      id="rowsPerPage"
+      value={rowsPerPage}
+      onChange={handleRowsPerPageChange}
+      className="text-sm rounded-md border border-gray-300 px-2 py-1 dark:bg-gray-700 dark:text-white "
+    >
+      {[25, 50, 75, 100].map((val) => (
+        <option key={val} value={val}>{val}</option>
+      ))}
+    </select>
+  </div>
+  <span className="text-sm text-gray-700 dark:text-gray-300 px-2 border-l border-[#c8c9cb]">
     Page {currentPage} of {pagination.totalPages}
   </span>
 
@@ -513,9 +518,10 @@ const BasicTableWithdrawals = () => {
     >
       Next
     </button>
+  </div>
+</div>
+
     </div>
-  </div>
-  </div>
   )
 }
 

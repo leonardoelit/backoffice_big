@@ -21,6 +21,7 @@ export default function PlayerProfile() {
 
   const subTabFromUrl = searchParams.get("subtab") || "Profile"; // default subtab
   const [activeSubTab, setActiveSubTab] = useState(subTabFromUrl);
+  
 
   // Sync subtab from URL
   useEffect(() => {
@@ -31,24 +32,27 @@ export default function PlayerProfile() {
   const [playerData, setPlayerData] = useState<Player>();
   const [isLoading, setIsLoading] = useState(true);
 
+  
   // Sync tab from URL on mount
   useEffect(() => {
-    setActiveTab(tabFromUrl);
-  }, [tabFromUrl]);
-
-  // Fetch player data
-  useEffect(() => {
     if (!id) return;
-
+  
     const fetchData = async () => {
       setIsLoading(true);
       const res = await getPlayerDataId(id);
-      if (res.isSuccess) setPlayerData(res.playerData);
+  
+      if (res.isSuccess && res.playerData) {
+        // Convert markedAsRisk to boolean
+        res.playerData.markedAsRisk = Boolean(res.playerData.markedAsRisk);
+        setPlayerData(res.playerData);
+      }
+  
       setIsLoading(false);
     };
-
+  
     fetchData();
   }, [id]);
+  
 
   const handleTabClick = (tabKey: string, subTabKey?: string) => {
   setActiveTab(tabKey);
@@ -89,41 +93,54 @@ export default function PlayerProfile() {
 
   return (
     <div className="w-full">
-    {/* Breadcrumb */}
-    <div className="flex items-center text-sm text-gray-500 dark:text-gray-400 mb-3">
-    <Link
-  href="/" 
-  className="hover:text-blue-500 cursor-pointer"
->
-  Dashboard
-</Link>  
-      <span className="mx-2">/</span>
-      <Link
-  href="/players/all-players" 
-  className="hover:text-blue-500 cursor-pointer"
->
-  Players
-</Link>      <span className="mx-2">/</span>
-      <span className="text-gray-900 dark:text-white font-medium">
-        {playerData?.username || "Yükleniyor..."}
-      </span>
-       {/* Online Status */}
-  {playerData && (
-    <div className="flex ml-4 items-center gap-2">
-      <div
-        className={`h-3 w-3 rounded-full ${
-          playerData.isOnline
-            ? "bg-green-500 shadow-[0_0_6px_rgba(34,197,94,0.7)]"
-            : "bg-red-500 shadow-[0_0_6px_rgba(239,68,68,0.6)]"
-        }`}
-      ></div>
+      {/* Breadcrumb */}
+      <div className="flex items-center text-sm text-gray-500 dark:text-gray-400 mb-3">
+        <Link href="/" className="hover:text-blue-500 cursor-pointer">
+          Dashboard
+        </Link>  
+        <span className="mx-2">/</span>
+        <Link href="/players/all-players" className="hover:text-blue-500 cursor-pointer">
+          Players
+        </Link>      
+        <span className="mx-2">/</span>
+        <span className="text-gray-900 dark:text-white font-medium">
+          {playerData?.username || "Yükleniyor..."}
+        </span>
+  
+        {/* Online & Risk Status */}
+        {playerData && (
+          <div className="flex ml-4 items-center gap-4">
+            {/* Online Status */}
+            <div className="flex items-center gap-1">
+              <div
+                className={`h-3 w-3 rounded-full ${
+                  playerData.isOnline
+                    ? "bg-green-500 shadow-[0_0_6px_rgba(34,197,94,0.7)]"
+                    : "bg-red-500 shadow-[0_0_6px_rgba(239,68,68,0.6)]"
+                }`}
+              ></div>
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                {playerData.isOnline ? "Online" : "Offline"}
+              </span>
+            </div>
+  {/* Risk */}
+  <div className="flex items-center gap-1">
       <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-        {playerData.isOnline ? "Online" : "Offline"}
+        Risk Status:
       </span>
-    </div>
-  )}
-</div>
+      <div
+  className={`h-3 w-3 rounded-full ${
+    playerData.markedAsRisk
+      ? "bg-purple-600 shadow-[0_0_8px_rgba(147,51,234,0.8)] soft-pulse"
+      : "bg-purple-300 shadow-[0_0_6px_rgba(192,132,252,0.7)]"
+  }`}
+></div>
 
+    </div>
+  </div>
+)}
+      </div>
+  
 
     <div className="w-full">
       {/* Tabs */}
