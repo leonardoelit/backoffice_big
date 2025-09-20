@@ -140,7 +140,7 @@ export default function PlayerProfile() {
       <div
   className={`h-3 w-3 rounded-full ${
     playerData.markedAsRisk
-      ? "bg-purple-600 shadow-[0_0_8px_rgba(147,51,234,0.8)] soft-pulse"
+      ? "bg-purple-600 shadow-[0_0_8px_rgba(147,51,234,0.8)] soft-pulse-purple"
       : "bg-purple-300 shadow-[0_0_6px_rgba(192,132,252,0.7)]"
   }`}
 ></div>
