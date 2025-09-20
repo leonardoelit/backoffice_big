@@ -14,10 +14,15 @@ const PlayerTransactionsTable = ({ playerId }: { playerId: string }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(25);
 
-  // ✅ Set default date range to today
+  const pad = (n: number) => n.toString().padStart(2, "0");
+
   const today = new Date();
-  const startOfToday = new Date(today.setHours(0, 0, 0, 0)).toISOString();
-  const endOfToday = new Date(today.setHours(23, 59, 59, 999)).toISOString();
+  const startOfTodayLocal = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 0, 0, 0);
+  const endOfTodayLocal = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59, 999);
+  
+  const startOfToday = `${today.getFullYear()}-${pad(today.getMonth()+1)}-${pad(today.getDate())}T00:00:00`;
+  const endOfToday = `${today.getFullYear()}-${pad(today.getMonth()+1)}-${pad(today.getDate())}T23:59:59`;
+  
 
   const [dateFrom, setDateFrom] = useState<string | undefined>(startOfToday);
   const [dateTo, setDateTo] = useState<string | undefined>(endOfToday);
@@ -291,7 +296,7 @@ const providerName = (gameId: number) => {
         <option value="Inc">Üst</option>
         <option value="Dec">Alt</option>
       </select>
-
+a
       {/* Event Type Multi-Select */}
       <div className="relative flex-1 min-w-[200px]" ref={selectRef}>
         <button
