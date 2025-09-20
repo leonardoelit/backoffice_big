@@ -109,9 +109,14 @@ export default function PlayerProfile() {
   
         {/* Online & Risk Status */}
         {playerData && (
+          
           <div className="flex ml-4 items-center gap-4">
+            
             {/* Online Status */}
             <div className="flex items-center gap-1">
+            <span className="text-sm font-medium text-gray-700 mr-3 dark:text-gray-300">
+        |
+      </span>
               <div
                 className={`h-3 w-3 rounded-full ${
                   playerData.isOnline
@@ -123,8 +128,12 @@ export default function PlayerProfile() {
                 {playerData.isOnline ? "Online" : "Offline"}
               </span>
             </div>
+            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+        |
+      </span>
   {/* Risk */}
   <div className="flex items-center gap-1">
+
       <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
         Risk Status:
       </span>
