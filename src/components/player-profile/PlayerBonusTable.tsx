@@ -17,6 +17,10 @@ const PlayerBonusTable = ({ playerId }: { playerId:string }) => {
     const [isDateModified, setIsDateModified] = useState(false)
     const [type, setType] = useState<string | undefined>(undefined);
     const [showPopup, setShowPopup] = useState(false);
+    const [showVoucherPopup, setShowVoucherPopup] = useState(false);
+    const [voucherCount, setVoucherCount] = useState(1);
+  
+
     
 
     const [isFilterOn, setIsFilterOn] = useState(false);
@@ -210,7 +214,23 @@ const PlayerBonusTable = ({ playerId }: { playerId:string }) => {
   }
 
   return (
-  <div className="space-y-4">
+<div className="space-y-4">
+  
+<div className="flex justify-end gap-2 items-center">
+  {/* Text Label */}
+ <div className="text-sm font-medium text-gray-700 dark:text-gray-300">
+    Mevcut Çark Döndürme Hakkı :
+  </div>
+  <div className="w-6 h-6 flex items-center justify-center rounded-full bg-blue-600 text-white text-sm font-semibold">
+    0
+  </div>
+    <button
+      onClick={() => setShowVoucherPopup(true)}
+      className="px-10 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 flex items-center gap-2"
+    >
+      Cark Kodu
+    </button>
+
     <div className="flex justify-end">
       <button
         onClick={() => {
@@ -229,107 +249,148 @@ const PlayerBonusTable = ({ playerId }: { playerId:string }) => {
         Add Bonus
       </button>
     </div>
-    
-    <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">
-          {/* Popup modal */}
-      {showPopup && (
-  <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-[9999999]">
-    <div
-      ref={popupRef}
-      className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 w-96"
-    >
-      <h2 className="text-lg font-semibold mb-4 text-gray-800 dark:text-gray-100">
-        Manage Bonus
-      </h2>
-
-      {/* Direction Select */}
-      <label className="block text-sm mb-1 text-gray-700 dark:text-gray-300">
-        Direction
-      </label>
-      <select
-        value={formData.direction}
-        onChange={(e) =>
-          setFormData({ ...formData, direction: e.target.value as "Inc" | "Dec" })
-        }
-        className="w-full mb-3 rounded-md border border-gray-300 dark:border-gray-600 
-                   bg-white dark:bg-gray-700 text-sm text-gray-700 dark:text-gray-200 
-                   px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-      >
-        <option value="Inc">Üst</option>
-        <option value="Dec">Alt</option>
-      </select>
-
-      {/* Bonus Select */}
-      <label className="block text-sm mb-1 text-gray-700 dark:text-gray-300">
-        Bonus
-      </label>
-      <select
-        value={formData.defId}
-        onChange={(e) =>
-          setFormData({ ...formData, defId: e.target.value })
-        }
-        className="w-full mb-3 rounded-md border border-gray-300 dark:border-gray-600 
-                   bg-white dark:bg-gray-700 text-sm text-gray-700 dark:text-gray-200 
-                   px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-      >
-        <option value="">Select Bonus</option>
-        {bonusList.map((b) => (
-          <option key={b.defId} value={b.defId}>
-            {b.name}
-          </option>
-        ))}
-      </select>
-
-      {/* Amount Input */}
-      <label className="block text-sm mb-1 text-gray-700 dark:text-gray-300">
-        Amount
-      </label>
-      <input
-        type="number"
-        value={formData.amount}
-        onChange={(e) =>
-          setFormData({ ...formData, amount: parseInt(e.target.value, 10) || 0 })
-        }
-        className="w-full mb-4 rounded-md border border-gray-300 dark:border-gray-600 
-                   bg-white dark:bg-gray-700 text-sm text-gray-700 dark:text-gray-200 
-                   px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-      />
-
-      {/* Note Input */}
-      <label className="block text-sm mb-1 text-gray-700 dark:text-gray-300">
-        Note
-      </label>
-      <input
-        type="text"
-        value={formData.note}
-        onChange={(e) => setFormData({ ...formData, note: e.target.value })}
-        placeholder="Add a note..."
-        className="w-full mb-4 rounded-md border border-gray-300 dark:border-gray-600 
-                  bg-white dark:bg-gray-700 text-sm text-gray-700 dark:text-gray-200 
-                  px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-      />
-
-
-      {/* Buttons */}
-      <div className="flex justify-end gap-3">
-        <button
-        disabled={isSubmitting}
-          onClick={() => setShowPopup(false)}
-          className="px-4 py-2 bg-gray-300 text-gray-800 dark:bg-gray-600 dark:text-gray-200 text-sm rounded hover:bg-gray-400 disabled:bg-gray-400"
-        >
-          Back
-        </button>
-        <button
-        disabled={isSubmitting}
-          onClick={() => handleManageBonus()}
-          className="px-4 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 disabled:bg-blue-800"
-        >
-          Submit
-        </button>
-      </div>
-    </div>
   </div>
-)}
+
+  <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">
+    {/* Popup modal */}
+    {showPopup && (
+      <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-[9999999]">
+        <div
+          ref={popupRef}
+          className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 w-96"
+        >
+          <h2 className="text-lg font-semibold mb-4 text-gray-800 dark:text-gray-100">
+            Manage Bonus
+          </h2>
+
+          {/* Direction Select */}
+          <label className="block text-sm mb-1 text-gray-700 dark:text-gray-300">
+            Direction
+          </label>
+          <select
+            value={formData.direction}
+            onChange={(e) =>
+              setFormData({ ...formData, direction: e.target.value as "Inc" | "Dec" })
+            }
+            className="w-full mb-3 rounded-md border border-gray-300 dark:border-gray-600 
+                       bg-white dark:bg-gray-700 text-sm text-gray-700 dark:text-gray-200 
+                       px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="Inc">Üst</option>
+            <option value="Dec">Alt</option>
+          </select>
+
+          {/* Bonus Select */}
+          <label className="block text-sm mb-1 text-gray-700 dark:text-gray-300">
+            Bonus
+          </label>
+          <select
+            value={formData.defId}
+            onChange={(e) =>
+              setFormData({ ...formData, defId: e.target.value })
+            }
+            className="w-full mb-3 rounded-md border border-gray-300 dark:border-gray-600 
+                       bg-white dark:bg-gray-700 text-sm text-gray-700 dark:text-gray-200 
+                       px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="">Select Bonus</option>
+            {bonusList.map((b) => (
+              <option key={b.defId} value={b.defId}>
+                {b.name}
+              </option>
+            ))}
+          </select>
+
+          {/* Amount Input */}
+          <label className="block text-sm mb-1 text-gray-700 dark:text-gray-300">
+            Amount
+          </label>
+          <input
+            type="number"
+            value={formData.amount}
+            onChange={(e) =>
+              setFormData({ ...formData, amount: parseInt(e.target.value, 10) || 0 })
+            }
+            className="w-full mb-4 rounded-md border border-gray-300 dark:border-gray-600 
+                       bg-white dark:bg-gray-700 text-sm text-gray-700 dark:text-gray-200 
+                       px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+
+          {/* Note Input */}
+          <label className="block text-sm mb-1 text-gray-700 dark:text-gray-300">
+            Note
+          </label>
+          <input
+            type="text"
+            value={formData.note}
+            onChange={(e) => setFormData({ ...formData, note: e.target.value })}
+            placeholder="Add a note..."
+            className="w-full mb-4 rounded-md border border-gray-300 dark:border-gray-600 
+                      bg-white dark:bg-gray-700 text-sm text-gray-700 dark:text-gray-200 
+                      px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+
+          {/* Buttons */}
+          <div className="flex justify-end gap-3">
+            <button
+              disabled={isSubmitting}
+              onClick={() => setShowPopup(false)}
+              className="px-4 py-2 bg-gray-300 text-gray-800 dark:bg-gray-600 dark:text-gray-200 text-sm rounded hover:bg-gray-400 disabled:bg-gray-400"
+            >
+              Back
+            </button>
+            <button
+              disabled={isSubmitting}
+              onClick={() => handleManageBonus()}
+              className="px-4 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 disabled:bg-blue-800"
+            >
+              Submit
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
+
+    {/* ✅ New Voucher Wheel Popup */}
+    {showVoucherPopup && (
+      <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-[9999999]">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 w-80">
+          <h2 className="text-lg font-semibold mb-4 text-gray-800 dark:text-gray-100">
+            Çark Dönürme Hakkı Ekle
+          </h2>
+
+          {/* Number of Codes Input */}
+          <label className="block text-sm mb-1 text-gray-700 dark:text-gray-300">
+            Çark Hakkı Sayısı
+          </label>
+          <input
+            type="number"
+            min={1}
+            value={voucherCount}
+            onChange={(e) =>
+              setVoucherCount(Math.max(1, parseInt(e.target.value, 10) || 1))
+            }
+            className="w-full mb-4 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm text-gray-700 dark:text-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+
+          {/* Buttons */}
+          <div className="flex justify-end gap-3">
+            <button
+              onClick={() => setShowVoucherPopup(false)}
+              className="px-4 py-2 bg-gray-300 text-gray-800 dark:bg-gray-600 dark:text-gray-200 text-sm rounded hover:bg-gray-400"
+            >
+              Back
+            </button>
+            <button
+              onClick={() => handleVoucherWheel(voucherCount)}
+              className="px-4 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
+            >
+              Submit
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
 
 
           <div className="relative flex flex-row items-center justify-between" ref={dropdownRef}>
