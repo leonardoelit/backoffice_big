@@ -138,3 +138,5 @@ export const providers = [
   { id: 349, name: "ZeusPlay" }
 ];
 
+export const freespinProviders = [22,26,116,19,21,106,102,58,353,324,325]
+

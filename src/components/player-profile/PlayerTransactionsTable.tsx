@@ -17,9 +17,6 @@ const PlayerTransactionsTable = ({ playerId }: { playerId: string }) => {
   const pad = (n: number) => n.toString().padStart(2, "0");
 
   const today = new Date();
-  const startOfTodayLocal = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 0, 0, 0);
-  const endOfTodayLocal = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59, 999);
-  
   const startOfToday = `${today.getFullYear()}-${pad(today.getMonth()+1)}-${pad(today.getDate())}T00:00:00`;
   const endOfToday = `${today.getFullYear()}-${pad(today.getMonth()+1)}-${pad(today.getDate())}T23:59:59`;
   

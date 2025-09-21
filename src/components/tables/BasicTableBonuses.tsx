@@ -7,23 +7,30 @@ import {
   TableRow,
   TableBody,
 } from "../ui/table";
-import { Bonus, UpdateBonusRequest } from "../constants/types";
+import { Bonus, GameData, UpdateBonusRequest } from "../constants/types";
 import { getBonuses, createBonus, deleteBonus, updateBonus } from "../lib/api";
 import { showToast } from "@/utils/toastUtil";
 import { formatDateToDDMMYYYYHHMMSS } from "@/utils/utils";
+import { useAuth } from "@/context/AuthContext";
+import { freespinProviders } from "../constants";
 
 type PopupMode = "create" | "update" | "delete";
 
 export const bonusTypes = [
-  { id: 1, name: "Freespin" },
-  { id: 2, name: "Casino" },
-  { id: 3, name: "Sport" },
+  { id: 0, name: "Freespin" },
+  { id: 1, name: "Casino" },
+  { id: 2, name: "Sport" },
 ];
 
 const BasicTableBonuses = () => {
+  const { games } = useAuth();
   const [bonusList, setBonusList] = useState<Bonus[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isCreating, setIsCreating] = useState(false)
+  const [filteredGames, setFilteredGames] = useState<GameData[]>([])
+  const [searchQuery, setSearchQuery] = useState("")
+  const [updateSearchQuery, setUpdateSearchQuery] = useState("");
+  const [isUpdateDropdownOpen, setIsUpdateDropdownOpen] = useState(false);
 
   // pagination
   const [currentPage, setCurrentPage] = useState(1);
@@ -40,10 +47,13 @@ const BasicTableBonuses = () => {
 
   // form state
   const [formData, setFormData] = useState({
-    type: bonusTypes[0].id,
+    type: bonusTypes[1].id,
     name: "",
     min: 0,
     max: 0,
+    bonusId: "",
+    bonusBet: "",
+    bonusRounds: "",
     isPercentage: false,
     percentage: 0,
     description: "",
@@ -53,9 +63,12 @@ const BasicTableBonuses = () => {
   const [updateFormData, setUpdateFormData] = useState<UpdateBonusRequest>({
     active: true,
     defId: "",
-    type: bonusTypes[0].id,
+    type: bonusTypes[1].id,
     name: "",
     isPercentage: false,
+    bonusId: undefined,
+    bonusBet: undefined,
+    bonusRounds: undefined,
     min: 0,
     max: 0,
     description: "",
@@ -64,10 +77,13 @@ const BasicTableBonuses = () => {
   const openCreatePopup = () => {
     setPopupMode("create");
     setFormData({
-      type: bonusTypes[0].id,
+      type: bonusTypes[1].id,
       name: "",
       isPercentage: false,
       percentage: 0,
+      bonusId: "",
+      bonusBet: "",
+      bonusRounds: "",
       min: 0,
       max: 0,
       description: "",
@@ -85,6 +101,9 @@ const BasicTableBonuses = () => {
       name: bonus.name,
       isPercentage: bonus.isPercentage,
       percentage: bonus.percentage,
+      bonusId: bonus.bonusId,
+      bonusBet: bonus.bonusBet,
+      bonusRounds: bonus.bonusRounds,
       min: bonus.min,
       max: bonus.max,
       description: bonus.description,
@@ -136,9 +155,27 @@ const BasicTableBonuses = () => {
     }
   };
 
+  const filterGames = () => {
+    const filteredGamesList = games.filter((g) => freespinProviders.includes(g.providerId))
+    setFilteredGames(filteredGamesList)
+  }
+
   useEffect(() => {
     getBonusesList();
   }, []);
+
+  useEffect(() => {
+    if(games.length > 0){
+      filterGames();
+    }
+  }, [games]);
+
+  useEffect(() => {
+  if (updateFormData.bonusId) {
+    const selectedGame = filteredGames.find((g) => g.id.toString() === updateFormData.bonusId);
+    setUpdateSearchQuery(selectedGame ? selectedGame.name : "");
+  }
+}, [updateFormData.bonusId, filteredGames]);
 
   const getBonusesList = async () => {
     setIsLoading(true);
@@ -175,7 +212,8 @@ const BasicTableBonuses = () => {
     }
   };
 
-  // close popup if clicked outside
+  const updateSelectRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -183,18 +221,24 @@ const BasicTableBonuses = () => {
         popupRef.current &&
         !popupRef.current.contains(event.target as Node)
       ) {
+        // Don't close if click is inside the update dropdown
+        if (updateSelectRef.current?.contains(event.target as Node)) return;
+
         setShowPopup(false);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [showPopup]);
+
 
   const handleCreateBonus = async () => {
     setIsCreating(true)
     try {
+      if(formData.type === 0){
+        formData.min = 0;
+        formData.max = 1000000
+      }
       const response = await createBonus(formData);
       if (!response.isSuccess) {
         showToast(response.message ?? "Failed to create bonus", "error");
@@ -208,6 +252,9 @@ const BasicTableBonuses = () => {
         name: "",
         isPercentage: false,
         percentage: 0,
+        bonusId: "",
+        bonusBet: "",
+        bonusRounds: "",
         min: 0,
         max: 0,
         description: "",
@@ -294,7 +341,7 @@ const BasicTableBonuses = () => {
                   Type
                 </TableCell>
                 <TableCell isHeader className="text-left px-5 py-3 font-medium text-gray-500 cursor-pointer" onClick={() => handleSort("type")}>
-                  Percentage
+                  Percentage/Freespin Info
                 </TableCell>
                 <TableCell isHeader className="text-left px-5 py-3 font-medium text-gray-500">
                   Active
@@ -334,7 +381,13 @@ const BasicTableBonuses = () => {
                       {bonusTypes.find((t) => t.id === bonus.type)?.name ??
                         bonus.type}
                     </TableCell>
-                    <TableCell className="px-5 py-4">{bonus.isPercentage ? bonus.percentage : "-"}</TableCell>
+                    <TableCell className="px-5 py-4">{bonus.isPercentage ? bonus.percentage : bonus.bonusId !== null ? (
+                      <div className="flex flex-col items-start justify-start">
+                        <p>{filteredGames.find((g) => g.id.toString() === bonus.bonusId)?.name}</p>
+                        <p>{bonus.bonusBet} Bet</p>
+                        <p>{bonus.bonusRounds} Rounds</p>
+                      </div>
+                    ) : "-"}</TableCell>
                     <TableCell className="px-5 py-4">
                       {bonus.active ? (
                         <span className="text-green-600 font-medium">Active</span>
@@ -438,6 +491,7 @@ const BasicTableBonuses = () => {
             {popupMode === "create" && (
               <>
                 <h2 className="text-lg font-semibold mb-4">Create Bonus</h2>
+                {/* Bonus Type Select */}
                 <label className="block text-sm mb-2">
                   Type
                   <select
@@ -457,6 +511,8 @@ const BasicTableBonuses = () => {
                     ))}
                   </select>
                 </label>
+
+                {/* Name input - common */}
                 <label className="block text-sm mb-2">
                   Name
                   <input
@@ -468,65 +524,144 @@ const BasicTableBonuses = () => {
                     className="w-full border px-2 py-1 rounded"
                   />
                 </label>
-                <label className="block text-sm mb-2">
-                  Is Percentage
-                  <input
-                    type="checkbox"
-                    checked={formData.isPercentage}
-                    onChange={(e) =>
-                      setFormData({ ...formData, isPercentage: e.target.checked })
-                    }
-                    className="ml-2"
-                  />
-                </label>
 
-                {formData.isPercentage && (
-                  <label className="block text-sm mb-2">
-                    Percentage
-                    <input
-                      type="text"
-                      value={formData.percentage}
-                      onChange={(e) => {
-                        const val = e.target.value;
+                {/* Conditional rendering based on type */}
+                {formData.type === 0 ? (
+                  <>
+                    {/* Free Spin Bonus field - Bonus Id (searchable select) */}
+                    <label className="block text-sm mb-2">
+                      Bonus Game
+                      <div className="relative">
+                        {/* Search input */}
+                        <input
+                          type="text"
+                          placeholder="Search game..."
+                          value={
+                            filteredGames.find((g) => g.id.toString() === formData.bonusId)?.name ||
+                            searchQuery
+                          }
+                          onChange={(e) => setSearchQuery(e.target.value)}
+                          className="w-full border px-2 py-1 rounded"
+                        />
 
-                        // Allow only digits (and optional single decimal)
-                        if (/^\d{0,3}(\.\d{0,2})?$/.test(val)) {
-                          let num = Number(val);
+                        {/* Dropdown list */}
+                        {searchQuery && (
+                          <ul className="absolute z-10 bg-white border rounded mt-1 max-h-40 overflow-y-auto w-full">
+                            {filteredGames
+                              .filter((game) =>
+                                game.name.toLowerCase().includes(searchQuery.toLowerCase())
+                              )
+                              .map((game) => (
+                                <li
+                                  key={game.id}
+                                  onClick={() => {
+                                    setFormData({ ...formData, bonusId: game.id.toString() });
+                                    setSearchQuery(""); // clear search after selection
+                                  }}
+                                  className="px-2 py-1 cursor-pointer hover:bg-gray-100"
+                                >
+                                  {game.name}
+                                </li>
+                              ))}
 
-                          // Clamp value between 0 and 100
-                          //if (num > 100) num = 100;
-                          if (num < 0) num = 0;
+                            {/* No results */}
+                            {filteredGames.filter((g) =>
+                              g.name.toLowerCase().includes(searchQuery.toLowerCase())
+                            ).length === 0 && (
+                              <li className="px-2 py-1 text-gray-500">No results</li>
+                            )}
+                          </ul>
+                        )}
+                      </div>
+                    </label>
 
-                          setFormData({ ...formData, percentage: num });
+                    <label className="block text-sm mb-2">
+                      Bonus Bet
+                      <input
+                        type="text"
+                        value={formData.bonusBet || ""}
+                        onChange={(e) =>
+                          setFormData({ ...formData, bonusBet: e.target.value })
                         }
-                      }}
-                      className="w-full border px-2 py-1 rounded"
-                      placeholder="Enter percentage (0-100)"
-                    />
-                  </label>
+                        className="w-full border px-2 py-1 rounded"
+                      />
+                    </label>
+                    <label className="block text-sm mb-2">
+                      Bonus Rounds
+                      <input
+                        type="text"
+                        value={formData.bonusRounds || ""}
+                        onChange={(e) =>
+                          setFormData({ ...formData, bonusRounds: e.target.value })
+                        }
+                        className="w-full border px-2 py-1 rounded"
+                      />
+                    </label>
+                  </>
+                ) : (
+                  <>
+                    {/* Normal Bonus fields */}
+                    <label className="block text-sm mb-2">
+                      Is Percentage
+                      <input
+                        type="checkbox"
+                        checked={formData.isPercentage}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            isPercentage: e.target.checked,
+                          })
+                        }
+                        className="ml-2"
+                      />
+                    </label>
+
+                    {formData.isPercentage && (
+                      <label className="block text-sm mb-2">
+                        Percentage
+                        <input
+                          type="text"
+                          value={formData.percentage}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            if (/^\d{0,3}(\.\d{0,2})?$/.test(val)) {
+                              let num = Number(val);
+                              if (num < 0) num = 0;
+                              setFormData({ ...formData, percentage: num });
+                            }
+                          }}
+                          className="w-full border px-2 py-1 rounded"
+                          placeholder="Enter percentage (0-100)"
+                        />
+                      </label>
+                    )}
+
+                    <label className="block text-sm mb-2">
+                      Min
+                      <input
+                        type="number"
+                        value={formData.min}
+                        onChange={(e) =>
+                          setFormData({ ...formData, min: Number(e.target.value) })
+                        }
+                        className="w-full border px-2 py-1 rounded"
+                      />
+                    </label>
+                    <label className="block text-sm mb-2">
+                      Max
+                      <input
+                        type="number"
+                        value={formData.max}
+                        onChange={(e) =>
+                          setFormData({ ...formData, max: Number(e.target.value) })
+                        }
+                        className="w-full border px-2 py-1 rounded"
+                      />
+                    </label>
+                  </>
                 )}
-                <label className="block text-sm mb-2">
-                  Min
-                  <input
-                    type="number"
-                    value={formData.min}
-                    onChange={(e) =>
-                      setFormData({ ...formData, min: Number(e.target.value) })
-                    }
-                    className="w-full border px-2 py-1 rounded"
-                  />
-                </label>
-                <label className="block text-sm mb-2">
-                  Max
-                  <input
-                    type="number"
-                    value={formData.max}
-                    onChange={(e) =>
-                      setFormData({ ...formData, max: Number(e.target.value) })
-                    }
-                    className="w-full border px-2 py-1 rounded"
-                  />
-                </label>
+
+                {/* Description - common */}
                 <label className="block text-sm mb-2">
                   Description
                   <textarea
@@ -540,6 +675,8 @@ const BasicTableBonuses = () => {
                     className="w-full border px-2 py-1 rounded"
                   />
                 </label>
+
+                {/* Action Buttons */}
                 <div className="flex justify-end mt-4 gap-2">
                   <button
                     onClick={() => setShowPopup(false)}
@@ -560,6 +697,8 @@ const BasicTableBonuses = () => {
             {popupMode === "update" && (
               <>
                 <h2 className="text-lg font-semibold mb-4">Update Bonus</h2>
+
+                {/* DefId (read-only) */}
                 <label className="block text-sm mb-2">
                   DefId
                   <input
@@ -569,6 +708,8 @@ const BasicTableBonuses = () => {
                     className="w-full border px-2 py-1 rounded bg-gray-100"
                   />
                 </label>
+
+                {/* Active */}
                 <label className="block text-sm mb-2">
                   Active
                   <select
@@ -585,7 +726,8 @@ const BasicTableBonuses = () => {
                     <option value="false">Inactive</option>
                   </select>
                 </label>
-                {/* reuse create form fields */}
+
+                {/* Type */}
                 <label className="block text-sm mb-2">
                   Type
                   <select
@@ -605,6 +747,8 @@ const BasicTableBonuses = () => {
                     ))}
                   </select>
                 </label>
+
+                {/* Name */}
                 <label className="block text-sm mb-2">
                   Name
                   <input
@@ -616,67 +760,151 @@ const BasicTableBonuses = () => {
                     className="w-full border px-2 py-1 rounded"
                   />
                 </label>
-                <label className="block text-sm mb-2">
-                Is Percentage
-                <input
-                  type="checkbox"
-                  checked={updateFormData.isPercentage}
-                  onChange={(e) =>
-                    setUpdateFormData({
-                      ...updateFormData,
-                      isPercentage: e.target.checked,
-                    })
-                  }
-                  className="ml-2"
-                />
-              </label>
 
-              {updateFormData.isPercentage && (
-                <label className="block text-sm mb-2">
-                  Percentage
-                  <input
-                    type="text"
-                    value={updateFormData.percentage}
-                    onChange={(e) => {
-                      const val = e.target.value;
+                {/* Conditional rendering based on type */}
+                {updateFormData.type === 0 ? (
+                  <>
+                    {/* Free Spin Bonus field - Bonus Id (update popup with searchable select) */}
+                    <label className="text-sm">Bonus Game</label>
+                    <div
+                      className="relative text-sm mb-2"
+                      ref={updateSelectRef} // ✅ add this
+                      onMouseDown={(e) => e.stopPropagation()} // optional, ensures the dropdown click doesn't bubble
+                    >
+                      <input
+                        type="text"
+                        placeholder="Search game..."
+                        value={updateSearchQuery}
+                        onFocus={() => setIsUpdateDropdownOpen(true)}
+                        onChange={(e) => {
+                          setUpdateSearchQuery(e.target.value);
+                          setIsUpdateDropdownOpen(true);
+                        }}
+                        className="w-full border px-2 py-1 rounded"
+                      />
+                      {isUpdateDropdownOpen && (
+                        <ul className="absolute z-10 bg-white border rounded mt-1 max-h-40 overflow-y-auto w-full">
+                          {filteredGames
+                            .filter((game) =>
+                              game.name.toLowerCase().includes(updateSearchQuery.toLowerCase())
+                            )
+                            .map((game) => (
+                              <li
+                                key={game.id}
+                                onClick={() => {
+                                  setUpdateFormData({
+                                    ...updateFormData,
+                                    bonusId: game.id.toString(),
+                                  });
+                                  setUpdateSearchQuery(game.name);
+                                  setIsUpdateDropdownOpen(false);
+                                }}
+                                className="px-2 py-1 cursor-pointer hover:bg-gray-100"
+                              >
+                                {game.name}
+                              </li>
+                            ))}
+                        </ul>
+                      )}
+                    </div>
 
-                      if (/^\d{0,3}(\.\d{0,2})?$/.test(val)) {
-                        let num = Number(val);
 
-                        if (num < 0) num = 0;
+                    <label className="block text-sm mb-2">
+                      Bonus Bet
+                      <input
+                        type="text"
+                        value={updateFormData.bonusBet || ""}
+                        onChange={(e) =>
+                          setUpdateFormData({ ...updateFormData, bonusBet: e.target.value })
+                        }
+                        className="w-full border px-2 py-1 rounded"
+                      />
+                    </label>
+                    <label className="block text-sm mb-2">
+                      Bonus Rounds
+                      <input
+                        type="text"
+                        value={updateFormData.bonusRounds || ""}
+                        onChange={(e) =>
+                          setUpdateFormData({
+                            ...updateFormData,
+                            bonusRounds: e.target.value,
+                          })
+                        }
+                        className="w-full border px-2 py-1 rounded"
+                      />
+                    </label>
+                  </>
+                ) : (
+                  <>
+                    {/* Normal Bonus fields */}
+                    <label className="block text-sm mb-2">
+                      Is Percentage
+                      <input
+                        type="checkbox"
+                        checked={updateFormData.isPercentage}
+                        onChange={(e) =>
+                          setUpdateFormData({
+                            ...updateFormData,
+                            isPercentage: e.target.checked,
+                          })
+                        }
+                        className="ml-2"
+                      />
+                    </label>
 
-                        setUpdateFormData({ ...updateFormData, percentage: num });
-                      }
-                    }}
-                    className="w-full border px-2 py-1 rounded"
-                    placeholder="Enter percentage (0-100)"
-                  />
-                </label>
-              )}
+                    {updateFormData.isPercentage && (
+                      <label className="block text-sm mb-2">
+                        Percentage
+                        <input
+                          type="text"
+                          value={updateFormData.percentage}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            if (/^\d{0,3}(\.\d{0,2})?$/.test(val)) {
+                              let num = Number(val);
+                              if (num < 0) num = 0;
+                              setUpdateFormData({ ...updateFormData, percentage: num });
+                            }
+                          }}
+                          className="w-full border px-2 py-1 rounded"
+                          placeholder="Enter percentage (0-100)"
+                        />
+                      </label>
+                    )}
 
+                    <label className="block text-sm mb-2">
+                      Min
+                      <input
+                        type="number"
+                        value={updateFormData.min}
+                        onChange={(e) =>
+                          setUpdateFormData({
+                            ...updateFormData,
+                            min: Number(e.target.value),
+                          })
+                        }
+                        className="w-full border px-2 py-1 rounded"
+                      />
+                    </label>
+                    <label className="block text-sm mb-2">
+                      Max
+                      <input
+                        type="number"
+                        value={updateFormData.max}
+                        onChange={(e) =>
+                          setUpdateFormData({
+                            ...updateFormData,
+                            max: Number(e.target.value),
+                          })
+                        }
+                        className="w-full border px-2 py-1 rounded"
+                      />
+                    </label>
+                  </>
+                )}
 
-                <label className="block text-sm mb-2">
-                  Min
-                  <input
-                    type="number"
-                    value={updateFormData.min}
-                    onChange={(e) =>
-                      setUpdateFormData({ ...updateFormData, min: Number(e.target.value) })
-                    }
-                    className="w-full border px-2 py-1 rounded"
-                  />
-                </label>
-                <label className="block text-sm mb-2">
-                  Max
-                  <input
-                    type="number"
-                    value={updateFormData.max}
-                    onChange={(e) =>
-                      setUpdateFormData({ ...updateFormData, max: Number(e.target.value) })
-                    }
-                    className="w-full border px-2 py-1 rounded"
-                  />
-                </label>
+                {/* Description (common) */}
                 <label className="block text-sm mb-2">
                   Description
                   <textarea
@@ -690,6 +918,8 @@ const BasicTableBonuses = () => {
                     className="w-full border px-2 py-1 rounded"
                   />
                 </label>
+
+                {/* Action buttons */}
                 <div className="flex justify-end mt-4 gap-2">
                   <button
                     disabled={isCreating}

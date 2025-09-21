@@ -235,6 +235,9 @@ export interface CreateBonusRequest{
   name: string;
   isPercentage: boolean;
   percentage?: number;
+  bonusId?: string;
+  bonusBet?: string;
+  bonusRounds?: string;
   min: number;
   max: number;
   description: string;
@@ -247,6 +250,9 @@ export interface UpdateBonusRequest{
   name: string;
   isPercentage: boolean;
   percentage?: number;
+  bonusId?: string;
+  bonusBet?: string;
+  bonusRounds?: string;
   min: number;
   max: number;
   description: string;
@@ -259,6 +265,9 @@ export interface Bonus {
   active: boolean;
   isPercentage: boolean;
   percentage?: number;
+  bonusId?: string;
+  bonusBet?: string;
+  bonusRounds?: string;
   min:number;
   max:number;
   description: string;
@@ -278,7 +287,7 @@ export interface PlayerBonusSettingsResponse{
 }
 
 export interface BonusSettingData{
-bonusId: number;
+  bonusId: number;
   name: string;
   type: number;
   percentage?: number;
