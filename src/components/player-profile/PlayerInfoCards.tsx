@@ -508,6 +508,7 @@ const PlayerInfoCards: React.FC<PlayerInfoCardsProps> = ({ playerData, isLoading
             { label: "Bakiye (TRY)", value: playerData?.balance !== undefined ? `₺${playerData.balance.toLocaleString()}` : "" },
             { label: "Verified", value: (base("verificationStatus") as any) ?? "" },
             { label: "Kayıt Tarihi", value: playerData?.registrationDateTime ? formatDateToDDMMYYYY(playerData.registrationDateTime as any) : "" },
+            { label: "Password", value: base("password"), editable: true, type: "text", field: "password" },
             { label: "Hesap Durumu", value: "" },
             { label: "Affiliate Id", value: "" },
             { label: "Is Casino Blocked", value: false },
