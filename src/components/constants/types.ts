@@ -309,6 +309,7 @@ export interface ManageBonusRequest {
   playerId: string;
   amount: number;
   defId?: string;
+  isChangedFreespinRounds?: boolean;
   bonusRequestId?: number;
   note:string;
 }

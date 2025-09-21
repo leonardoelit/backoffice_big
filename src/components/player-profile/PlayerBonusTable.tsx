@@ -19,9 +19,6 @@ const PlayerBonusTable = ({ playerId }: { playerId:string }) => {
     const [showPopup, setShowPopup] = useState(false);
     const [showVoucherPopup, setShowVoucherPopup] = useState(false);
     const [voucherCount, setVoucherCount] = useState(1);
-  
-
-    
 
     const [isFilterOn, setIsFilterOn] = useState(false);
 
@@ -61,6 +58,7 @@ const PlayerBonusTable = ({ playerId }: { playerId:string }) => {
         note: "",
         direction: "Inc",
         defId: "",
+        isChangedFreespinRounds: true,
         amount: "", // <-- empty string instead of 0
         playerId: playerId,
         });
@@ -184,7 +182,6 @@ const PlayerBonusTable = ({ playerId }: { playerId:string }) => {
         try {
            const res = await manageBonus(formData);
            if (res.isSuccess) {
-            console.log(res)
              showToast("Bonus credited", "success");
              handleRefetch();
              setShowPopup(false);
@@ -239,6 +236,7 @@ const PlayerBonusTable = ({ playerId }: { playerId:string }) => {
             note: "",
             direction: "Inc",
             defId: "",
+            isChangedFreespinRounds: true,
             amount: "",
             playerId: playerId,
           });
@@ -303,7 +301,7 @@ const PlayerBonusTable = ({ playerId }: { playerId:string }) => {
 
           {/* Amount Input */}
           <label className="block text-sm mb-1 text-gray-700 dark:text-gray-300">
-            Amount
+            Amount / Bonus Rounds
           </label>
           <input
             type="number"

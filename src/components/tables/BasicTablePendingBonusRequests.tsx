@@ -156,8 +156,9 @@ const BasicTablePendingBonusRequests = () => {
         direction: "Inc",
         result: modalState.action === "accept",
         playerId: modalState.playerId,
+        isChangedFreespinRounds: amount === 14821748325 ? false : true,
         bonusRequestId: modalState.id,
-        amount: amount,
+        amount: amount === 14821748325 ? 123 : amount,
         note: note
       }
       const result = await manageBonus(

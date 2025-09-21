@@ -19,6 +19,7 @@ const BonusConfirmationModal = ({
 }) => {
   const [amount, setAmount] = useState<string>("");
   const [note, setNote] = useState<string>("");
+  const [isChangedRounds, setIsChangedRounds] = useState(false)
 
   useEffect(() => {
     if (isOpen) {
@@ -36,8 +37,8 @@ const BonusConfirmationModal = ({
   const handleConfirm = () => {
     const numericAmount = Number(amount);
 
-    if (type !== 0 && action === "accept" && (isNaN(numericAmount) || numericAmount <= 0)) {
-      showToast("Miktar 0 dan büyük olmalıdır", "info");
+    if ((type !== 0 || isChangedRounds ) && action === "accept" && (isNaN(numericAmount) || numericAmount <= 0)) {
+      showToast(type === 0 ? "Tur sayısı 0 dan büyük olmalıdır" :"Miktar 0 dan büyük olmalıdır", "info");
       return;
     }
 
@@ -46,7 +47,7 @@ const BonusConfirmationModal = ({
       return;
     }
 
-    onConfirm(type === 0 ? 123 : numericAmount, note);
+    onConfirm(type === 0 && !isChangedRounds ? 14821748325 : numericAmount, note);
   };
 
   return (
@@ -77,6 +78,37 @@ const BonusConfirmationModal = ({
               disabled={action === "reject"}
               className="w-full border border-gray-300 dark:border-gray-700 rounded-md px-3 py-2 text-gray-900 dark:text-white bg-white dark:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
               placeholder="Enter amount"
+            />
+          </div>
+          )}
+          {type === 0 && (
+            <div className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                checked={isChangedRounds}
+                onChange={(e) => setIsChangedRounds(e.target.checked)}
+                disabled={action === "reject"}
+                className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+              />
+              <label className="text-sm text-gray-700 dark:text-gray-300">
+                Change Bet Rounds
+              </label>
+            </div>
+          )}
+          {isChangedRounds && (
+            <div>
+            <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">
+              Bet Rounds
+            </label>
+            <input
+              type="number"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              disabled={action === "reject"}
+              className="w-full border border-gray-300 dark:border-gray-700 rounded-md px-3 py-2 text-gray-900 dark:text-white bg-white dark:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              placeholder="Enter number of rounds"
             />
           </div>
           )}
