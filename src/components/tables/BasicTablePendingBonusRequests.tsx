@@ -30,11 +30,13 @@ const BasicTablePendingBonusRequests = () => {
     const [modalState, setModalState] = useState<{
     isOpen: boolean;
     id: number | null;
+    type: number | null;
     playerId: string | null;
     action: 'accept' | 'reject' | null;
   }>({
     isOpen: false,
     id: null,
+    type: null,
     playerId: null,
     action: null
   });
@@ -136,10 +138,11 @@ const BasicTablePendingBonusRequests = () => {
     };
 
     // Modify manageRequest to open confirmation modal
-  const handleActionClick = (id: number, playerId: string, action: 'accept' | 'reject') => {
+  const handleActionClick = (id: number, playerId: string, type: number, action: 'accept' | 'reject') => {
     setModalState({
       isOpen: true,
       id,
+      type,
       playerId,
       action
     });
@@ -169,7 +172,7 @@ const BasicTablePendingBonusRequests = () => {
       }
       
       setIsSendingResponse(false);
-      setModalState({ isOpen: false, id: null, playerId: null, action: null });
+      setModalState({ isOpen: false, id: null, type: null, playerId: null, action: null });
     }
   };
 
@@ -190,14 +193,14 @@ const BasicTablePendingBonusRequests = () => {
   return (
     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">
           <BonusConfirmationModal
-        isOpen={modalState.isOpen}
-        onClose={() => setModalState({ isOpen: false, id: null, playerId: null, action: null })}
-        onConfirm={(amount, note) => handleConfirmedAction(amount, note)}
-        isSubmitting={isSendingResponse}
-        action={modalState.action}
-      />
-          <div className="relative" ref={dropdownRef}>
-          {/* Toggle button */}
+            isOpen={modalState.isOpen}
+            onClose={() => setModalState({ isOpen: false, id: null, type: null, playerId: null, action: null })}
+            type={modalState.type!}
+            onConfirm={(amount, note) => handleConfirmedAction(amount, note)}
+            isSubmitting={isSendingResponse}
+            action={modalState.action}
+          />
+          <div className='relative flex flex-row items-center justify-between' ref={dropdownRef}>
           <button
             onClick={() => setOpen(!open)}
             className="px-4 py-2 bg-blue-600 text-white text-sm rounded-tl-md hover:bg-blue-700 flex items-center gap-2"
@@ -208,7 +211,6 @@ const BasicTablePendingBonusRequests = () => {
             Filters
           </button>
     
-          {/* Dropdown panel */}
           {/* Dropdown panel */}
         {open && (
         <div
@@ -317,7 +319,27 @@ const BasicTablePendingBonusRequests = () => {
     </div>
   </div>
         )}
-        </div>
+        <button
+          onClick={handleRefetch}
+          title="Refresh Table"
+          className="p-2 bg-blue-500 text-white rounded hover:bg-blue-600 flex items-center justify-center"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth={2}
+            stroke="currentColor"
+            className="w-5 h-5"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M4 4v5h.582M20 20v-5h-.581M4.582 9a8 8 0 0111.836-1.414M19.418 15a8 8 0 01-11.836 1.414"
+            />
+          </svg>
+        </button>
+      </div>
 
       <div className="w-full overflow-x-auto">
         <div className="min-w-[1102px] min-h-[600px] h-auto">
@@ -403,7 +425,7 @@ const BasicTablePendingBonusRequests = () => {
               {loading ? (
                 <>
                   {Array.from({ length: rowsPerPage }).map((_, i) => (
-                    <SkeletonRow key={i} columns={14} />
+                    <SkeletonRow key={i} columns={12} />
                   ))}
                 </>
               ) : (
@@ -453,10 +475,10 @@ const BasicTablePendingBonusRequests = () => {
                     <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
                         
                         <div className='flex flex-row items-start justify-start gap-2'>
-                            <button disabled={isSendingResponse || t.status !== 0} onClick={() => handleActionClick(t.id, t.playerId, 'accept')} className='px-2 py-1 text-green-600 border-[1px] border-green-600 bg-white hover:green-700 hover:bg-gray-200 hover:test-semibold disabled:bg-gray-300 rounded-md'>
+                            <button disabled={isSendingResponse || t.status !== 0} onClick={() => handleActionClick(t.id, t.playerId, t.type, 'accept')} className='px-2 py-1 text-green-600 border-[1px] border-green-600 bg-white hover:green-700 hover:bg-gray-200 hover:test-semibold disabled:bg-gray-300 rounded-md'>
                                 Kabul
                             </button>
-                            <button disabled={isSendingResponse || t.status !== 0} onClick={() => handleActionClick(t.id, t.playerId, 'reject')} className='px-2 py-1 text-red-600 border-[1px] border-red-600 bg-white hover:green-700 hover:bg-gray-200 hover:test-semibold disabled:bg-gray-300 rounded-md'>
+                            <button disabled={isSendingResponse || t.status !== 0} onClick={() => handleActionClick(t.id, t.playerId, t.type, 'reject')} className='px-2 py-1 text-red-600 border-[1px] border-red-600 bg-white hover:green-700 hover:bg-gray-200 hover:test-semibold disabled:bg-gray-300 rounded-md'>
                                 Reddet
                             </button>
                         </div>

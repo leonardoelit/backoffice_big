@@ -6,12 +6,14 @@ const BonusConfirmationModal = ({
   isOpen,
   onClose,
   onConfirm,
+  type,
   isSubmitting,
   action,
 }: {
   isOpen: boolean;
   onClose: () => void;
   onConfirm: (amount: number, note: string) => void;
+  type: number;
   isSubmitting: boolean;
   action: "accept" | "reject" | null;
 }) => {
@@ -34,7 +36,7 @@ const BonusConfirmationModal = ({
   const handleConfirm = () => {
     const numericAmount = Number(amount);
 
-    if (action === "accept" && (isNaN(numericAmount) || numericAmount <= 0)) {
+    if (type !== 0 && action === "accept" && (isNaN(numericAmount) || numericAmount <= 0)) {
       showToast("Miktar 0 dan büyük olmalıdır", "info");
       return;
     }
@@ -44,7 +46,7 @@ const BonusConfirmationModal = ({
       return;
     }
 
-    onConfirm(numericAmount, note);
+    onConfirm(type === 0 ? 123 : numericAmount, note);
   };
 
   return (
@@ -61,6 +63,7 @@ const BonusConfirmationModal = ({
         </h3>
 
         <div className="space-y-4 mb-6">
+          {type !== 0 && (
           <div>
             <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">
               Amount
@@ -76,6 +79,7 @@ const BonusConfirmationModal = ({
               placeholder="Enter amount"
             />
           </div>
+          )}
           <div>
             <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">
               Note

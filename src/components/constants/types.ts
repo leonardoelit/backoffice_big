@@ -453,6 +453,7 @@ export interface BonusData {
   lastDepositAmount: number;
   lastDepositTime?: string;
   lastWithdrawalTime?: string;
+  freespinWinAmount?: number;
   defId: string;
   type: number;
   lastTimePlayerTakeBonus?: string;

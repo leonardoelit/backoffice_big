@@ -141,8 +141,7 @@ const BasicTableBonusRequests = () => {
   }
   return (
     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">
-          <div className="relative" ref={dropdownRef}>
-          {/* Toggle button */}
+          <div className='relative flex flex-row items-center justify-between' ref={dropdownRef}>
           <button
             onClick={() => setOpen(!open)}
             className="px-4 py-2 bg-blue-600 text-white text-sm rounded-tl-md hover:bg-blue-700 flex items-center gap-2"
@@ -152,8 +151,6 @@ const BasicTableBonusRequests = () => {
             </svg>
             Filters
           </button>
-    
-          {/* Dropdown panel */}
           {/* Dropdown panel */}
         {open && (
         <div
@@ -284,7 +281,27 @@ const BasicTableBonusRequests = () => {
     </div>
   </div>
         )}
-        </div>
+        <button
+          onClick={handleRefetch}
+          title="Refresh Table"
+          className="p-2 bg-blue-500 text-white rounded hover:bg-blue-600 flex items-center justify-center"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth={2}
+            stroke="currentColor"
+            className="w-5 h-5"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M4 4v5h.582M20 20v-5h-.581M4.582 9a8 8 0 0111.836-1.414M19.418 15a8 8 0 01-11.836 1.414"
+            />
+          </svg>
+        </button>
+      </div>
 
       <div className="w-full overflow-x-auto">
         <div className="min-w-[1102px] min-h-[600px] h-auto">
@@ -415,7 +432,7 @@ const BasicTableBonusRequests = () => {
                       {bonusRequestStatusEnum.find((p) => p.id === t.status)?.name}
                     </TableCell>
                     <TableCell title={t.note} className="px-3 py-2 text-gray-900 truncate max-w-[120px]">
-                      {t.note}
+                      {t.note}{" "}{t.freespinWinAmount && t.freespinWinAmount.toLocaleString()}
                     </TableCell>
                     <TableCell className="px-4 py-3 text-gray-900 text-start text-theme-sm dark:text-gray-400">
                       {t.updatedAt === undefined ? " - " : formatDateToDDMMYYYYHHMMSS(t.updatedAt)}
