@@ -10,6 +10,7 @@ import PlayerTransactionsTable from "@/components/player-profile/PlayerTransacti
 import PlayerBonusTable from "@/components/player-profile/PlayerBonusTable";
 import Link from "next/link";
 import PlayerSettings from "@/components/player-profile/PlayerSettings";
+import PlayerNotes from "@/components/player-profile/PlayerNotes";
 
 export default function PlayerProfile() {
   const router = useRouter();
@@ -69,36 +70,39 @@ export default function PlayerProfile() {
   router.push(`${window.location.pathname}?${newParams.toString()}`, { scroll: false });
 };
 
-    
-  const renderTabContent = () => {
-    switch (activeTab) {
-      case "overview":
-        return <PlayerInfoCards playerData={playerData} isLoadingData={isLoading} />;
-      case "istatistik":
-        return <Statistic playerData={playerData} isLoadingData={isLoading} />;
-      case "bonuslar":
-        return <PlayerBonusTable playerId={id} />
-      case "Raporlar":
-        return <PlayerTransactionsTable playerId={id} />;
-      case "ayarlar":
-        return <PlayerSettings
-      playerId={id}
-      activeSubTab={activeSubTab}
-      onSubTabChange={(subtab) => handleTabClick("ayarlar", subtab)}
-    />;
-      default:
-        return null;
-    }
-  };
+const renderTabContent = () => {
+  switch (activeTab) {
+    case "overview":
+      return <PlayerInfoCards playerData={playerData} isLoadingData={isLoading} />;
+    case "istatistik":
+      return <Statistic playerData={playerData} isLoadingData={isLoading} />;
+    case "bonuslar":
+      return <PlayerBonusTable playerId={id} />;
+    case "Raporlar":
+      return <PlayerTransactionsTable playerId={id} />;
+    case "ayarlar":
+      return (
+        <PlayerSettings
+          playerId={id}
+          activeSubTab={activeSubTab}
+          onSubTabChange={(subtab) => handleTabClick("ayarlar", subtab)}
+        />
+      );
+    case "notes": // ✅ lowercase to match your tab key
+      return <PlayerNotes playerId={id} />; // ✅ pass id if needed
+    default:
+      return null;
+  }
+};
 
   return (
     <div className="w-full">
       {/* Breadcrumb */}
-      <div className="flex items-center text-sm text-gray-500 dark:text-gray-400 mb-3">
-        <Link href="/" className="hover:text-blue-500 cursor-pointer">
+      <div className="flex items-center text-sm text-gray-500 dark:text-gray-400 mb-3 ">
+        <Link href="/" className=" hidden md:block hover:text-blue-500 cursor-pointer">
           Dashboard
         </Link>  
-        <span className="mx-2">/</span>
+        <span className="mx-2 hidden md:block">/</span>
         <Link href="/players/all-players" className="hover:text-blue-500 cursor-pointer">
           Players
         </Link>      
@@ -152,31 +156,34 @@ export default function PlayerProfile() {
   
 
     <div className="w-full">
-      {/* Tabs */}
-      <div className="flex space-x-3 mb-4 border-b border-gray-300 dark:border-gray-600">
-        {[
-          { key: "overview", label: "Genel Bakış" },
-          { key: "istatistik", label: "İstatistikler" },
-          { key: "Raporlar", label: "Raporlar" },
-          { key: "bonuslar", label: "Bonuslar" },
-          { key: "notes", label: "Notlar" },
-          { key: "communications", label: "İletişim" },
-          { key: "verification", label: "Doğrulama" },
-          { key: "ayarlar", label: "Ayarlar" },
-        ].map((tab) => (
-          <button
-            key={tab.key}
-            onClick={() => handleTabClick(tab.key)}
-            className={`py-2 px-4 text-sm font-medium ${
-              activeTab === tab.key
-                ? "border-b-2 border-blue-500 text-blue-500 dark:text-blue-400"
-                : "text-gray-500 dark:text-gray-400 hover:text-gray-700"
-            }`}
-          >
-            {tab.label}
-          </button>
-        ))}
-      </div>
+ {/* Tabs */}
+<div className="overflow-x-auto">
+  <div className="flex space-x-3 mb-4 border-b border-gray-300 dark:border-gray-600 flex-nowrap">
+    {[
+      { key: "overview", label: "Genel Bakış" },
+      { key: "istatistik", label: "İstatistikler" },
+      { key: "Raporlar", label: "Raporlar" },
+      { key: "bonuslar", label: "Bonuslar" },
+      { key: "notes", label: "Notlar" },
+      { key: "communications", label: "İletişim" },
+      { key: "verification", label: "Doğrulama" },
+      { key: "ayarlar", label: "Ayarlar" },
+    ].map((tab) => (
+      <button
+        key={tab.key}
+        onClick={() => handleTabClick(tab.key)}
+        className={`flex-shrink-0 py-2 px-4 text-sm font-medium ${
+          activeTab === tab.key
+            ? "border-b-2 border-blue-500 text-blue-500 dark:text-blue-400"
+            : "text-gray-500 dark:text-gray-400 hover:text-gray-700"
+        }`}
+      >
+        {tab.label}
+      </button>
+    ))}
+  </div>
+</div>
+
 
       {/* Tab Content */}
       {renderTabContent()}
