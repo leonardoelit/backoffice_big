@@ -1,6 +1,7 @@
 "use client";
 
 import { useSearchParams, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 import BasicTableBonuses from "@/components/tables/BasicTableBonuses";
 import BasicTableWheelPrizes from "@/components/tables/BasicTableWheelPrizes";
@@ -9,13 +10,24 @@ export default function BonusesPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  // read from ?tab=bonuses or ?tab=wheelPrizes, default to bonuses
-  const tab = (searchParams.get("tab") as "bonuses" | "wheelPrizes") || "bonuses";
+  const [tab, setTabState] = useState<"bonuses" | "wheelPrizes">("bonuses");
 
-  // helper to update the query string
+  // Initialize tab after client hydration
+  useEffect(() => {
+    const param = searchParams.get("tab");
+    if (param === "wheelPrizes") setTabState("wheelPrizes");
+    else setTabState("bonuses");
+  }, [searchParams]);
+
+  // Update URL without page reload
   const setTab = (value: "bonuses" | "wheelPrizes") => {
-    const newUrl = `?tab=${value}`;
-    router.push(newUrl); // updates URL without full page reload
+    setTabState(value);
+
+    // Update URL query without full reload
+    const url = new URL(window.location.href);
+    url.searchParams.set("tab", value);
+
+    router.replace(`${url.pathname}?${url.searchParams.toString()}`);
   };
 
   return (
