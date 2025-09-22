@@ -5,12 +5,14 @@ import { Bonus, ManageBonusRequest, PlayerTransactionFilter } from '../constants
 import { Table, TableBody, TableCell, TableHeader, TableRow } from '../ui/table';
 import { formatDateToDDMMYYYYHHMMSS } from '@/utils/utils';
 import DateRangePickerWithTime from './DateRangePickerWithTime';
-import { getBonuses, manageBonus } from '../lib/api';
+import { getBonuses, givePlayerWheelChance, manageBonus } from '../lib/api';
 import { showToast } from '@/utils/toastUtil';
 
-const PlayerBonusTable = ({ playerId }: { playerId:string }) => {
+const PlayerBonusTable = ({ playerId, isLoadingData, currentVoucherCount, setCurrentVoucherCount }: { playerId:string, isLoadingData:boolean, currentVoucherCount:number | undefined, setCurrentVoucherCount:(voucherCount:number) => void }) => {
     const [currentPage, setCurrentPage] = useState(1);
     const [rowsPerPage, setRowsPerPage] = useState(25);
+
+    const [isGivingVoucher, setIsGivingVoucher] = useState(false)
 
     const [dateFrom, setDateFrom] = useState<string | undefined>(undefined);
     const [dateTo, setDateTo] = useState<string | undefined>(undefined);
@@ -195,6 +197,23 @@ const PlayerBonusTable = ({ playerId }: { playerId:string }) => {
          setIsSubmitting(false)
       }
 
+      const handleVoucherWheel = async () => {
+        if(playerId === null || currentVoucherCount === undefined){
+          showToast(playerId === null ? "PlayerId cannot be null" : "Please wait, player data's still loading...", "error")
+          return;
+        }
+        setIsGivingVoucher(true);
+        const result = await givePlayerWheelChance({ playerId: playerId, spinAmount: voucherCount < 1 ? 1 : voucherCount });
+        if(result.isSuccess){
+          showToast(result.message ? result.message : "Oyuncuya çark hakkı eklendi", "success")
+          setCurrentVoucherCount(currentVoucherCount + voucherCount);
+          setShowVoucherPopup(false)
+        }else{
+          showToast(result.message ? result.message : "Oyuncuya çark hakkı eklendirken hata", "error")
+        }
+        setIsGivingVoucher(false);
+      }
+
       const SkeletonRow = ({ columns }: { columns: number }) => (
           <TableRow>
             {Array.from({ length: columns }).map((_, index) => (
@@ -219,7 +238,7 @@ const PlayerBonusTable = ({ playerId }: { playerId:string }) => {
     Mevcut Çark Döndürme Hakkı :
   </div>
   <div className="w-6 h-6 flex items-center justify-center rounded-full bg-blue-600 text-white text-sm font-semibold">
-    0
+    {isLoadingData ? "--" : currentVoucherCount}
   </div>
     <button
       onClick={() => setShowVoucherPopup(true)}
@@ -365,9 +384,15 @@ const PlayerBonusTable = ({ playerId }: { playerId:string }) => {
             type="number"
             min={1}
             value={voucherCount}
-            onChange={(e) =>
-              setVoucherCount(Math.max(1, parseInt(e.target.value, 10) || 1))
-            }
+            onChange={(e) => {
+              const val = e.target.value;
+              if (val === "") {
+                setVoucherCount(1); // fallback
+              } else {
+                const num = parseInt(val, 10);
+                setVoucherCount(num < 1 ? 1 : num);
+              }
+            }}
             className="w-full mb-4 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm text-gray-700 dark:text-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
 
@@ -375,15 +400,17 @@ const PlayerBonusTable = ({ playerId }: { playerId:string }) => {
           <div className="flex justify-end gap-3">
             <button
               onClick={() => setShowVoucherPopup(false)}
-              className="px-4 py-2 bg-gray-300 text-gray-800 dark:bg-gray-600 dark:text-gray-200 text-sm rounded hover:bg-gray-400"
+              disabled={isGivingVoucher}
+              className="px-4 py-2 bg-gray-300 text-gray-800 dark:bg-gray-600 dark:text-gray-200 text-sm rounded hover:bg-gray-400 disabled:bg-gray-500"
             >
               Back
             </button>
             <button
-              onClick={() => handleVoucherWheel(voucherCount)}
-              className="px-4 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
+              onClick={handleVoucherWheel}
+              disabled={isGivingVoucher}
+              className="px-4 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 disabled:bg-blue-800"
             >
-              Submit
+              {isGivingVoucher ? (<span className='loading-dots'>Submiting</span>) : "Submit"}
             </button>
           </div>
         </div>

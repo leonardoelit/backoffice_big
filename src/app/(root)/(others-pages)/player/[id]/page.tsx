@@ -32,7 +32,7 @@ export default function PlayerProfile() {
   const [activeTab, setActiveTab] = useState(tabFromUrl);
   const [playerData, setPlayerData] = useState<Player>();
   const [isLoading, setIsLoading] = useState(true);
-
+  const [currentVoucherCount, setCurrentVoucherCount] = useState<number>()
   
   // Sync tab from URL on mount
   useEffect(() => {
@@ -46,6 +46,7 @@ export default function PlayerProfile() {
         // Convert markedAsRisk to boolean
         res.playerData.markedAsRisk = Boolean(res.playerData.markedAsRisk);
         setPlayerData(res.playerData);
+        setCurrentVoucherCount(res.playerData.wheelSpinChance)
       }
   
       setIsLoading(false);
@@ -77,7 +78,7 @@ const renderTabContent = () => {
     case "istatistik":
       return <Statistic playerData={playerData} isLoadingData={isLoading} />;
     case "bonuslar":
-      return <PlayerBonusTable playerId={id} />;
+      return <PlayerBonusTable playerId={id} isLoadingData={isLoading} currentVoucherCount={currentVoucherCount} setCurrentVoucherCount={setCurrentVoucherCount} />;
     case "Raporlar":
       return <PlayerTransactionsTable playerId={id} />;
     case "ayarlar":

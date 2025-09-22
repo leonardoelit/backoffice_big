@@ -129,6 +129,7 @@ export interface Player {
   totalSportWin?: number;
   totalCasinoStakes?: number;
   totalSportStakes?: number;
+  wheelSpinChance: number;
   isOnline?: boolean;
 }
 
@@ -599,4 +600,66 @@ export interface ProviderStat{
   totalBet: number;
   totalWin: number;
   profit: number;
+}
+
+export enum PrizeType {
+  Freespin = 0,
+  Cash = 1
+}
+
+export interface PrizeData{
+  id: number;
+  name: string;
+  prizeType: PrizeType;
+  percentage: number;
+  prizeAmount: number;
+  orderNumber: number;
+  active: boolean;
+  gameId?: string;
+  gameBet?: string;
+  updatedAt: string;
+}
+
+export interface WheelResponse {
+  isSuccess: boolean;
+  message?: string;
+  prizes?: PrizeData[];
+}
+
+export interface CreateWheelPrizeRequest {
+  name: string;
+  prizeType: PrizeType;
+  prizeAmount: number;
+  percentage: number;
+  gameId?: string;
+  gameBet?: string;
+}
+
+export interface UpdateWheelPrizeRequest {
+  id: number;
+  name: string;
+  prizeType: PrizeType;
+  prizeAmount: number;
+  percentage: number;
+  active: boolean;
+  gameId?: string;
+  gameBet?: string;
+}
+
+export interface DeleteWheelPrizeRequest {
+  prizeId: number;
+}
+
+export interface WheelArrangementData{
+  id: number;
+  orderNumber: number;
+}
+
+export interface WheelArrangementRequest {
+  wheelArrangementList: WheelArrangementData[];
+}
+
+export interface GivePlayerWheelChanceRequest{
+  playerId: string;
+  spinAmount: number;
 }

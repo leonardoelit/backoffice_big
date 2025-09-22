@@ -1,4 +1,4 @@
-import { ActionResponse, BonusResponse, CancelOrValidateWithdrawalRequest, ChangePlayersBonusSettingRequest, CreateBonusRequest, CreateUserRequest, DashboardStatsRequestDto, DashboardStatsResponseDto, GameStatsResponse, GetAllFinancialTransactionsResponse, GetAllPlayersResponse, GetBonusRequestsResponse, GetGameOrProviderStatsRequest, GetPermissionResponse, GetPlayersDataWithIdResponse, GetPlayersTransactionHistoryResponse, GetRoleResponse, GetTaggedPlayersRequest, GetTaggedPlayersResponse, GetUsersResponse, LoginAsUserResponse, ManageBonusRequest, ManagePlayerBalanceDto, MarkPlayerRequest, PaymentResponse, PermissionRequest, PermissionResponse, PlayerBonusRequestFilter, PlayerBonusSettingsResponse, PlayerFilter, PlayerFinancialFilter, PlayerTransactionFilter, ProviderStatResponse, RolePermissionRequest, RoleRequest, RoleResponse, UpdateBonusRequest, UpdatePlayersDataRequest, UserResponse, UserRoleRequest } from "../constants/types";
+import { ActionResponse, BonusResponse, CancelOrValidateWithdrawalRequest, ChangePlayersBonusSettingRequest, CreateBonusRequest, CreateUserRequest, CreateWheelPrizeRequest, DashboardStatsRequestDto, DashboardStatsResponseDto, GameStatsResponse, GetAllFinancialTransactionsResponse, GetAllPlayersResponse, GetBonusRequestsResponse, GetGameOrProviderStatsRequest, GetPermissionResponse, GetPlayersDataWithIdResponse, GetPlayersTransactionHistoryResponse, GetRoleResponse, GetTaggedPlayersRequest, GetTaggedPlayersResponse, GetUsersResponse, GivePlayerWheelChanceRequest, LoginAsUserResponse, ManageBonusRequest, ManagePlayerBalanceDto, MarkPlayerRequest, PaymentResponse, PermissionRequest, PermissionResponse, PlayerBonusRequestFilter, PlayerBonusSettingsResponse, PlayerFilter, PlayerFinancialFilter, PlayerTransactionFilter, ProviderStatResponse, RolePermissionRequest, RoleRequest, RoleResponse, UpdateBonusRequest, UpdatePlayersDataRequest, UpdateWheelPrizeRequest, UserResponse, UserRoleRequest, WheelArrangementRequest, WheelResponse } from "../constants/types";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -731,6 +731,185 @@ export async function managePlayerBalance(requestBody: ManagePlayerBalanceDto): 
 
   } catch (error) {
     console.error('Error managing bonus:', error);
+    return {
+      isSuccess: false,
+      message: "Internal server error"
+    };
+  }
+}
+
+export async function createWheelPrize(requestBody: CreateWheelPrizeRequest): Promise<WheelResponse>{
+  try{
+    const token = localStorage.getItem("authToken");
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/api/Client/createWheelPrize`,
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(requestBody),
+        cache: 'no-store'
+      }
+    );
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error('Error creating wheel prize:', error);
+    return {
+      isSuccess: false,
+      message: "Internal server error"
+    };
+  }
+}
+
+export async function updateWheelPrize(requestBody: UpdateWheelPrizeRequest): Promise<WheelResponse>{
+  try{
+    const token = localStorage.getItem("authToken");
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/api/Client/updateWheelPrize`,
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(requestBody),
+        cache: 'no-store'
+      }
+    );
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error('Error updating wheel prize:', error);
+    return {
+      isSuccess: false,
+      message: "Internal server error"
+    };
+  }
+}
+
+export async function deleteWheelPrize(prizeId: number): Promise<WheelResponse>{
+  try{
+    const token = localStorage.getItem("authToken");
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/api/Client/deletePrize`,
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ prizeId }),
+        cache: 'no-store'
+      }
+    );
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error('Error deleting prize:', error);
+    return {
+      isSuccess: false,
+      message: "Internal server error"
+    };
+  }
+}
+
+export async function getWheelPrizes(): Promise<WheelResponse>{
+  try{
+    const token = localStorage.getItem("authToken");
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/api/Client/getWheelPrizes`,
+      {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        cache: 'no-store'
+      }
+    );
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error('Error getting wheel prizes:', error);
+    return {
+      isSuccess: false,
+      message: "Internal server error"
+    };
+  }
+}
+
+export async function arrangeWheelPrizes(requestBody: WheelArrangementRequest): Promise<WheelResponse>{
+  try{
+    const token = localStorage.getItem("authToken");
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/api/Client/arrangeWheelPrizes`,
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(requestBody),
+        cache: 'no-store'
+      }
+    );
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error('Error arranging wheel prizes:', error);
+    return {
+      isSuccess: false,
+      message: "Internal server error"
+    };
+  }
+}
+
+export async function givePlayerWheelChance(requestBody: GivePlayerWheelChanceRequest): Promise<WheelResponse>{
+  try{
+    const token = localStorage.getItem("authToken");
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/api/Client/givePlayerWheelChance`,
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(requestBody),
+        cache: 'no-store'
+      }
+    );
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error('Error giving player wheel chance:', error);
     return {
       isSuccess: false,
       message: "Internal server error"

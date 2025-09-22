@@ -293,7 +293,6 @@ const providerName = (gameId: number) => {
         <option value="Inc">Üst</option>
         <option value="Dec">Alt</option>
       </select>
-a
       {/* Event Type Multi-Select */}
       <div className="relative flex-1 min-w-[200px]" ref={selectRef}>
         <button
@@ -385,7 +384,7 @@ a
     </div>
     
   </div>
-)}
+          )}
         </div>
 
         {showPopup && (

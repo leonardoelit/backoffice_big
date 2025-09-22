@@ -7,8 +7,8 @@ import {
   TableRow,
   TableBody,
 } from "../ui/table";
-import { Bonus, GameData, UpdateBonusRequest } from "../constants/types";
-import { getBonuses, createBonus, deleteBonus, updateBonus } from "../lib/api";
+import { GameData, PrizeData, PrizeType, UpdateWheelPrizeRequest } from "../constants/types";
+import { updateWheelPrize, deleteWheelPrize, getWheelPrizes, createWheelPrize } from "../lib/api";
 import { showToast } from "@/utils/toastUtil";
 import { formatDateToDDMMYYYYHHMMSS } from "@/utils/utils";
 import { useAuth } from "@/context/AuthContext";
@@ -16,16 +16,9 @@ import { freespinProviders } from "../constants";
 
 type PopupMode = "create" | "update" | "delete";
 
-export const bonusTypes = [
-  { id: 0, name: "Freespin" },
-  { id: 1, name: "Casino" },
-  { id: 2, name: "Sport" },
-  { id: 3, name: "Wheel" },
-];
-
-const BasicTableBonuses = () => {
+const BasicTableWheelPrizes = () => {
   const { games } = useAuth();
-  const [bonusList, setBonusList] = useState<Bonus[]>([]);
+  const [prizeList, setPrizeList] = useState<PrizeData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isCreating, setIsCreating] = useState(false)
   const [filteredGames, setFilteredGames] = useState<GameData[]>([])
@@ -38,7 +31,7 @@ const BasicTableBonuses = () => {
   const [rowsPerPage, setRowsPerPage] = useState(25);
 
   // sorting
-  const [sortField, setSortField] = useState<keyof Bonus | null>(null);
+  const [sortField, setSortField] = useState<keyof PrizeData | null>(null);
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
 
   // popup state
@@ -48,111 +41,107 @@ const BasicTableBonuses = () => {
 
   // form state
   const [formData, setFormData] = useState({
-    type: bonusTypes[1].id,
     name: "",
-    min: 0,
-    max: 0,
-    bonusId: "",
-    bonusBet: "",
-    bonusRounds: "",
-    isPercentage: false,
+    prizeAmount: 0,
     percentage: 0,
-    description: "",
+    prizeType: PrizeType.Cash,
+    gameId: "",
+    gameBet: "",
   });
 
-  const [selectedBonus, setSelectedBonus] = useState<Bonus | null>(null);
-  const [updateFormData, setUpdateFormData] = useState<UpdateBonusRequest>({
+  const [selectedPrize, setSelectedPrize] = useState<PrizeData | null>(null);
+  const [updateFormData, setUpdateFormData] = useState<UpdateWheelPrizeRequest>({
+    id: 0,
     active: true,
-    defId: "",
-    type: bonusTypes[1].id,
+    prizeType: PrizeType.Cash,
+    percentage: 0,
     name: "",
-    isPercentage: false,
-    bonusId: undefined,
-    bonusBet: undefined,
-    bonusRounds: undefined,
-    min: 0,
-    max: 0,
-    description: "",
+    prizeAmount: 0
   });
+
+  const [isPercentageInvalid, setIsPercentageInvalid] = useState(false);
+
+  // Recalculate percentages whenever prizeList changes
+  useEffect(() => {
+    if(prizeList.length > 0){
+      const totalPercentage = prizeList.reduce(
+        (sum, prize) => sum + (prize.percentage || 0),
+        0
+      );
+      setIsPercentageInvalid(totalPercentage !== 100);
+    }
+  }, [prizeList]);
 
   const openCreatePopup = () => {
     setPopupMode("create");
     setFormData({
-      type: bonusTypes[1].id,
       name: "",
-      isPercentage: false,
+      prizeAmount: 0,
+      prizeType: PrizeType.Cash,
       percentage: 0,
-      bonusId: "",
-      bonusBet: "",
-      bonusRounds: "",
-      min: 0,
-      max: 0,
-      description: "",
+      gameId: "",
+      gameBet: "",
     });
     setShowPopup(true);
   };
 
-  const openUpdatePopup = (bonus: Bonus) => {
+  const openUpdatePopup = (prize: PrizeData) => {
     setPopupMode("update");
-    setSelectedBonus(bonus);
+    setSelectedPrize(prize);
     setUpdateFormData({
-      defId: bonus.defId,
-      active: bonus.active,
-      type: bonus.type,
-      name: bonus.name,
-      isPercentage: bonus.isPercentage,
-      percentage: bonus.percentage,
-      bonusId: bonus.bonusId,
-      bonusBet: bonus.bonusBet,
-      bonusRounds: bonus.bonusRounds,
-      min: bonus.min,
-      max: bonus.max,
-      description: bonus.description,
+      id: prize.id,
+      active: prize.active,
+      name: prize.name,
+      percentage: prize.percentage,
+      prizeAmount: prize.prizeAmount,
+      prizeType: prize.prizeType,
+      gameBet: prize.gameBet,
+      gameId: prize.gameId
     });
     setShowPopup(true);
   };
 
-  const openDeletePopup = (bonus: Bonus) => {
+  const openDeletePopup = (prize: PrizeData) => {
     setPopupMode("delete");
-    setSelectedBonus(bonus);
+    setSelectedPrize(prize);
     setShowPopup(true);
   };
 
-  const handleUpdateBonus = async () => {
-    if (!selectedBonus) return;
+  const handleUpdatePrize = async () => {
+    if (!selectedPrize) return;
     setIsCreating(true)
     try {
-      const response = await updateBonus(updateFormData);
+      const response = await updateWheelPrize(updateFormData);
       if (!response.isSuccess) {
-        showToast(response.message ?? "Failed to update bonus", "error");
+        showToast(response.message ?? "Failed to update wheel prize", "error");
         setIsCreating(false)
         return;
       }
-      showToast("Bonus updated successfully!", "success");
+      showToast("Prize updated successfully!", "success");
       setShowPopup(false);
       setIsCreating(false)
-      getBonusesList();
+      getWheelPrizeList();
     } catch {
-      showToast("Unexpected error updating bonus", "error");
+      showToast("Unexpected error updating wheel prize", "error");
     }
   };
 
-  const handleDeleteBonus = async () => {
-    if (!selectedBonus) return;
+  const handleDeletePrize = async () => {
+    if (!selectedPrize) return;
     setIsCreating(true)
     try {
-      const response = await deleteBonus(selectedBonus.defId);
+      const response = await deleteWheelPrize(selectedPrize.id);
       if (!response.isSuccess) {
-        showToast(response.message ?? "Failed to delete bonus", "error");
+        showToast(response.message ?? "Failed to delete prize", "error");
         setIsCreating(false)
         return;
       }
-      showToast("Bonus deleted successfully!", "success");
+      showToast("Prize deleted successfully!", "success");
       setShowPopup(false);
       setIsCreating(false)
-      getBonusesList();
+      getWheelPrizeList();
     } catch {
-      showToast("Unexpected error deleting bonus", "error");
+      showToast("Unexpected error deleting wheel prize", "error");
     }
   };
 
@@ -162,7 +151,7 @@ const BasicTableBonuses = () => {
   }
 
   useEffect(() => {
-    getBonusesList();
+    getWheelPrizeList();
   }, []);
 
   useEffect(() => {
@@ -172,28 +161,28 @@ const BasicTableBonuses = () => {
   }, [games]);
 
   useEffect(() => {
-  if (updateFormData.bonusId) {
-    const selectedGame = filteredGames.find((g) => g.id.toString() === updateFormData.bonusId);
+  if (updateFormData.gameId) {
+    const selectedGame = filteredGames.find((g) => g.id.toString() === updateFormData.gameId);
     setUpdateSearchQuery(selectedGame ? selectedGame.name : "");
   }
-}, [updateFormData.bonusId, filteredGames]);
+}, [updateFormData.gameId, filteredGames]);
 
-  const getBonusesList = async () => {
+  const getWheelPrizeList = async () => {
     setIsLoading(true);
-    const bonusesResponse = await getBonuses();
+    const bonusesResponse = await getWheelPrizes();
     if (!bonusesResponse.isSuccess) {
       showToast(
         bonusesResponse.message ??
-          "Something went wrong while getting bonus list",
+          "Something went wrong while getting prize list",
         "error"
       );
     } else {
-      setBonusList(bonusesResponse.bonuses ?? []);
+      setPrizeList(bonusesResponse.prizes ?? []);
     }
     setIsLoading(false);
   };
 
-  const handleSort = (field: keyof Bonus) => {
+  const handleSort = (field: keyof PrizeData) => {
     if (sortField === field) {
       setSortDirection(sortDirection === "asc" ? "desc" : "asc");
     } else {
@@ -236,11 +225,7 @@ const BasicTableBonuses = () => {
   const handleCreateBonus = async () => {
     setIsCreating(true)
     try {
-      if(formData.type === 0){
-        formData.min = 0;
-        formData.max = 1000000
-      }
-      const response = await createBonus(formData);
+      const response = await createWheelPrize(formData);
       if (!response.isSuccess) {
         showToast(response.message ?? "Failed to create bonus", "error");
         setIsCreating(false)
@@ -249,26 +234,22 @@ const BasicTableBonuses = () => {
       showToast("Bonus created successfully!", "success");
       setShowPopup(false);
       setFormData({
-        type: bonusTypes[0].id,
         name: "",
-        isPercentage: false,
+        prizeAmount: 0,
+        prizeType: PrizeType.Cash,
         percentage: 0,
-        bonusId: "",
-        bonusBet: "",
-        bonusRounds: "",
-        min: 0,
-        max: 0,
-        description: "",
+        gameId: "",
+        gameBet: "",
       });
     setIsCreating(false)
-      getBonusesList();
+      getWheelPrizeList();
     } catch (error) {
       showToast("Unexpected error creating bonus", "error");
     }
   };
 
   // apply sorting
-  let sortedList = [...bonusList];
+  let sortedList = [...prizeList];
   if (sortField) {
     sortedList.sort((a, b) => {
       const valA = a[sortField];
@@ -296,17 +277,23 @@ const BasicTableBonuses = () => {
 
   return (
     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03] relative">
+      {/* 🚨 Error Banner */}
+    {isPercentageInvalid && (
+      <div className="w-full bg-red-100 border border-red-400 text-red-700 px-4 py-2 text-center font-medium">
+        Sum of all the prizes percentages must be 100 for the wheel to work
+      </div>
+    )}
       {/* Header controls */}
       <div className="flex justify-between items-center px-4 py-2 bg-gray-50 dark:bg-white/[0.02]">
         <div className="text-sm text-gray-700 dark:text-gray-300">
-          Showing {paginatedList.length} of {bonusList.length} bonuses
+          Showing {paginatedList.length} of {prizeList.length} prizes
         </div>
         <div className="flex items-center gap-2">
           <button
             onClick={openCreatePopup}
             className="bg-blue-600 text-white px-3 py-1 rounded-md shadow hover:bg-blue-700"
           >
-            + Add Bonus
+            + Add Prize
           </button>
           <label
             htmlFor="rowsPerPage"
@@ -335,28 +322,25 @@ const BasicTableBonuses = () => {
           <Table>
             <TableHeader className="border-b border-gray-100 dark:border-white/[0.05]">
               <TableRow>
+                <TableCell isHeader className="text-left px-5 py-3 font-medium text-gray-500 cursor-pointer" onClick={() => handleSort("orderNumber")}>
+                  Order
+                </TableCell>
                 <TableCell isHeader className="text-left px-5 py-3 font-medium text-gray-500 cursor-pointer" onClick={() => handleSort("name")}>
                   Name
                 </TableCell>
-                <TableCell isHeader className="text-left px-5 py-3 font-medium text-gray-500 cursor-pointer" onClick={() => handleSort("type")}>
+                <TableCell isHeader className="text-left px-5 py-3 font-medium text-gray-500 cursor-pointer" onClick={() => handleSort("prizeType")}>
                   Type
                 </TableCell>
-                <TableCell isHeader className="text-left px-5 py-3 font-medium text-gray-500 cursor-pointer" onClick={() => handleSort("type")}>
-                  Percentage/Freespin Info
+                <TableCell isHeader className="text-left px-5 py-3 font-medium text-gray-500 cursor-pointer" onClick={() => handleSort("prizeAmount")}>
+                  Amount / Freespin Info
+                </TableCell>
+                <TableCell isHeader className="text-left px-5 py-3 font-medium text-gray-500 cursor-pointer" onClick={() => handleSort("percentage")}>
+                  Percentage
                 </TableCell>
                 <TableCell isHeader className="text-left px-5 py-3 font-medium text-gray-500">
                   Active
                 </TableCell>
-                <TableCell isHeader className="text-left px-5 py-3 font-medium text-gray-500 cursor-pointer" onClick={() => handleSort("min")}>
-                  Min
-                </TableCell>
-                <TableCell isHeader className="text-left px-5 py-3 font-medium text-gray-500 cursor-pointer" onClick={() => handleSort("max")}>
-                  Max
-                </TableCell>
-                <TableCell isHeader className="text-left px-5 py-3 font-medium text-gray-500">
-                  Description
-                </TableCell>
-                <TableCell isHeader className="text-left px-5 py-3 font-medium text-gray-500 cursor-pointer" onClick={() => handleSort("createdAt")}>
+                <TableCell isHeader className="text-left px-5 py-3 font-medium text-gray-500 cursor-pointer" onClick={() => handleSort("updatedAt")}>
                   Created At
                 </TableCell>
                 <TableCell isHeader className="text-left px-5 py-3 font-medium text-gray-500 ">
@@ -372,42 +356,38 @@ const BasicTableBonuses = () => {
             >
               {isLoading ? (
                 Array.from({ length: rowsPerPage }).map((_, i) => (
-                  <SkeletonRow key={i} columns={9} />
+                  <SkeletonRow key={i} columns={8} />
                 ))
               ) : paginatedList.length > 0 ? (
-                paginatedList.map((bonus) => (
-                  <TableRow key={bonus.defId}>
-                    <TableCell className="px-5 py-4">{bonus.name}</TableCell>
+                paginatedList.map((prize) => (
+                  <TableRow key={prize.id}>
+                    <TableCell className="px-5 py-4">{prize.orderNumber}</TableCell>
+                    <TableCell className="px-5 py-4">{prize.name}</TableCell>
                     <TableCell className="px-5 py-4">
-                      {bonusTypes.find((t) => t.id === bonus.type)?.name ??
-                        bonus.type}
+                      {PrizeType[prize.prizeType]}
                     </TableCell>
-                    <TableCell className="px-5 py-4">{bonus.isPercentage ? bonus.percentage : bonus.bonusId !== null ? (
+                    <TableCell className="px-5 py-4">{prize.prizeType === 1 ? `₺${prize.prizeAmount}` : (
                       <div className="flex flex-col items-start justify-start">
-                        <p>{filteredGames.find((g) => g.id.toString() === bonus.bonusId)?.name}</p>
-                        <p>{bonus.bonusBet} Bet</p>
-                        <p>{bonus.bonusRounds} Rounds</p>
+                        <p>{filteredGames.find((g) => g.id.toString() === prize.gameId)?.name}</p>
+                        <p>{prize.gameBet} Bet</p>
+                        <p>{prize.prizeAmount} Rounds</p>
                       </div>
-                    ) : "-"}</TableCell>
+                    )}</TableCell>
+                    <TableCell className="px-5 py-4">{prize.percentage}%</TableCell>
                     <TableCell className="px-5 py-4">
-                      {bonus.active ? (
+                      {prize.active ? (
                         <span className="text-green-600 font-medium">Active</span>
                       ) : (
                         <span className="text-red-600 font-medium">Inactive</span>
                       )}
                     </TableCell>
-                    <TableCell className="px-5 py-4">{bonus.min}</TableCell>
-                    <TableCell className="px-5 py-4">{bonus.max}</TableCell>
                     <TableCell className="px-5 py-4">
-                      {bonus.description || "-"}
+                      {formatDateToDDMMYYYYHHMMSS(prize.updatedAt)}
                     </TableCell>
                     <TableCell className="px-5 py-4">
-                      {formatDateToDDMMYYYYHHMMSS(bonus.createdAt)}
-                    </TableCell>
-                    <TableCell className="px-5 py-4 flex gap-2">
                       <button
-                        onClick={() => openUpdatePopup(bonus)}
-                        className="text-blue-600 hover:text-blue-800"
+                        onClick={() => openUpdatePopup(prize)}
+                        className="text-blue-600 hover:text-blue-800 mr-1"
                         title="Update"
                         >
                         <svg
@@ -429,7 +409,7 @@ const BasicTableBonuses = () => {
                         </svg>
                         </button>
                         <button
-                        onClick={() => openDeletePopup(bonus)}
+                        onClick={() => openDeletePopup(prize)}
                         className="text-black hover:text-red-700 transition-colors"
                         title="Delete"
                         >
@@ -452,7 +432,7 @@ const BasicTableBonuses = () => {
               ) : (
                 <TableRow>
                   <TableCell colSpan={9} className="px-5 py-4 text-center">
-                    No bonuses found
+                    No prizes found
                   </TableCell>
                 </TableRow>
               )}
@@ -494,24 +474,27 @@ const BasicTableBonuses = () => {
                 <h2 className="text-lg font-semibold mb-4">Create Bonus</h2>
                 {/* Bonus Type Select */}
                 <label className="block text-sm mb-2">
-                  Type
-                  <select
-                    value={formData.type}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        type: parseInt(e.target.value),
-                      })
-                    }
-                    className="w-full border px-2 py-1 rounded"
-                  >
-                    {bonusTypes.map((t) => (
-                      <option key={t.id} value={t.id}>
-                        {t.name}
-                      </option>
-                    ))}
-                  </select>
+                    Type
+                    <select
+                        value={formData.prizeType}
+                        onChange={(e) =>
+                        setFormData({
+                            ...formData,
+                            prizeType: Number(e.target.value),
+                        })
+                        }
+                        className="w-full border px-2 py-1 rounded"
+                    >
+                        {Object.entries(PrizeType)
+                        .filter(([key, value]) => !isNaN(Number(value))) // only numeric values
+                        .map(([key, value]) => (
+                            <option key={value} value={value}>
+                            {key}
+                            </option>
+                        ))}
+                    </select>
                 </label>
+
 
                 {/* Name input - common */}
                 <label className="block text-sm mb-2">
@@ -527,7 +510,7 @@ const BasicTableBonuses = () => {
                 </label>
 
                 {/* Conditional rendering based on type */}
-                {formData.type === 0 ? (
+                {formData.prizeType === 0 ? (
                   <>
                     {/* Free Spin Bonus field - Bonus Id (searchable select) */}
                     <label className="block text-sm mb-2">
@@ -538,7 +521,7 @@ const BasicTableBonuses = () => {
                           type="text"
                           placeholder="Search game..."
                           value={
-                            filteredGames.find((g) => g.id.toString() === formData.bonusId)?.name ||
+                            filteredGames.find((g) => g.id.toString() === formData.gameId)?.name ||
                             searchQuery
                           }
                           onChange={(e) => setSearchQuery(e.target.value)}
@@ -556,7 +539,7 @@ const BasicTableBonuses = () => {
                                 <li
                                   key={game.id}
                                   onClick={() => {
-                                    setFormData({ ...formData, bonusId: game.id.toString() });
+                                    setFormData({ ...formData, gameId: game.id.toString() });
                                     setSearchQuery(""); // clear search after selection
                                   }}
                                   className="px-2 py-1 cursor-pointer hover:bg-gray-100"
@@ -580,102 +563,78 @@ const BasicTableBonuses = () => {
                       Bonus Bet
                       <input
                         type="text"
-                        value={formData.bonusBet || ""}
+                        value={formData.gameBet || ""}
                         onChange={(e) =>
-                          setFormData({ ...formData, bonusBet: e.target.value })
+                          setFormData({ ...formData, gameBet: e.target.value })
                         }
                         className="w-full border px-2 py-1 rounded"
                       />
                     </label>
                     <label className="block text-sm mb-2">
-                      Bonus Rounds
-                      <input
-                        type="text"
-                        value={formData.bonusRounds || ""}
-                        onChange={(e) =>
-                          setFormData({ ...formData, bonusRounds: e.target.value })
-                        }
-                        className="w-full border px-2 py-1 rounded"
-                      />
+                        Bonus Rounds
+                        <input
+                            type="number"
+                            value={formData.prizeAmount ?? ""}
+                            onChange={(e) =>
+                            setFormData({
+                                ...formData,
+                                prizeAmount: e.target.value ? parseInt(e.target.value) : 0,
+                            })
+                            }
+                            className="w-full border px-2 py-1 rounded"
+                            min={0} // optional: prevent negative numbers
+                        />
+                    </label>
+                    <label className="block text-sm mb-2">
+                        Percentage
+                        <input
+                            type="number"
+                            value={formData.percentage ?? ""}
+                            onChange={(e) =>
+                            setFormData({
+                                ...formData,
+                                percentage: e.target.value ? parseInt(e.target.value) : 0,
+                            })
+                            }
+                            className="w-full border px-2 py-1 rounded"
+                            min={0} // optional: prevent negative numbers
+                        />
                     </label>
                   </>
                 ) : (
                   <>
-                    {/* Normal Bonus fields */}
-                    <label className="block text-sm mb-2">
-                      Is Percentage
-                      <input
-                        type="checkbox"
-                        checked={formData.isPercentage}
-                        onChange={(e) =>
-                          setFormData({
-                            ...formData,
-                            isPercentage: e.target.checked,
-                          })
-                        }
-                        className="ml-2"
-                      />
+                  <label className="block text-sm mb-2">
+                        Cash Amount
+                        <input
+                            type="number"
+                            value={formData.prizeAmount ?? ""}
+                            onChange={(e) =>
+                            setFormData({
+                                ...formData,
+                                prizeAmount: e.target.value ? parseInt(e.target.value) : 0,
+                            })
+                            }
+                            className="w-full border px-2 py-1 rounded"
+                            min={0} // optional: prevent negative numbers
+                        />
                     </label>
-
-                    {formData.isPercentage && (
-                      <label className="block text-sm mb-2">
+                    <label className="block text-sm mb-2">
                         Percentage
                         <input
-                          type="text"
-                          value={formData.percentage}
-                          onChange={(e) => {
-                            const val = e.target.value;
-                            if (/^\d{0,3}(\.\d{0,2})?$/.test(val)) {
-                              let num = Number(val);
-                              if (num < 0) num = 0;
-                              setFormData({ ...formData, percentage: num });
+                            type="number"
+                            value={formData.percentage ?? ""}
+                            onChange={(e) =>
+                            setFormData({
+                                ...formData,
+                                percentage: e.target.value ? parseInt(e.target.value) : 0,
+                            })
                             }
-                          }}
-                          className="w-full border px-2 py-1 rounded"
-                          placeholder="Enter percentage (0-100)"
+                            className="w-full border px-2 py-1 rounded"
+                            min={0} // optional: prevent negative numbers
                         />
-                      </label>
-                    )}
-
-                    <label className="block text-sm mb-2">
-                      Min
-                      <input
-                        type="number"
-                        value={formData.min}
-                        onChange={(e) =>
-                          setFormData({ ...formData, min: Number(e.target.value) })
-                        }
-                        className="w-full border px-2 py-1 rounded"
-                      />
-                    </label>
-                    <label className="block text-sm mb-2">
-                      Max
-                      <input
-                        type="number"
-                        value={formData.max}
-                        onChange={(e) =>
-                          setFormData({ ...formData, max: Number(e.target.value) })
-                        }
-                        className="w-full border px-2 py-1 rounded"
-                      />
                     </label>
                   </>
                 )}
-
-                {/* Description - common */}
-                <label className="block text-sm mb-2">
-                  Description
-                  <textarea
-                    value={formData.description}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        description: e.target.value,
-                      })
-                    }
-                    className="w-full border px-2 py-1 rounded"
-                  />
-                </label>
 
                 {/* Action Buttons */}
                 <div className="flex justify-end mt-4 gap-2">
@@ -701,10 +660,10 @@ const BasicTableBonuses = () => {
 
                 {/* DefId (read-only) */}
                 <label className="block text-sm mb-2">
-                  DefId
+                  Id
                   <input
                     type="text"
-                    value={updateFormData.defId}
+                    value={updateFormData.id}
                     disabled
                     className="w-full border px-2 py-1 rounded bg-gray-100"
                   />
@@ -728,27 +687,6 @@ const BasicTableBonuses = () => {
                   </select>
                 </label>
 
-                {/* Type */}
-                <label className="block text-sm mb-2">
-                  Type
-                  <select
-                    value={updateFormData.type}
-                    onChange={(e) =>
-                      setUpdateFormData({
-                        ...updateFormData,
-                        type: parseInt(e.target.value),
-                      })
-                    }
-                    className="w-full border px-2 py-1 rounded"
-                  >
-                    {bonusTypes.map((t) => (
-                      <option key={t.id} value={t.id}>
-                        {t.name}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-
                 {/* Name */}
                 <label className="block text-sm mb-2">
                   Name
@@ -762,11 +700,34 @@ const BasicTableBonuses = () => {
                   />
                 </label>
 
+                {/* Type */}
+                <label className="block text-sm mb-2">
+                Type
+                <select
+                    value={updateFormData.prizeType}
+                    onChange={(e) =>
+                    setUpdateFormData({
+                        ...updateFormData,
+                        prizeType: Number(e.target.value),
+                    })
+                    }
+                    className="w-full border px-2 py-1 rounded"
+                >
+                    {Object.entries(PrizeType)
+                    .filter(([key, value]) => !isNaN(Number(value)))
+                    .map(([key, value]) => (
+                        <option key={value} value={value}>
+                        {key}
+                        </option>
+                    ))}
+                </select>
+                </label>
+
                 {/* Conditional rendering based on type */}
-                {updateFormData.type === 0 ? (
+                {updateFormData.prizeType === 0 ? (
                   <>
                     {/* Free Spin Bonus field - Bonus Id (update popup with searchable select) */}
-                    <label className="text-sm">Bonus Game</label>
+                    <label className="text-sm">Prize Game</label>
                     <div
                       className="relative text-sm mb-2"
                       ref={updateSelectRef} // ✅ add this
@@ -795,7 +756,7 @@ const BasicTableBonuses = () => {
                                 onClick={() => {
                                   setUpdateFormData({
                                     ...updateFormData,
-                                    bonusId: game.id.toString(),
+                                    gameId: game.id.toString(),
                                   });
                                   setUpdateSearchQuery(game.name);
                                   setIsUpdateDropdownOpen(false);
@@ -811,114 +772,82 @@ const BasicTableBonuses = () => {
 
 
                     <label className="block text-sm mb-2">
-                      Bonus Bet
+                      Prize Bet
                       <input
                         type="text"
-                        value={updateFormData.bonusBet || ""}
+                        value={updateFormData.gameBet || ""}
                         onChange={(e) =>
-                          setUpdateFormData({ ...updateFormData, bonusBet: e.target.value })
+                          setUpdateFormData({ ...updateFormData, gameBet: e.target.value })
                         }
                         className="w-full border px-2 py-1 rounded"
                       />
                     </label>
                     <label className="block text-sm mb-2">
-                      Bonus Rounds
-                      <input
-                        type="text"
-                        value={updateFormData.bonusRounds || ""}
-                        onChange={(e) =>
-                          setUpdateFormData({
-                            ...updateFormData,
-                            bonusRounds: e.target.value,
-                          })
-                        }
-                        className="w-full border px-2 py-1 rounded"
-                      />
+                        Bonus Rounds
+                        <input
+                            type="number"
+                            value={updateFormData.prizeAmount ?? ""}
+                            onChange={(e) =>
+                            setUpdateFormData({
+                                ...updateFormData,
+                                prizeAmount: e.target.value ? parseInt(e.target.value) : 0,
+                            })
+                            }
+                            className="w-full border px-2 py-1 rounded"
+                            min={0} // optional, prevent negative numbers
+                        />
+                    </label>
+                    <label className="block text-sm mb-2">
+                        Percentage
+                        <input
+                            type="number"
+                            value={updateFormData.percentage ?? ""}
+                            onChange={(e) =>
+                            setUpdateFormData({
+                                ...updateFormData,
+                                percentage: e.target.value ? parseInt(e.target.value) : 0,
+                            })
+                            }
+                            className="w-full border px-2 py-1 rounded"
+                            min={0} // optional: prevent negative numbers
+                        />
                     </label>
                   </>
                 ) : (
                   <>
-                    {/* Normal Bonus fields */}
                     <label className="block text-sm mb-2">
-                      Is Percentage
-                      <input
-                        type="checkbox"
-                        checked={updateFormData.isPercentage}
+                    Cash Amount
+                    <input
+                        type="number"
+                        value={updateFormData.prizeAmount ?? ""}
                         onChange={(e) =>
-                          setUpdateFormData({
+                        setUpdateFormData({
                             ...updateFormData,
-                            isPercentage: e.target.checked,
-                          })
+                            prizeAmount: e.target.value ? parseInt(e.target.value) : 0,
+                        })
                         }
-                        className="ml-2"
-                      />
+                        className="w-full border px-2 py-1 rounded"
+                        min={0}
+                    />
                     </label>
-
-                    {updateFormData.isPercentage && (
-                      <label className="block text-sm mb-2">
+                    <label className="block text-sm mb-2">
                         Percentage
                         <input
-                          type="text"
-                          value={updateFormData.percentage}
-                          onChange={(e) => {
-                            const val = e.target.value;
-                            if (/^\d{0,3}(\.\d{0,2})?$/.test(val)) {
-                              let num = Number(val);
-                              if (num < 0) num = 0;
-                              setUpdateFormData({ ...updateFormData, percentage: num });
+                            type="number"
+                            value={updateFormData.percentage ?? ""}
+                            onChange={(e) =>
+                            setUpdateFormData({
+                                ...updateFormData,
+                                percentage: e.target.value ? parseInt(e.target.value) : 0,
+                            })
                             }
-                          }}
-                          className="w-full border px-2 py-1 rounded"
-                          placeholder="Enter percentage (0-100)"
+                            className="w-full border px-2 py-1 rounded"
+                            min={0} // optional: prevent negative numbers
                         />
-                      </label>
-                    )}
-
-                    <label className="block text-sm mb-2">
-                      Min
-                      <input
-                        type="number"
-                        value={updateFormData.min}
-                        onChange={(e) =>
-                          setUpdateFormData({
-                            ...updateFormData,
-                            min: Number(e.target.value),
-                          })
-                        }
-                        className="w-full border px-2 py-1 rounded"
-                      />
-                    </label>
-                    <label className="block text-sm mb-2">
-                      Max
-                      <input
-                        type="number"
-                        value={updateFormData.max}
-                        onChange={(e) =>
-                          setUpdateFormData({
-                            ...updateFormData,
-                            max: Number(e.target.value),
-                          })
-                        }
-                        className="w-full border px-2 py-1 rounded"
-                      />
                     </label>
                   </>
                 )}
 
-                {/* Description (common) */}
-                <label className="block text-sm mb-2">
-                  Description
-                  <textarea
-                    value={updateFormData.description}
-                    onChange={(e) =>
-                      setUpdateFormData({
-                        ...updateFormData,
-                        description: e.target.value,
-                      })
-                    }
-                    className="w-full border px-2 py-1 rounded"
-                  />
-                </label>
 
                 {/* Action buttons */}
                 <div className="flex justify-end mt-4 gap-2">
@@ -931,7 +860,7 @@ const BasicTableBonuses = () => {
                   </button>
                   <button
                     disabled={isCreating}
-                    onClick={handleUpdateBonus}
+                    onClick={handleUpdatePrize}
                     className="px-3 py-1 rounded bg-blue-600 hover:bg-blue-700 disabled:bg-blue-800 text-white"
                   >
                     Update
@@ -945,7 +874,7 @@ const BasicTableBonuses = () => {
                 <h2 className="text-lg font-semibold mb-4">Delete Bonus</h2>
                 <p>
                   Are you sure you want to delete{" "}
-                  <b>{selectedBonus?.name}</b>?
+                  <b>{selectedPrize?.name}</b>?
                 </p>
                 <div className="flex justify-end mt-4 gap-2">
                   <button
@@ -957,7 +886,7 @@ const BasicTableBonuses = () => {
                   </button>
                   <button
                     disabled = {isCreating}
-                    onClick={handleDeleteBonus}
+                    onClick={handleDeletePrize}
                     className="px-3 py-1 rounded bg-red-600 hover:bg-red-700 dark:bg-red-800 text-white"
                   >
                     Delete
@@ -972,4 +901,4 @@ const BasicTableBonuses = () => {
   );
 };
 
-export default BasicTableBonuses;
+export default BasicTableWheelPrizes;
