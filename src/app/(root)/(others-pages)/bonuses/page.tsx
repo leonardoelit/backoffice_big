@@ -1,3 +1,4 @@
+"use client"
 import BonusesTabs from "@/components/bonus/BonusesTabs";
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 
