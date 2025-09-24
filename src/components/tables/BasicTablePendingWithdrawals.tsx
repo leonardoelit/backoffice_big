@@ -5,7 +5,7 @@ import { PlayerFinancialFilter } from '../constants/types';
 import { Table, TableBody, TableCell, TableHeader, TableRow } from '../ui/table';
 import { formatDateToDDMMYYYYHHMMSS } from '@/utils/utils';
 import DateRangePickerWithTime from '../player-profile/DateRangePickerWithTime';
-import { managePendingFinancialRequest } from '../lib/api';
+import { cancelOrValidateWithdrawal, managePendingFinancialRequest } from '../lib/api';
 import { showToast } from '@/utils/toastUtil';
 import ConfirmationModal from './ConfirmationModal';
 import Link from 'next/link';
@@ -29,12 +29,25 @@ const BasicTablePendingWithdrawals = () => {
     const [accountNumber, setAccountNumber] = useState<string | undefined>(undefined)
     const [cryptoType, setCryptoType] = useState<string | undefined>(undefined)
     const [playerUsername, setPlayerUsername] = useState<string | undefined>(undefined)
+     const [isAction, setIsAction] = useState(false)
 
     const [modalState, setModalState] = useState<{
     isOpen: boolean;
     id: number | null;
     playerId: string | null;
     action: 'accept' | 'reject' | null;
+  }>({
+    isOpen: false,
+    id: null,
+    playerId: null,
+    action: null
+  });
+
+    const [modalStateForCancel, setModalStateForCancel] = useState<{
+    isOpen: boolean;
+    id: number | null;
+    playerId: string | null;
+    action: 'onay' | 'red' | null;
   }>({
     isOpen: false,
     id: null,
@@ -199,6 +212,34 @@ const BasicTablePendingWithdrawals = () => {
     }
   };
 
+  const handleCancelClick = (id: number, playerId: string, action: 'onay' | 'red') => {
+    setModalStateForCancel({
+      isOpen: true,
+      id,
+      playerId,
+      action
+    });
+  };
+
+    const handelCancelAction = async () => {
+      if(modalStateForCancel.id === null || modalStateForCancel.playerId === null || modalStateForCancel.action == null){
+        showToast("İşlem bilgisi alırken hata lütfen tekrar deneyiniz", "error")
+        return;
+      }
+
+      setIsAction(true)
+
+      const res = await cancelOrValidateWithdrawal({ id: modalStateForCancel.id, playerId: modalStateForCancel.playerId, result: modalStateForCancel.action === "onay" ? true : false  })
+
+      if(res.hasError){
+        showToast(res.description, "error")
+      }else{
+        showToast(res.description, "success")
+        handleRefetch();
+      }
+      setIsAction(false)
+    } 
+
     const SkeletonRow = ({ columns }: { columns: number }) => (
       <TableRow>
         {Array.from({ length: columns }).map((_, index) => (
@@ -221,6 +262,12 @@ const BasicTablePendingWithdrawals = () => {
         onConfirm={handleConfirmedAction}
         action={modalState.action || 'accept'}
       />
+      <ConfirmationModal
+            isOpen={modalStateForCancel.isOpen}
+            onClose={() => setModalStateForCancel({ isOpen: false, id: null, playerId: null, action: null })}
+            onConfirm={handelCancelAction}
+            action={modalStateForCancel.action || 'accept'}
+          />
       <div className='relative flex flex-row items-center justify-between' ref={dropdownRef}>
           <button
             onClick={() => setOpen(!open)}
@@ -533,6 +580,16 @@ const BasicTablePendingWithdrawals = () => {
                         {formatDateToDDMMYYYYHHMMSS(t.createdAt)}
                     </TableCell>
                     <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                        {t.status === "Çekim Aktarılıyor" ? (
+                          <div className='flex flex-row items-start justify-start gap-2'>
+                            <button disabled={isAction} onClick={() => handleCancelClick(t.id, t.playerID, "onay")} className='px-2 py-1 text-green-600 border-[1px] border-green-600 bg-white hover:green-700 hover:bg-gray-200 hover:test-semibold disabled:bg-gray-400 rounded-md'>
+                                Onay
+                            </button>
+                            <button disabled={isAction} onClick={() => handleCancelClick(t.id, t.playerID, "red")} className='px-2 py-1 text-red-600 border-[1px] border-red-600 bg-white hover:green-700 hover:bg-gray-200 hover:test-semibold disabled:bg-gray-400 rounded-md'>
+                                Red
+                            </button>
+                        </div>
+                        ) : t.status === "Pending" ? (
                         <div className='flex flex-row items-start justify-start gap-2'>
                             <button disabled={isSendingResponse || t.status !== "Pending"} onClick={() => handleActionClick(t.id, t.playerID, 'accept')} className='px-2 py-1 text-green-600 border-[1px] border-green-600 bg-white hover:green-700 hover:bg-gray-200 hover:test-semibold disabled:bg-gray-200 dark:disabled:bg-gray-700 disabled:border-green-600/25 disabled:text-green-600/25 rounded-md'>
                                 Onayla
@@ -541,6 +598,7 @@ const BasicTablePendingWithdrawals = () => {
                                 Reddet
                             </button>
                         </div>
+                        ) : "-"}
                     </TableCell>
                   </TableRow>
                 ))
@@ -553,7 +611,7 @@ const BasicTablePendingWithdrawals = () => {
   {/* Pagination Controls */}
 <div className="flex items-center justify-end w-full px-4 py-2 space-x-3 border-t border-[#c8c9cb]">
   <div className="text-sm text-gray-700 dark:text-gray-300 px-2 border-r border-[#c8c9cb]">
-          Showing {financialTransactions.length} of {pagination.totalCount} transactions
+          Showing {financialTransactions.length} of {pagination.totalCount} withdrawals
         </div>
     <div className="flex items-center gap-2">
           <label htmlFor="rowsPerPage" className="text-sm text-gray-700 dark:text-gray-300">
