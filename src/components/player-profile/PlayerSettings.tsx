@@ -1,6 +1,7 @@
 "use client";
 import React from "react";
 import PlayerBonusSettings from "./settings/PlayerBonusSettings";
+import PlayerIpActivityTable from "../tables/PlayerIpActivityTable";
 
 const PlayerSettings = ({
   playerId,
@@ -38,7 +39,7 @@ const PlayerSettings = ({
         {activeSubTab === "BonusSettings" && <PlayerBonusSettings playerId={playerId} />}
         {activeSubTab === "Security" && <div>Security content for player {playerId}</div>}
         {activeSubTab === "Notifications" && <div>Notifications content for player {playerId}</div>}
-        {activeSubTab === "Activity" && <div>Activity content for player {playerId}</div>}
+        {activeSubTab === "Activity" && <PlayerIpActivityTable playerId={playerId} />}
       </div>
     </div>
   );

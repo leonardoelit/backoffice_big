@@ -663,3 +663,48 @@ export interface GivePlayerWheelChanceRequest{
   playerId: string;
   spinAmount: number;
 }
+
+export enum Device {
+  Mobile = 0,
+  Desktop = 1
+}
+
+export interface IpLogData {
+  playerId: number;
+  playerUsername: string;
+  ip: string;
+  loginDate: string;
+  device: Device;
+}
+
+export interface IpLogResponse {
+  isSuccess: boolean;
+  message?: string;
+  ipLogs: IpLogData[];
+}
+
+export interface BlackListData {
+  id: number;
+  ip: string;
+  employeeName: string;
+  playerId?: number;
+  playerUsername?: string;
+  reason?: string;
+  createdAt: string;
+  expiresAt?: string;
+  isActive: boolean;
+}
+
+export interface GetBlacklistResponse {
+  isSuccess: boolean;
+  message?: string;
+  blacklist: BlackListData[];
+}
+
+export interface BanIpRequest {
+  ip: string;
+  playerId?: number;
+  playerUsername?: string;
+  reason?: string;
+  expiredAt?: string;
+}

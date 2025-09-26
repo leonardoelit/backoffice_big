@@ -42,6 +42,7 @@ const navItems: NavItem[] = [
       { name: "Tüm Oyuncular", path: "/players/all-players", pro: false },
       { name: "Favori Oyuncular", path: "/players/favorite-players", pro: false },
       { name: "Risk Listesi", path: "/players/risk-list", pro: false },
+      { name: "Yasaklanan Ip ler", path: "/players/blacklisted-ips", pro: false },
     ],
   },
   {
