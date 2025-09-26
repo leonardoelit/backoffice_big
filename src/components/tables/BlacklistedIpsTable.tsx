@@ -173,7 +173,27 @@ const BlacklistedIpsTable = () => {
               <td className="border px-4 py-2">{log.reason}</td>
               <td className="border px-4 py-2">{formatDateToDDMMYYYYHHMMSS(log.createdAt)}</td>
               <td className="border px-4 py-2">{log.expiresAt === null || log.expiresAt === undefined ? "Infinite" : formatDateToDDMMYYYYHHMMSS(log.expiresAt)}</td>
-              <td className="border px-4 py-2">{log.isActive}</td>
+              <td className="px-4 py-3 text-center">
+                <div className="relative group inline-flex items-center justify-center h-6 w-6">
+                    
+                    <span
+                        className={`absolute inline-flex h-full w-full rounded-full ${
+                            log.isActive
+                                ? "bg-green-400 opacity-75 animate-pulse"
+                                : "hidden"
+                        }`}
+                    ></span>
+                    <span
+                        className={`relative inline-flex h-3 w-3 rounded-full shadow-lg transition-colors duration-300 ${
+                            log.isActive ? "hidden" : "bg-red-600"
+                        }`}
+                    ></span>
+                    <span className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 hidden group-hover:block px-3 py-1 text-xs rounded-md bg-gray-800 text-white shadow-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10">
+                        {log.isActive ? "Active" : "Inactive"}
+                    </span>
+                    
+                </div>
+              </td>
               <td className="border px-4 py-2">
                   <button
                     disabled={isSubmitting}
