@@ -105,16 +105,16 @@ const PlayerIpActivityTable = ({ playerId }: { playerId: string }) => {
   if (loading) return <div>Loading ip activities...</div>;
 
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full border-collapse border border-gray-300 dark:border-gray-700">
-        <thead>
-          <tr className="bg-gray-100 dark:bg-gray-800 text-black dark:text-gray-100">
-            <th className="border px-4 py-2 text-left">IP</th>
-            <th className="border px-4 py-2 text-left">Login Date</th>
-            <th className="border px-4 py-2 text-left">Device</th>
-            <th className="border px-4 py-2 text-left">Actions</th>
-          </tr>
-        </thead>
+    <div className="overflow-x-auto max-h-[500px] overflow-y-auto">
+  <table className="w-full border-collapse border border-gray-300 dark:border-gray-700">
+    <thead className="sticky top-0 z-10 bg-gray-100 dark:bg-gray-800">
+      <tr>
+        <th className="border px-4 py-2 text-left">IP</th>
+        <th className="border px-4 py-2 text-left">Login Date</th>
+        <th className="border px-4 py-2 text-left">Device</th>
+        <th className="border px-4 py-2 text-left">Actions</th>
+      </tr>
+    </thead>
         <tbody>
           {ipLogs.map((log, i) => (
             <tr

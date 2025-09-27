@@ -172,72 +172,70 @@ const confirmRemove = async () => {
           </button>
     
           {/* Dropdown panel */}
-          {/* Dropdown panel */}
-{open && (
-  <div
-    className="absolute mt-2 w-full md:w-[70vw] max-w-4xl right-0 
-               bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 
-               rounded-lg shadow-lg z-50 p-4"
-  >
-    {/* Filter row 1 */}
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-      {/* Player ID */}
-      <input
-        type="text"
-        value={playerId || ""}
-        onChange={(e) => setPlayerId(e.target.value)}
-        placeholder="Player ID"
-        className="w-full rounded-md border border-gray-300 dark:border-gray-600 
-                   bg-white dark:bg-gray-700 text-sm text-gray-700 dark:text-gray-200 
-                   px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-      />
-      <input
-        type="text"
-        value={playerUsername || ""}
-        onChange={(e) => setPlayerUsername(e.target.value)}
-        placeholder="Username"
-        className="w-full rounded-md border border-gray-300 dark:border-gray-600 
-                   bg-white dark:bg-gray-700 text-sm text-gray-700 dark:text-gray-200 
-                   px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-      />
-      <input
-        type="text"
-        value={whoMarked || ""}
-        onChange={(e) => setWhoMarked(e.target.value)}
-        placeholder="Çalışan İsmi"
-        className="w-full rounded-md border border-gray-300 dark:border-gray-600 
-                   bg-white dark:bg-gray-700 text-sm text-gray-700 dark:text-gray-200 
-                   px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-      />
-    </div>
+          {open && (
+            <div
+              className="absolute mt-2 w-full md:w-[70vw] max-w-4xl right-0 
+                        bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 
+                        rounded-lg shadow-lg z-50 p-4"
+            >
+              {/* Filter row 1 */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                {/* Player ID */}
+                <input
+                  type="text"
+                  value={playerId || ""}
+                  onChange={(e) => setPlayerId(e.target.value)}
+                  placeholder="Player ID"
+                  className="w-full rounded-md border border-gray-300 dark:border-gray-600 
+                            bg-white dark:bg-gray-700 text-sm text-gray-700 dark:text-gray-200 
+                            px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+                <input
+                  type="text"
+                  value={playerUsername || ""}
+                  onChange={(e) => setPlayerUsername(e.target.value)}
+                  placeholder="Username"
+                  className="w-full rounded-md border border-gray-300 dark:border-gray-600 
+                            bg-white dark:bg-gray-700 text-sm text-gray-700 dark:text-gray-200 
+                            px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+                <input
+                  type="text"
+                  value={whoMarked || ""}
+                  onChange={(e) => setWhoMarked(e.target.value)}
+                  placeholder="Çalışan İsmi"
+                  className="w-full rounded-md border border-gray-300 dark:border-gray-600 
+                            bg-white dark:bg-gray-700 text-sm text-gray-700 dark:text-gray-200 
+                            px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
 
-    {/* Existing Payment + Event selectors can stay above or below as you want */}
+              {/* Existing Payment + Event selectors can stay above or below as you want */}
 
-    {/* Footer Buttons */}
-    <div className="flex justify-end gap-3">
-      {isFilterOn && (
-        <button
-          onClick={removeFilter}
-          className="px-4 py-2 bg-red-600 text-white text-sm rounded 
-                    hover:bg-red-700 transition-colors"
-        >
-          Clear Filters
-        </button>
-      )}
-      <button
-        onClick={() => {
-          handleRefetch()
-          setOpen(false)
-        }}
-        className="px-4 py-2 bg-blue-600 text-white text-sm rounded 
-                  hover:bg-blue-700 transition-colors"
-      >
-        Apply Filters
-      </button>
-    </div>
-  </div>
-)}
-
+              {/* Footer Buttons */}
+              <div className="flex justify-end gap-3">
+                {isFilterOn && (
+                  <button
+                    onClick={removeFilter}
+                    className="px-4 py-2 bg-red-600 text-white text-sm rounded 
+                              hover:bg-red-700 transition-colors"
+                  >
+                    Clear Filters
+                  </button>
+                )}
+                <button
+                  onClick={() => {
+                    handleRefetch()
+                    setOpen(false)
+                  }}
+                  className="px-4 py-2 bg-blue-600 text-white text-sm rounded 
+                            hover:bg-blue-700 transition-colors"
+                >
+                  Apply Filters
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       <div className="w-full overflow-x-auto">
         <div className="min-w-[1102px] min-h-[600px]">

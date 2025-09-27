@@ -122,7 +122,7 @@ const BlacklistedIpsTable = () => {
             <tr key={i} className="animate-pulse">
               {Array(9).fill(0).map((_, j) => (
                 <td key={j} className="border px-4 py-2">
-                  <div className="h-4 bg-gray-300 dark:bg-gray-700 rounded w-full"></div>
+                  <div className="h-8 bg-gray-300 dark:bg-gray-700 rounded w-full"></div>
                 </td>
               ))}
             </tr>
@@ -134,7 +134,7 @@ const BlacklistedIpsTable = () => {
 }
 
   return (
-    <div className="overflow-x-auto">
+    <div className="overflow-x-auto max-h-[600px]">
         <div className="w-full flex justify-end items-center mb-4">
             <button
                 disabled={isBaning}
@@ -146,8 +146,9 @@ const BlacklistedIpsTable = () => {
         </div>
 
 
-      <table className="w-full border-collapse border border-gray-300 dark:border-gray-700">
-        <thead>
+      
+  <table className="w-full border-collapse border border-gray-300 dark:border-gray-700">
+    <thead className="sticky top-0 z-10 bg-gray-100 dark:bg-gray-800">
           <tr className="bg-gray-100 dark:bg-gray-800 text-black dark:text-gray-100">
             <th className="border px-4 py-2 text-left">IP</th>
             <th className="border px-4 py-2 text-left">Employee Name</th>
@@ -173,7 +174,7 @@ const BlacklistedIpsTable = () => {
               <td className="border px-4 py-2">{log.reason}</td>
               <td className="border px-4 py-2">{formatDateToDDMMYYYYHHMMSS(log.createdAt)}</td>
               <td className="border px-4 py-2">{log.expiresAt === null || log.expiresAt === undefined ? "Infinite" : formatDateToDDMMYYYYHHMMSS(log.expiresAt)}</td>
-              <td className="px-4 py-3 text-center">
+              <td className="px-4 py-3 text-center border">
                 <div className="relative group inline-flex items-center justify-center h-6 w-6">
                     
                     <span
