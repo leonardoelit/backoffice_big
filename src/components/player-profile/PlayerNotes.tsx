@@ -1,42 +1,59 @@
 "use client"
-import React, { useState } from "react"
+import React, { useEffect, useState } from "react"
 import { Pencil, Trash2 } from "lucide-react"
+import { CreatePlayerNoteRequest, GetPlayerNotesResponse, NoteData, NotesType, UpdatePlayerNoteRequest } from "../constants/types"
+import { addNote, getPlayerNotesWithPlayerId, removeNote, updateNote } from "../lib/api"
+import { formatDateToDDMMYYYYHHMMSS } from "@/utils/utils"
+import { showToast } from "@/utils/toastUtil"
 
-type Note = {
-  id: number
-  category: string
-  text: string
-  author: string
-  CreatedAt: string
+const categories: Record<NotesType, string> = {
+  [NotesType.Financial]: "Finansal",
+  [NotesType.Risk]: "Risk",
+  [NotesType.Call]: "Call",
+  [NotesType.Chat]: "Chat",
+  [NotesType.Ban]: "Ban",
 }
 
-const categories = ["Finansal", "Risk", "Call", "Chat", "Ban"]
-
-const categoryColors: Record<string, string> = {
-  Finansal: "bg-blue-100 text-blue-700",
-  Risk: "bg-red-100 text-red-700",
-  Call: "bg-green-100 text-green-700",
-  Chat: "bg-purple-100 text-purple-700",
-  Ban: "bg-gray-300 text-gray-800",
+const categoryColors: Record<NotesType, string> = {
+  [NotesType.Financial]: "bg-blue-100 text-blue-700",
+  [NotesType.Risk]: "bg-red-100 text-red-700",
+  [NotesType.Call]: "bg-green-100 text-green-700",
+  [NotesType.Chat]: "bg-purple-100 text-purple-700",
+  [NotesType.Ban]: "bg-gray-300 text-gray-800",
 }
 
-const PlayerNotes = () => {
-  const [notes, setNotes] = useState<Note[]>([
-    { id: 1, category: "Finansal", text: "Oyuncu ile yapılan telefon görüşmesinden not alındı.Oyuncu ile yapılan telefon görüşmesinden not alındıOyuncu ile yapılan telefon görüşmesinden not alındı.Oyuncu ile yapılan telefon görüşmesinden not alındıOyuncu ile yapılan telefon görüşmesinden not alındı.Oyuncu ile yapılan telefon görüşmesinden not alındı.", author: "BuzzAdmin", CreatedAt: "2025-06-20 14:30" },
-    { id: 2, category: "Call", text: "Oyuncu ile yapılan telefon görüşmesinden not alındı.Oyuncu ile yapılan telefon görüşmesinden not alındı.", author: "Admin Teknik", CreatedAt: "2025-06-20 14:30" },
-    { id: 3, category: "Risk", text: "Oyuncu ile yapılan telefon görüşmesinden not alındı.", author: "Admin Teknik", CreatedAt: "2025-06-20 14:30" },
-    { id: 4, category: "Chat", text: "Oyuncu ile yapılan telefon görüşmesinden not alındı.", author: "Admin Teknik", CreatedAt: "2025-06-20 14:30" },
-    { id: 5, category: "Ban", text: "Test note id 5 category Ban.", author: "Admin Teknik", CreatedAt: "2025-06-20 14:30" },
-  ])
+type Props = {
+  playerId: number
+}
 
+const PlayerNotes = ({ playerId }: Props) => {
+  const [notes, setNotes] = useState<NoteData[]>([])
   const [expandedNoteIds, setExpandedNoteIds] = useState<number[]>([])
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  // Add/Edit modal state
   const [showPopup, setShowPopup] = useState(false)
-  const [newCategory, setNewCategory] = useState(categories[0])
+  const [editingNote, setEditingNote] = useState<NoteData | null>(null)
+  const [newCategory, setNewCategory] = useState<NotesType>(NotesType.Financial)
   const [newText, setNewText] = useState("")
-  const [newAuthor, setNewAuthor] = useState("")
+
+  // Confirm modal state
   const [confirmOpen, setConfirmOpen] = useState(false)
   const [confirmAction, setConfirmAction] = useState<() => void>(() => {})
   const [confirmMessage, setConfirmMessage] = useState("")
+
+  useEffect(() => {
+    loadNotes()
+  }, [playerId])
+
+  const loadNotes = async () => {
+    const res: GetPlayerNotesResponse = await getPlayerNotesWithPlayerId(
+      String(playerId)
+    )
+    if (res.isSuccess) {
+      setNotes(res.notes)
+    }
+  }
 
   const toggleExpand = (id: number) => {
     setExpandedNoteIds((prev) =>
@@ -44,44 +61,82 @@ const PlayerNotes = () => {
     )
   }
 
-  const handleAddNote = () => {
-    if (!newText.trim() || !newAuthor.trim()) return
-    const newNote: Note = {
-      id: Date.now(),
-      category: newCategory,
-      text: newText,
-      author: newAuthor,
-      CreatedAt: new Date().toISOString().slice(0, 16).replace("T", " "),
+  const handleSave = async () => {
+    if (!newText.trim()) return
+
+    setIsSubmitting(true)
+
+    if (editingNote) {
+      // Update existing note
+      const req: UpdatePlayerNoteRequest = {
+        id: editingNote.id,
+        noteType: newCategory,
+        note: newText,
+      }
+      const res = await updateNote(req)
+      if (res.isSuccess) {
+        await loadNotes()
+        setShowPopup(false)
+        setEditingNote(null)
+        showToast(res.message ? res.message : "Note updated", "success")
+      }else{
+        showToast(res.message ? res.message : "Error while updating the note", "error")
+      }
+    } else {
+      // Add new note
+      const req: CreatePlayerNoteRequest = {
+        playerId,
+        notesType: newCategory,
+        note: newText,
+      }
+      const res = await addNote(req)
+      if (res.isSuccess) {
+        await loadNotes()
+        setShowPopup(false)
+        showToast(res.message ? res.message : "Note added", "success")
+      }else{
+        showToast(res.message ? res.message : "Error while adding the note", "error")
+      }
     }
-    setNotes([newNote, ...notes])
-    setShowPopup(false)
+
     setNewText("")
-    setNewAuthor("")
+    setIsSubmitting(false)
   }
 
   const handleDelete = (id: number) => {
     setConfirmMessage("Bu notu silmek istediğinize emin misiniz?")
-    setConfirmAction(() => () => {
-      setNotes(notes.filter((n) => n.id !== id))
+    setConfirmAction(() => async () => {
+      setIsSubmitting(true)
+      const res = await removeNote(id)
+      if (res.isSuccess) {
+        setNotes((prev) => prev.filter((n) => n.id !== id))
+        showToast(res.message ? res.message : "Note removed", "success")
+      }else{
+        showToast(res.message ? res.message : "Error while removing the note", "error")
+      }
       setConfirmOpen(false)
+      setIsSubmitting(false);
     })
     setConfirmOpen(true)
   }
 
-  const handleEdit = (id: number) => {
-    setConfirmMessage("Bu notu düzenlemek istediğinize emin misiniz?")
-    setConfirmAction(() => () => {
-      alert("Edit flow will be added later 🚀")
-      setConfirmOpen(false)
-    })
-    setConfirmOpen(true)
+  const handleEdit = (note: NoteData) => {
+    setNewCategory(note.type)
+    setNewText(note.note)
+    setEditingNote(note)
+    setShowPopup(true)
   }
 
   return (
     <div className="space-y-4">
       <div className="flex justify-end">
         <button
-          onClick={() => setShowPopup(true)}
+          onClick={() => {
+            setEditingNote(null)
+            setNewCategory(NotesType.Financial)
+            setNewText("")
+            setShowPopup(true)
+          }}
           className="px-6 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 flex items-center gap-2"
         >
           + Add Note
@@ -91,9 +146,9 @@ const PlayerNotes = () => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {notes.map((note) => {
           const isExpanded = expandedNoteIds.includes(note.id)
-          const isLong = note.text.length > 100
+          const isLong = note.note.length > 100
           const displayedText =
-            isExpanded || !isLong ? note.text : note.text.slice(0, 100) + "..."
+            isExpanded || !isLong ? note.note : note.note.slice(0, 100) + "..."
 
           return (
             <div
@@ -104,13 +159,13 @@ const PlayerNotes = () => {
                 <div className="flex items-center justify-between mb-2">
                   <span
                     className={`inline-block px-2 py-1 text-xs font-semibold rounded-sm ${
-                      categoryColors[note.category] || "bg-gray-100 text-gray-700"
+                      categoryColors[note.type]
                     }`}
                   >
-                    {note.category}
+                    {categories[note.type]}
                   </span>
                   <span className="text-xs text-gray-500 dark:text-gray-400">
-                    {note.author}
+                    {note.writerName}
                   </span>
                 </div>
                 <p className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
@@ -127,11 +182,11 @@ const PlayerNotes = () => {
               </div>
               <div className="flex justify-between items-center mt-4">
                 <span className="text-xs text-gray-400 dark:text-gray-500">
-                  {note.CreatedAt || "Tarih Yok"}
+                  {formatDateToDDMMYYYYHHMMSS(note.createdAt)}
                 </span>
                 <div className="flex gap-2">
                   <button
-                    onClick={() => handleEdit(note.id)}
+                    onClick={() => handleEdit(note)}
                     className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700"
                   >
                     <Pencil className="w-4 h-4 text-gray-600 dark:text-gray-300" />
@@ -149,24 +204,26 @@ const PlayerNotes = () => {
         })}
       </div>
 
-      {/* Add Note Modal */}
+      {/* Add/Edit Note Modal */}
       {showPopup && (
         <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-[99999]">
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 w-96">
             <h2 className="text-lg font-semibold mb-4 text-gray-800 dark:text-gray-100">
-              Add Note
+              {editingNote ? "Edit Note" : "Add Note"}
             </h2>
             <label className="block text-sm mb-1 text-gray-700 dark:text-gray-300">
               Category
             </label>
             <select
               value={newCategory}
-              onChange={(e) => setNewCategory(e.target.value)}
+              onChange={(e) =>
+                setNewCategory(Number(e.target.value) as NotesType)
+              }
               className="w-full mb-3 rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
             >
-              {categories.map((cat) => (
-                <option key={cat} value={cat}>
-                  {cat}
+              {Object.entries(categories).map(([key, value]) => (
+                <option key={key} value={key}>
+                  {value}
                 </option>
               ))}
             </select>
@@ -179,17 +236,22 @@ const PlayerNotes = () => {
               rows={4}
               className="w-full mb-3 rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
             />
-            {/* Add Note Buttons */}
+            {/* Buttons */}
             <div className="flex justify-end gap-3 mt-4">
               <button
-                onClick={() => setShowPopup(false)}
-                className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
+                disabled={isSubmitting}
+                onClick={() => {
+                  setShowPopup(false)
+                  setEditingNote(null)
+                }}
+                className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400 disabled:bg-gray-500"
               >
                 Cancel
               </button>
               <button
-                onClick={handleAddNote}
-                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                disabled = {isSubmitting}
+                onClick={handleSave}
+                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-blue-800"
               >
                 Save
               </button>
@@ -210,14 +272,16 @@ const PlayerNotes = () => {
             </p>
             <div className="flex justify-end gap-3">
               <button
+                disabled={isSubmitting}
                 onClick={() => setConfirmOpen(false)}
-                className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
+                className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400 disabled:bg-gray-500"
               >
                 Geri
               </button>
               <button
+                disabled={isSubmitting}
                 onClick={confirmAction}
-                className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+                className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 disabled:bg-red-800"
               >
                 Onayla
               </button>

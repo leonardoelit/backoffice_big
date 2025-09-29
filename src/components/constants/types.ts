@@ -708,3 +708,39 @@ export interface BanIpRequest {
   reason?: string;
   expiredAt?: string;
 }
+
+export enum NotesType{
+  Financial = 0,
+  Call = 1,
+  Risk = 2,
+  Chat = 3,
+  Ban = 4
+}
+
+export interface CreatePlayerNoteRequest{
+  note: string;
+  playerId: number;
+  notesType: NotesType;
+}
+
+export interface UpdatePlayerNoteRequest{
+  id: number;
+  noteType: NotesType;
+  note: string;
+}
+
+export interface NoteData {
+  id: number;
+  writerName: string;
+  type: NotesType;
+  note: string;
+  updatedBy?: string;
+  updatedAt: string;
+  createdAt: string;
+}
+
+export interface GetPlayerNotesResponse{
+  isSuccess: boolean;
+  message?: string;
+  notes: NoteData[];
+}

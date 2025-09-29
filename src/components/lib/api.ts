@@ -1,4 +1,4 @@
-import { ActionResponse, BanIpRequest, BonusResponse, CancelOrValidateWithdrawalRequest, ChangePlayersBonusSettingRequest, CreateBonusRequest, CreateUserRequest, CreateWheelPrizeRequest, DashboardStatsRequestDto, DashboardStatsResponseDto, GameStatsResponse, GetAllFinancialTransactionsResponse, GetAllPlayersResponse, GetBlacklistResponse, GetBonusRequestsResponse, GetGameOrProviderStatsRequest, GetPermissionResponse, GetPlayersDataWithIdResponse, GetPlayersTransactionHistoryResponse, GetRoleResponse, GetTaggedPlayersRequest, GetTaggedPlayersResponse, GetUsersResponse, GivePlayerWheelChanceRequest, IpLogResponse, LoginAsUserResponse, ManageBonusRequest, ManagePlayerBalanceDto, MarkPlayerRequest, PaymentResponse, PermissionRequest, PermissionResponse, PlayerBonusRequestFilter, PlayerBonusSettingsResponse, PlayerFilter, PlayerFinancialFilter, PlayerTransactionFilter, ProviderStatResponse, RolePermissionRequest, RoleRequest, RoleResponse, UpdateBonusRequest, UpdatePlayersDataRequest, UpdateWheelPrizeRequest, UserResponse, UserRoleRequest, WheelArrangementRequest, WheelResponse } from "../constants/types";
+import { ActionResponse, BanIpRequest, BonusResponse, CancelOrValidateWithdrawalRequest, ChangePlayersBonusSettingRequest, CreateBonusRequest, CreatePlayerNoteRequest, CreateUserRequest, CreateWheelPrizeRequest, DashboardStatsRequestDto, DashboardStatsResponseDto, GameStatsResponse, GetAllFinancialTransactionsResponse, GetAllPlayersResponse, GetBlacklistResponse, GetBonusRequestsResponse, GetGameOrProviderStatsRequest, GetPermissionResponse, GetPlayerNotesResponse, GetPlayersDataWithIdResponse, GetPlayersTransactionHistoryResponse, GetRoleResponse, GetTaggedPlayersRequest, GetTaggedPlayersResponse, GetUsersResponse, GivePlayerWheelChanceRequest, IpLogResponse, LoginAsUserResponse, ManageBonusRequest, ManagePlayerBalanceDto, MarkPlayerRequest, PaymentResponse, PermissionRequest, PermissionResponse, PlayerBonusRequestFilter, PlayerBonusSettingsResponse, PlayerFilter, PlayerFinancialFilter, PlayerTransactionFilter, ProviderStatResponse, RolePermissionRequest, RoleRequest, RoleResponse, UpdateBonusRequest, UpdatePlayerNoteRequest, UpdatePlayersDataRequest, UpdateWheelPrizeRequest, UserResponse, UserRoleRequest, WheelArrangementRequest, WheelResponse } from "../constants/types";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -1315,6 +1315,130 @@ export async function removeIpFromBlacklist(id: number): Promise<ActionResponse>
     return data;
   } catch (error) {
     console.error('Error removing ip to blacklist:', error);
+    return {
+      isSuccess: false,
+      message: "Internal server error"
+    };
+  }
+}
+
+export async function addNote(requestBody: CreatePlayerNoteRequest): Promise<ActionResponse> {
+  try {
+    const token = localStorage.getItem("authToken");
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/api/Client/player/createNote`,
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(requestBody),
+        cache: 'no-store'
+      }
+    );
+
+    const data: ActionResponse = await response.json();
+
+    return data;
+  } catch (error) {
+    console.error('Error adding note to player:', error);
+    return {
+      isSuccess: false,
+      message: "Internal server error"
+    };
+  }
+}
+
+export async function updateNote(requestBody: UpdatePlayerNoteRequest): Promise<ActionResponse> {
+  try {
+    const token = localStorage.getItem("authToken");
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/api/Client/player/updateNote`,
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(requestBody),
+        cache: 'no-store'
+      }
+    );
+
+    const data: ActionResponse = await response.json();
+
+    return data;
+  } catch (error) {
+    console.error('Error updating note:', error);
+    return {
+      isSuccess: false,
+      message: "Internal server error"
+    };
+  }
+}
+
+export async function getPlayerNotesWithPlayerId(
+  playerId: string
+): Promise<GetPlayerNotesResponse> {
+  try {
+    const token = localStorage.getItem("authToken");
+    
+    // Convert filter to query params
+    const queryParams = new URLSearchParams();
+    
+    queryParams.set('playerId', playerId);
+
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/api/Client/player/getNotes?${queryParams.toString()}`,
+      {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        cache: 'no-store'
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Error getting player notes:', error);
+    return {
+      isSuccess: false,
+      message: error instanceof Error ? error.message : 'Error getting player notes logs',
+      notes: []
+    };
+  }
+}
+
+export async function removeNote(id: number): Promise<ActionResponse> {
+  try {
+    const token = localStorage.getItem("authToken");
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/api/Client/player/removeNote`,
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          id: id
+        }),
+        cache: 'no-store'
+      }
+    );
+
+    const data: ActionResponse = await response.json();
+
+    return data;
+  } catch (error) {
+    console.error('Error removing player note:', error);
     return {
       isSuccess: false,
       message: "Internal server error"
