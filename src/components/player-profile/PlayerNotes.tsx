@@ -30,6 +30,7 @@ const PlayerNotes = ({ playerId }: Props) => {
   const [notes, setNotes] = useState<NoteData[]>([])
   const [expandedNoteIds, setExpandedNoteIds] = useState<number[]>([])
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isLoading, setIsLoading] = useState(true) 
 
   // Add/Edit modal state
   const [showPopup, setShowPopup] = useState(false)
@@ -47,12 +48,16 @@ const PlayerNotes = ({ playerId }: Props) => {
   }, [playerId])
 
   const loadNotes = async () => {
+    setIsLoading(true)
     const res: GetPlayerNotesResponse = await getPlayerNotesWithPlayerId(
       String(playerId)
     )
     if (res.isSuccess) {
       setNotes(res.notes)
+    }else{
+      showToast("Error whşle getting notes", "error")
     }
+    setIsLoading(false)
   }
 
   const toggleExpand = (id: number) => {
@@ -144,7 +149,25 @@ const PlayerNotes = ({ playerId }: Props) => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {notes.map((note) => {
+        {isLoading ? (
+    // Skeleton loader
+    Array.from({ length: 3 }).map((_, idx) => (
+      <div
+        key={idx}
+        className="border border-gray-200 dark:border-white/[0.05] bg-white dark:bg-white/[0.03] rounded-lg p-4 shadow-sm animate-pulse"
+      >
+        <div className="h-4 bg-gray-300 dark:bg-gray-600 rounded w-1/3 mb-3"></div>
+        <div className="h-3 bg-gray-300 dark:bg-gray-600 rounded w-full mb-2"></div>
+        <div className="h-3 bg-gray-300 dark:bg-gray-600 rounded w-full mb-6"></div>
+        <div className="h-3 bg-gray-300 dark:bg-gray-600 rounded w-2/3"></div>
+      </div>
+    ))
+  ) : notes.length === 0 ? (
+    <div className="col-span-full text-center text-gray-500 dark:text-gray-400">
+      No notes yet.
+    </div>
+  ) : 
+        (notes.map((note) => {
           const isExpanded = expandedNoteIds.includes(note.id)
           const isLong = note.note.length > 100
           const displayedText =
@@ -156,7 +179,8 @@ const PlayerNotes = ({ playerId }: Props) => {
               className="border border-gray-200 dark:border-white/[0.05] bg-white dark:bg-white/[0.03] rounded-lg p-4 shadow-sm flex flex-col justify-between"
             >
               <div>
-                <div className="flex items-center justify-between mb-2">
+                <div className="flex justify-between items-start mb-2">
+                  {/* Category badge stays top-left */}
                   <span
                     className={`inline-block px-2 py-1 text-xs font-semibold rounded-sm ${
                       categoryColors[note.type]
@@ -164,10 +188,23 @@ const PlayerNotes = ({ playerId }: Props) => {
                   >
                     {categories[note.type]}
                   </span>
-                  <span className="text-xs text-gray-500 dark:text-gray-400">
-                    {note.writerName}
-                  </span>
+
+                  {/* Writer & updated info, aligned top-right */}
+                  <div className="text-xs text-gray-500 dark:text-gray-400 text-right flex flex-col items-end">
+                    <span>{note.writerName}</span>
+                    {note.updatedBy && (
+                      <span className="text-gray-400 text-[10px]">
+                        Updated by: {note.updatedBy}
+                      </span>
+                    )}
+                    {note.updatedBy && note.updatedAt && (
+                      <span className="text-gray-400 text-[10px]">
+                        {formatDateToDDMMYYYYHHMMSS(note.updatedAt)}
+                      </span>
+                    )}
+                  </div>
                 </div>
+
                 <p className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
                   {displayedText}
                 </p>
@@ -201,7 +238,7 @@ const PlayerNotes = ({ playerId }: Props) => {
               </div>
             </div>
           )
-        })}
+        }))}
       </div>
 
       {/* Add/Edit Note Modal */}
