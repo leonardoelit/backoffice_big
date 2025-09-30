@@ -744,3 +744,33 @@ export interface GetPlayerNotesResponse{
   message?: string;
   notes: NoteData[];
 }
+
+export interface PlayerStatsFilterByTimeDto {
+  from: string; // ISO date string
+  to: string;   // ISO date string
+}
+
+export interface PlayerStatsByTimeDto {
+  playerId: number;
+  playerUsername: string;
+  playerFullName: string;
+  mobileNumber: string;
+  email: string;
+  playerBalance: number;
+  depositAmount: number;
+  withdrawalAmount: number;
+  lastDepositAmount: number;
+  lastWithdrawalAmount: number;
+  totalCasinoStakes: number;
+  totalCasinoWin: number;
+  totalCasinoGGR: number;
+  lastDepositDate: string;     // ISO date string
+  lastWithdrawalDate: string;  // ISO date string
+  lastLoginDate: string;       // ISO date string
+}
+
+export interface PlayerStatsFilterByTimeResponseDto {
+  isSuccess: boolean;
+  message?: string;
+  playersStats?: PlayerStatsByTimeDto[];
+}

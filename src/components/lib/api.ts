@@ -1,4 +1,4 @@
-import { ActionResponse, BanIpRequest, BonusResponse, CancelOrValidateWithdrawalRequest, ChangePlayersBonusSettingRequest, CreateBonusRequest, CreatePlayerNoteRequest, CreateUserRequest, CreateWheelPrizeRequest, DashboardStatsRequestDto, DashboardStatsResponseDto, GameStatsResponse, GetAllFinancialTransactionsResponse, GetAllPlayersResponse, GetBlacklistResponse, GetBonusRequestsResponse, GetGameOrProviderStatsRequest, GetPermissionResponse, GetPlayerNotesResponse, GetPlayersDataWithIdResponse, GetPlayersTransactionHistoryResponse, GetRoleResponse, GetTaggedPlayersRequest, GetTaggedPlayersResponse, GetUsersResponse, GivePlayerWheelChanceRequest, IpLogResponse, LoginAsUserResponse, ManageBonusRequest, ManagePlayerBalanceDto, MarkPlayerRequest, PaymentResponse, PermissionRequest, PermissionResponse, PlayerBonusRequestFilter, PlayerBonusSettingsResponse, PlayerFilter, PlayerFinancialFilter, PlayerTransactionFilter, ProviderStatResponse, RolePermissionRequest, RoleRequest, RoleResponse, UpdateBonusRequest, UpdatePlayerNoteRequest, UpdatePlayersDataRequest, UpdateWheelPrizeRequest, UserResponse, UserRoleRequest, WheelArrangementRequest, WheelResponse } from "../constants/types";
+import { ActionResponse, BanIpRequest, BonusResponse, CancelOrValidateWithdrawalRequest, ChangePlayersBonusSettingRequest, CreateBonusRequest, CreatePlayerNoteRequest, CreateUserRequest, CreateWheelPrizeRequest, DashboardStatsRequestDto, DashboardStatsResponseDto, GameStatsResponse, GetAllFinancialTransactionsResponse, GetAllPlayersResponse, GetBlacklistResponse, GetBonusRequestsResponse, GetGameOrProviderStatsRequest, GetPermissionResponse, GetPlayerNotesResponse, GetPlayersDataWithIdResponse, GetPlayersTransactionHistoryResponse, GetRoleResponse, GetTaggedPlayersRequest, GetTaggedPlayersResponse, GetUsersResponse, GivePlayerWheelChanceRequest, IpLogResponse, LoginAsUserResponse, ManageBonusRequest, ManagePlayerBalanceDto, MarkPlayerRequest, PaymentResponse, PermissionRequest, PermissionResponse, PlayerBonusRequestFilter, PlayerBonusSettingsResponse, PlayerFilter, PlayerFinancialFilter, PlayerStatsFilterByTimeDto, PlayerStatsFilterByTimeResponseDto, PlayerTransactionFilter, ProviderStatResponse, RolePermissionRequest, RoleRequest, RoleResponse, UpdateBonusRequest, UpdatePlayerNoteRequest, UpdatePlayersDataRequest, UpdateWheelPrizeRequest, UserResponse, UserRoleRequest, WheelArrangementRequest, WheelResponse } from "../constants/types";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -42,6 +42,46 @@ export async function getDashboardStats(
     return {
       isSuccess: false,
       message: error instanceof Error ? error.message : 'Failed to fetch dashboard stats',
+    };
+  }
+}
+
+export async function getPlayersStats(
+  requestTimes: PlayerStatsFilterByTimeDto
+): Promise<PlayerStatsFilterByTimeResponseDto> {
+  try {
+    const token = await getToken();
+
+    if (!requestTimes.from || !requestTimes.to) {
+      return {
+        isSuccess: false,
+        message: "Lütfen geçerli tarih aralığı giriniz",
+      }
+    }
+
+    const queryParams = new URLSearchParams({
+      from: requestTimes.from,
+      to: requestTimes.to
+    });
+
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/api/Client/getPlayersStats?${queryParams.toString()}`,
+      {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        cache: 'no-store'
+      }
+    );
+
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching player stats:', error);
+    return {
+      isSuccess: false,
+      message: error instanceof Error ? error.message : 'Failed to fetch player stats',
     };
   }
 }

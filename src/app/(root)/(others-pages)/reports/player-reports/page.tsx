@@ -1,7 +1,7 @@
 "use client";
 
 import PageBreadcrumb from "@/components/common/PageBreadCrumb";
-import TransactionsTable from "@/components/tables/TransactionsTable";
+import PlayerStatsWithTimeTable from "@/components/tables/PlayerStatsWithTimeTable";
 
 export default function PlayerReportsPage() {
 
@@ -9,7 +9,7 @@ export default function PlayerReportsPage() {
     <div>
       <PageBreadcrumb pageTitle="Oyuncu Raporları" />
       <div className="space-y-6">
-          <TransactionsTable />
+          <PlayerStatsWithTimeTable />
       </div>
     </div>
   );
