@@ -1,11 +1,11 @@
 "use client"
 import React, { useEffect, useRef, useState } from 'react'
 import { usePlayerTransactions } from '../hooks/usePlayerTransactions';
-import { PlayerTransactionFilter } from '../constants/types';
+import { ManualFinancialEventType, PlayerTransactionFilter } from '../constants/types';
 import { Table, TableBody, TableCell, TableHeader, TableRow } from '../ui/table';
 import { formatDateToDDMMYYYYHHMMSS } from '@/utils/utils';
 import DateRangePickerWithTime from './DateRangePickerWithTime';
-import { managePlayerBalance } from '../lib/api';
+import { addManualFinancialEvent, managePlayerBalance } from '../lib/api';
 import { showToast } from '@/utils/toastUtil';
 import { useAuth } from '@/context/AuthContext';
 
@@ -30,6 +30,7 @@ const PlayerTransactionsTable = ({ playerId }: { playerId: string }) => {
   const [isFilterOn, setIsFilterOn] = useState(false);
 
   const [showPopup, setShowPopup] = useState(false);
+  const [showFinancialPopup, setShowFinancialPopup] = useState(false);
   const [formData, setFormData] = useState<{
     direction: string;
     playerId: string;
@@ -40,8 +41,20 @@ const PlayerTransactionsTable = ({ playerId }: { playerId: string }) => {
     amount: ''
   });
 
+  const [financialFormData, setFinancialFormData] = useState<{
+    playerId: string;
+    amount: number | '';
+    eventType: ManualFinancialEventType;
+    note?: string;
+  }>({
+    playerId: playerId,
+    amount: '',
+    eventType: ManualFinancialEventType.Deposit
+  });
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const popupRef = useRef<HTMLDivElement>(null);
+  const financialPopupRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -52,6 +65,16 @@ const PlayerTransactionsTable = ({ playerId }: { playerId: string }) => {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [showPopup]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (showFinancialPopup && financialPopupRef.current && !financialPopupRef.current.contains(event.target as Node)) {
+        setShowFinancialPopup(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showFinancialPopup]);
 
   const { transactions, loading, error, pagination, filter, setFilter } = usePlayerTransactions({
     pageNumber: currentPage,
@@ -181,6 +204,42 @@ const PlayerTransactionsTable = ({ playerId }: { playerId: string }) => {
   setIsSubmitting(false);
 };
 
+  const handleManualFinancialEvent = async () => {
+  if (financialFormData.amount === '' || financialFormData.amount <= 0) {
+    alert('Please enter a valid amount');
+    return;
+  }
+
+  if (!(financialFormData.eventType in ManualFinancialEventType)){
+    alert('Please select a valid event type');
+    return;
+  }
+
+  setIsSubmitting(true);
+
+  try {
+    const res = await addManualFinancialEvent({
+      playerId: playerId,
+      amount: Number(financialFormData.amount),
+      eventType: financialFormData.eventType,
+      note: financialFormData.note,
+    });
+
+    if (res.isSuccess) {
+      showToast(`${financialFormData.eventType === ManualFinancialEventType.Deposit ? "Yatırım" : "Çekim"} işlemi oluşturuldu, oyuncunun bakiyesi güncellendi`, "success")
+      setShowFinancialPopup(false);
+      handleRefetch(); // refresh the table
+    } else {
+      showToast(res.message || 'Failed to create financial event', "error")
+    }
+  } catch (err) {
+    console.error(err);
+    showToast("Beklenmeyen error, lütfen bekleyiniz", "error")
+  }
+
+  setIsSubmitting(false);
+};
+
 const providerName = (gameId: number) => {
     const game = games.find(g => g.id === gameId);
     return game ? `${game.name} - ${game.providerName}` : gameId;
@@ -215,7 +274,7 @@ const providerName = (gameId: number) => {
             amount: "",
           });
         }}
-        className="p-2 bg-green-500 text-sm text-white rounded hover:bg-blue-600 flex items-center justify-center"
+        className="p-2 bg-green-500 text-sm text-white rounded hover:bg-green-600 flex items-center justify-center"
       >
         <svg
           className="w-5 h-5"
@@ -232,6 +291,33 @@ const providerName = (gameId: number) => {
           />
         </svg>
         Add/Remove Balance
+      </button>
+      <button
+        onClick={() => {
+          setShowFinancialPopup(true);
+          setFinancialFormData({
+            playerId: playerId,
+            amount: '',
+            eventType: ManualFinancialEventType.Deposit
+          });
+        }}
+        className="p-2 bg-yellow-600 text-sm text-white rounded hover:bg-yellow-700 flex items-center justify-center"
+      >
+        <svg
+          className="w-5 h-5"
+          viewBox="0 0 24 24"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M4 12H20M12 4V20"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+        Add Deposit/Withdrawal
       </button>
 
       {/* Refresh button */}
@@ -437,6 +523,69 @@ const providerName = (gameId: number) => {
           </div>
         )}
 
+        {showFinancialPopup && (
+          <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-[9999999]">
+            <div
+              ref={financialPopupRef}
+              className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 w-96"
+            >
+              <h2 className="text-lg font-semibold mb-4 text-gray-800 dark:text-gray-100">
+                Add Manual Deposit/Withdrawal
+              </h2>
+
+              {/* Direction */}
+              <label className="block text-sm mb-1 text-gray-700 dark:text-gray-300">Event Type</label>
+              <select
+                value={financialFormData.eventType}
+                onChange={e => setFinancialFormData({ ...financialFormData, eventType: Number(e.target.value) })}
+                className="w-full mb-3 rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value={ManualFinancialEventType.Deposit}>Deposit</option>
+                <option value={ManualFinancialEventType.Withdrawal}>Withdrawal</option>
+              </select>
+
+              {/* Amount */}
+              <label className="block text-sm mb-1 text-gray-700 dark:text-gray-300">Amount</label>
+              <input
+                type="number"
+                value={financialFormData.amount}
+                onChange={e => setFinancialFormData({ ...financialFormData, amount: parseInt(e.target.value) || 0 })}
+                className="w-full mb-4 rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+
+              <label className="block text-sm mb-1 text-gray-700 dark:text-gray-300">Note</label>
+              <textarea
+                value={financialFormData.note ?? ""}
+                placeholder='Optional'
+                onChange={e =>
+                  setFinancialFormData({
+                    ...financialFormData,
+                    note: e.target.value || undefined,
+                  })
+                }
+                rows={4} // adjust height
+                className="w-full mb-4 rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-y"
+              />
+
+              {/* Buttons */}
+              <div className="flex justify-end gap-3">
+                <button
+                  onClick={() => setShowFinancialPopup(false)}
+                  className="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleManualFinancialEvent}
+                  disabled={isSubmitting}
+                  className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-blue-800"
+                >
+                  Submit
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
       <div className="w-full overflow-x-auto">
 

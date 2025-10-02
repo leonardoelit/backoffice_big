@@ -30,10 +30,13 @@ export default function Ecommerce() {
   const [isLoading, setIsLoading] = useState(true);
 
   const today = new Date();
+    const pad = (n: number) => n.toString().padStart(2, '0');
+    const startOfToday = `${today.getFullYear()}-${pad(today.getMonth()+1)}-${pad(today.getDate())} 00:00:00`;
+    const endOfToday = `${today.getFullYear()}-${pad(today.getMonth()+1)}-${pad(today.getDate())} 23:59:59`;
 
   const [range, setRange] = useState<{ MinCreatedLocal: string; MaxCreatedLocal: string }>({
-    MinCreatedLocal: new Date(today.setHours(0,0,0,0)).toISOString(),
-    MaxCreatedLocal: new Date(today.setHours(23,59,59,999)).toISOString(),
+    MinCreatedLocal: startOfToday,
+    MaxCreatedLocal: endOfToday,
   });
 
   const handleDateChange = (range: { MinCreatedLocal: string; MaxCreatedLocal: string }) => setRange(range);

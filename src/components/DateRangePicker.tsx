@@ -43,17 +43,20 @@ export default function DateRangePicker({
   })
 }, [initialStartDate?.getTime(), initialEndDate?.getTime()])
 
-  const startOfDayISO = (date: Date) => {
+  const pad = (n: number) => n.toString().padStart(2, "0")
+
+  const startOfDayLocal = (date: Date) => {
     const d = new Date(date)
     d.setHours(0, 0, 0, 0)
-    return d.toISOString()
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} 00:00:00`
   }
 
-  const endOfDayISO = (date: Date) => {
+  const endOfDayLocal = (date: Date) => {
     const d = new Date(date)
     d.setHours(23, 59, 59, 999)
-    return d.toISOString()
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} 23:59:59`
   }
+
 
   const formatDisplayDate = (date: Date) => {
     return format(date, 'dd.MM.yyyy')
@@ -67,8 +70,8 @@ export default function DateRangePicker({
 
   const handleApply = () => {
     onChange({
-      MinCreatedLocal: startOfDayISO(customRange.startDate),
-      MaxCreatedLocal: endOfDayISO(customRange.endDate)
+      MinCreatedLocal: startOfDayLocal(customRange.startDate),
+      MaxCreatedLocal: endOfDayLocal(customRange.endDate)
     })
     setDropdownOpen(false)
   }
@@ -79,8 +82,8 @@ export default function DateRangePicker({
     setCustomRange({ startDate: defaultStart, endDate: defaultEnd })
     if (onModifiedChange) onModifiedChange(true)
     onChange({
-      MinCreatedLocal: startOfDayISO(defaultStart),
-      MaxCreatedLocal: endOfDayISO(defaultEnd)
+      MinCreatedLocal: startOfDayLocal(defaultStart),
+      MaxCreatedLocal: endOfDayLocal(defaultEnd)
     })
   }
 

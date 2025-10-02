@@ -764,13 +764,25 @@ export interface PlayerStatsByTimeDto {
   totalCasinoStakes: number;
   totalCasinoWin: number;
   totalCasinoGGR: number;
-  lastDepositDate: string;     // ISO date string
-  lastWithdrawalDate: string;  // ISO date string
-  lastLoginDate: string;       // ISO date string
+  lastDepositDate?: string;     // ISO date string
+  lastWithdrawalDate?: string;  // ISO date string
+  lastLoginDate?: string;       // ISO date string
 }
 
 export interface PlayerStatsFilterByTimeResponseDto {
   isSuccess: boolean;
   message?: string;
   playersStats?: PlayerStatsByTimeDto[];
+}
+
+export enum ManualFinancialEventType {
+  Deposit = 0,
+  Withdrawal = 1
+}
+
+export interface AddManualFinancialEventRequest {
+  playerId: string;
+  amount: number;
+  eventType: ManualFinancialEventType,
+  note?: string;
 }

@@ -22,9 +22,12 @@ export default function PlayerStatsWithTimeTable() {
 
   // Date range state, matching your DateRangePicker's needs
   const today = new Date();
+    const pad = (n: number) => n.toString().padStart(2, '0');
+    const startOfToday = `${today.getFullYear()}-${pad(today.getMonth()+1)}-${pad(today.getDate())} 00:00:00`;
+    const endOfToday = `${today.getFullYear()}-${pad(today.getMonth()+1)}-${pad(today.getDate())} 23:59:59`;
   const [range, setRange] = useState({
-    MinCreatedLocal: new Date(today.getFullYear(), today.getMonth(), today.getDate(), 0, 0, 0).toISOString(),
-    MaxCreatedLocal: new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59, 999).toISOString(),
+    MinCreatedLocal: startOfToday,
+    MaxCreatedLocal: endOfToday,
   });
 
   // UI and Client-side logic states
