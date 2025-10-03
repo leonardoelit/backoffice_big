@@ -45,7 +45,7 @@ function NoteCell({ note }: { note?: string }) {
       {/* truncated note */}
       <button
         onClick={() => setOpen(!open)}
-        className="max-w-[170px] truncate text-left text-blue-600 hover:underline"
+        className="max-w-[100px] truncate text-left text-blue-600 hover:underline"
       >
         {note}
       </button>

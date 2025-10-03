@@ -17,6 +17,8 @@ export function usePlayerTransactions(initialFilter: PlayerTransactionFilter) {
     timeStampFrom: undefined,
     timeStampTo: undefined,
     type: undefined,
+    orderBy: undefined,
+    orderDirection: undefined,
     ...initialFilter,
   });
 
@@ -55,6 +57,7 @@ export function usePlayerTransactions(initialFilter: PlayerTransactionFilter) {
       totalCount: data?.totalCount || 0,
       pageSize: filter.pageSize || 25,
     },
+    totalAmount: data?.totalAmount || 0,
     loading,
     error,
     filter,

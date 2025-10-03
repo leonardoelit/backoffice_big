@@ -1,5 +1,5 @@
 "use client"
-import React, { useEffect, useRef, useState } from 'react'
+import React, { startTransition, useEffect, useRef, useState } from 'react'
 import { usePlayerTransactions } from '../hooks/usePlayerTransactions';
 import { ManualFinancialEventType, PlayerTransactionFilter } from '../constants/types';
 import { Table, TableBody, TableCell, TableHeader, TableRow } from '../ui/table';
@@ -9,6 +9,7 @@ import { addManualFinancialEvent, managePlayerBalance } from '../lib/api';
 import { showToast } from '@/utils/toastUtil';
 import { useAuth } from '@/context/AuthContext';
 import NoteCell from '../tables/NoteCell';
+import SortableHeader from '../tables/SortableHeader';
 
 const PlayerTransactionsTable = ({ playerId }: { playerId: string }) => {
   const { games } = useAuth();
@@ -28,6 +29,8 @@ const PlayerTransactionsTable = ({ playerId }: { playerId: string }) => {
 
   const [type, setType] = useState<string | undefined>(undefined);
   const [eventType, setEventType] = useState<string[]>([]);
+  const [orderBy, setOrderBy] = useState<string | undefined>(undefined);
+  const [orderDirection, setOrderDirection] = useState<"asc" | "desc" | undefined>(undefined);
   const [isFilterOn, setIsFilterOn] = useState(false);
 
   const [selectedNote, setSelectedNote] = useState<string | null>(null)
@@ -81,7 +84,7 @@ const PlayerTransactionsTable = ({ playerId }: { playerId: string }) => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [showFinancialPopup]);
 
-  const { transactions, loading, error, pagination, filter, setFilter } = usePlayerTransactions({
+  const { transactions, loading, error, pagination, filter, totalAmount, setFilter } = usePlayerTransactions({
     pageNumber: currentPage,
     pageSize: rowsPerPage,
     playerId,
@@ -133,7 +136,7 @@ const PlayerTransactionsTable = ({ playerId }: { playerId: string }) => {
     }));
   };
 
-  const handleRefetch = () => {
+  const handleRefetch = (override?: { orderBy?: string; orderDirection?: "asc" | "desc" }) => {
     setCurrentPage(1);
 
     const newFilter: PlayerTransactionFilter = {
@@ -144,11 +147,15 @@ const PlayerTransactionsTable = ({ playerId }: { playerId: string }) => {
        eventTypes: eventType?.length ? eventType : undefined,
       timeStampFrom: dateFrom,
       timeStampTo: dateTo,
+      orderBy: override?.orderBy || undefined,
+      orderDirection: override?.orderDirection || undefined,
     };
 
     const isAnyFilterActive =
       Boolean(type) ||
       Boolean(eventType.length > 0) ||
+      Boolean(orderBy) ||
+      Boolean(orderDirection) ||
       isDateModified
 
     setIsFilterOn(isAnyFilterActive);
@@ -163,17 +170,17 @@ const PlayerTransactionsTable = ({ playerId }: { playerId: string }) => {
   const removeFilter = () => {
     setType('');
     setEventType([]);
-    setDateFrom(startOfToday);
-    setDateTo(endOfToday);
-    setIsDateModified(true);
+    setOrderBy(undefined);
+    setOrderDirection(undefined);
+    setDateFrom(undefined);
+    setDateTo(undefined);
+    setIsDateModified(false);
 
     setCurrentPage(1);
     const defaultFilter = {
       pageNumber: 1,
       pageSize: rowsPerPage,
       playerId,
-      timeStampFrom: startOfToday,
-      timeStampTo: endOfToday
     };
     setFilter(defaultFilter);
     setIsFilterOn(false);
@@ -250,6 +257,27 @@ const providerName = (gameId: number) => {
     const game = games.find(g => g.id === gameId);
     return game ? `${game.name} - ${game.providerName}` : gameId;
   };
+
+  const handleOrderToggle = (column: string) => {
+  if (orderBy !== column) {
+    // new column selected → start with desc
+    setOrderBy(column);
+    setOrderDirection("desc");
+  } else {
+    // same column clicked again → cycle direction
+    if (orderDirection === "desc") {
+      setOrderDirection("asc");
+    } else if (orderDirection === "asc") {
+      setOrderBy(undefined);
+      setOrderDirection(undefined);
+    } else {
+      setOrderDirection("desc");
+    }
+  }
+
+  handleRefetch();
+};
+
 
 
   const SkeletonRow = ({ columns }: { columns: number }) => (
@@ -629,18 +657,40 @@ const providerName = (gameId: number) => {
                   İşlem Tipi
                 </TableCell>
                 <TableCell 
-                  isHeader 
-                  className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400 cursor-pointer" 
-                  onClick={() => handleSort("amount")}
+                  isHeader
                 >
-                  İşlem Miktar
+                  <SortableHeader
+                    column="Amount"
+                    orderBy={orderBy}
+                    orderDirection={orderDirection}
+                    onSortChange={(col, dir) => {
+                      startTransition(() => {
+                        setOrderBy(col)
+                        setOrderDirection(dir)
+                        handleRefetch({ orderBy: col, orderDirection: dir });
+                      })
+                    }}
+                  >
+                    İşlem Miktarı
+                  </SortableHeader>
                 </TableCell>
                 <TableCell 
                   isHeader 
-                  className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400 cursor-pointer" 
-                  onClick={() => handleSort("amount")}
                 >
-                  Yeni Bakiye
+                  <SortableHeader
+                    column="BalanceAfter"
+                    orderBy={orderBy}
+                    orderDirection={orderDirection}
+                    onSortChange={(col, dir) => {
+                      startTransition(() => {
+                        setOrderBy(col)
+                        setOrderDirection(dir)
+                        handleRefetch({ orderBy: col, orderDirection: dir });
+                      })
+                    }}
+                  >
+                    Yeni Bakiye
+                  </SortableHeader>
                 </TableCell>
                 <TableCell 
                   isHeader 
@@ -663,10 +713,21 @@ const providerName = (gameId: number) => {
                 </TableCell>
                   <TableCell 
                     isHeader 
-                    className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400 cursor-pointer" 
-                    onClick={() => handleSort("timestamp")}
+                  >
+                    <SortableHeader
+                    column="Timestamp"
+                    orderBy={orderBy}
+                    orderDirection={orderDirection}
+                    onSortChange={(col, dir) => {
+                      startTransition(() => {
+                        setOrderBy(col)
+                        setOrderDirection(dir)
+                        handleRefetch({ orderBy: col, orderDirection: dir });
+                      })
+                    }}
                   >
                     Zaman
+                  </SortableHeader>
                   </TableCell>
               </TableRow>
             </TableHeader>
@@ -724,6 +785,22 @@ const providerName = (gameId: number) => {
             </TableBody>
           </Table>
         </div>
+
+        {/* ✅ Sticky Total Row (separate from table) */}
+        {transactions.length > 0 && totalAmount && totalAmount > 0 && (
+          <div className="mt-auto border-t border-gray-200 dark:border-white/[0.1]">
+            <div className="grid grid-cols-12 bg-gray-50 dark:bg-gray-900">
+              {/* Empty cells */}
+              <div className="col-span-3 px-5 py-3 text-end font-medium text-gray-700 dark:text-gray-300">
+                Total:
+              </div>
+              <div className="px-5 py-3 font-medium text-gray-700 dark:text-gray-300">
+                ₺{totalAmount.toLocaleString()}
+              </div>
+              <div className="col-span-3"></div>
+            </div>
+          </div>
+        )}
       </div>
 
       {selectedNote && (

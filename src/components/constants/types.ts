@@ -168,6 +168,7 @@ export interface GetPlayersTransactionHistoryResponse{
   currentPage: number;
   totalPages: number;
   totalCount: number;
+  totalAmount: number;
 }
 
 export interface PlayerTransactionFilter{
@@ -179,6 +180,8 @@ export interface PlayerTransactionFilter{
   type?: string;
   timeStampFrom?: string;
   timeStampTo?: string;
+  orderBy?: string;
+  orderDirection?: string;
 }
 
 export interface PlayerFinancialFilter{

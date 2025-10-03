@@ -342,6 +342,7 @@ export async function getPlayerTransactions(filter: PlayerTransactionFilter): Pr
       currentPage: 1,
       totalPages: 1,
       totalCount: 0,
+      totalAmount: 0
     };
   }
 }

@@ -75,18 +75,18 @@ const renderTabContent = () => {
   switch (activeTab) {
     case "overview":
       return <PlayerInfoCards playerData={playerData} isLoadingData={isLoading} />;
-    case "istatistik":
+    case "statistics":
       return <Statistic playerData={playerData} isLoadingData={isLoading} />;
-    case "bonuslar":
+    case "bonuses":
       return <PlayerBonusTable playerId={id} isLoadingData={isLoading} currentVoucherCount={currentVoucherCount} setCurrentVoucherCount={setCurrentVoucherCount} />;
-    case "Raporlar":
+    case "reports":
       return <PlayerTransactionsTable playerId={id} />;
-    case "ayarlar":
+    case "settings":
       return (
         <PlayerSettings
           playerId={id}
           activeSubTab={activeSubTab}
-          onSubTabChange={(subtab) => handleTabClick("ayarlar", subtab)}
+          onSubTabChange={(subtab) => handleTabClick("settings", subtab)}
         />
       );
     case "notes": // ✅ lowercase to match your tab key
@@ -162,13 +162,13 @@ const renderTabContent = () => {
   <div className="flex space-x-3 mb-4 border-b border-gray-300 dark:border-gray-600 flex-nowrap">
     {[
       { key: "overview", label: "Genel Bakış" },
-      { key: "istatistik", label: "İstatistikler" },
-      { key: "Raporlar", label: "Raporlar" },
-      { key: "bonuslar", label: "Bonuslar" },
+      { key: "statistics", label: "İstatistikler" },
+      { key: "reports", label: "Raporlar" },
+      { key: "bonuses", label: "Bonuslar" },
       { key: "notes", label: "Notlar" },
       { key: "communications", label: "İletişim" },
       { key: "verification", label: "Doğrulama" },
-      { key: "ayarlar", label: "Ayarlar" },
+      { key: "settings", label: "Ayarlar" },
     ].map((tab) => (
       <button
         key={tab.key}
