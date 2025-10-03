@@ -6,7 +6,6 @@ import {
   TableHeader,
   TableRow,
 } from "../ui/table";
-import { useAuth } from "@/context/AuthContext";
 import Link from "next/link";
 import { Player, PlayerFilter } from "../constants/types";
 import { usePlayers } from "../hooks/usePlayers";
@@ -497,7 +496,7 @@ const removeFilter = () => {
               {loading ? (
                 <>
                   {Array.from({ length: rowsPerPage }).map((_, i) => (
-                    <SkeletonRow key={i} columns={12} />
+                    <SkeletonRow key={i} columns={13} />
                   ))}
                 </>
               ) : (

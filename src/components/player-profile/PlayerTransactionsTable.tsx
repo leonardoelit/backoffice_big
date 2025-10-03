@@ -8,6 +8,7 @@ import DateRangePickerWithTime from './DateRangePickerWithTime';
 import { addManualFinancialEvent, managePlayerBalance } from '../lib/api';
 import { showToast } from '@/utils/toastUtil';
 import { useAuth } from '@/context/AuthContext';
+import NoteCell from '../tables/NoteCell';
 
 const PlayerTransactionsTable = ({ playerId }: { playerId: string }) => {
   const { games } = useAuth();
@@ -29,16 +30,20 @@ const PlayerTransactionsTable = ({ playerId }: { playerId: string }) => {
   const [eventType, setEventType] = useState<string[]>([]);
   const [isFilterOn, setIsFilterOn] = useState(false);
 
+  const [selectedNote, setSelectedNote] = useState<string | null>(null)
+
   const [showPopup, setShowPopup] = useState(false);
   const [showFinancialPopup, setShowFinancialPopup] = useState(false);
   const [formData, setFormData] = useState<{
     direction: string;
     playerId: string;
     amount: number | '';
+    note: string | undefined;
   }>({
     direction: 'Inc',
     playerId: playerId,
-    amount: ''
+    amount: '',
+    note: undefined
   });
 
   const [financialFormData, setFinancialFormData] = useState<{
@@ -187,6 +192,7 @@ const PlayerTransactionsTable = ({ playerId }: { playerId: string }) => {
       direction: formData.direction,
       playerId: playerId,
       amount: Number(formData.amount),
+      note: formData.note
     });
 
     if (res.isSuccess) {
@@ -272,6 +278,7 @@ const providerName = (gameId: number) => {
             direction: "Inc",
             playerId: playerId,
             amount: "",
+            note: undefined
           });
         }}
         className="p-2 bg-green-500 text-sm text-white rounded hover:bg-green-600 flex items-center justify-center"
@@ -503,6 +510,20 @@ const providerName = (gameId: number) => {
                 className="w-full mb-4 rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
 
+              <label className="block text-sm mb-1 text-gray-700 dark:text-gray-300">Note</label>
+              <textarea
+                value={formData.note ?? ""}
+                placeholder='Optional'
+                onChange={e =>
+                  setFormData({
+                    ...formData,
+                    note: e.target.value || undefined,
+                  })
+                }
+                rows={4} // adjust height
+                className="w-full mb-4 rounded-md border border-gray-300 dark:border-gray-600 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-y"
+              />
+
               {/* Buttons */}
               <div className="flex justify-end gap-3">
                 <button
@@ -630,6 +651,12 @@ const providerName = (gameId: number) => {
                 <TableCell 
                   isHeader 
                   className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400 cursor-pointer" 
+                >
+                  Not
+                </TableCell>
+                <TableCell 
+                  isHeader 
+                  className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400 cursor-pointer" 
                   onClick={() => handleSort("status")}
                 >
                   Durum
@@ -648,7 +675,7 @@ const providerName = (gameId: number) => {
               {loading ? (
                 <>
                   {Array.from({ length: rowsPerPage }).map((_, i) => (
-                    <SkeletonRow key={i} columns={8} />
+                    <SkeletonRow key={i} columns={9} />
                   ))}
                 </>
               ) : (
@@ -662,13 +689,12 @@ const providerName = (gameId: number) => {
                       </div>
                     </TableCell>
                     <TableCell className="px-4 py-3 text-gray-700 text-start text-theme-sm dark:text-gray-400">
-  {t.type === "Inc" ? (
-    <span className="text-green-600">Üst</span>
-  ) : (
-    <span className="text-red-600">Alt</span>
-  )}
-</TableCell>
-
+                      {t.type === "Inc" ? (
+                        <span className="text-green-600">Üst</span>
+                      ) : (
+                        <span className="text-red-600">Alt</span>
+                      )}
+                    </TableCell>
                     <TableCell className="px-4 py-3 text-gray-900 text-start text-theme-sm dark:text-gray-400">
                       {t.eventType}
                     </TableCell>
@@ -683,6 +709,9 @@ const providerName = (gameId: number) => {
                         ? providerName(Number(t.name)) 
                         : t.name}
                     </TableCell>
+                    <TableCell title="Tam halini görmek için tıkla" className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                      <NoteCell note={t.note} />
+                    </TableCell>
                     <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
                       {t.status}
                     </TableCell>
@@ -696,6 +725,15 @@ const providerName = (gameId: number) => {
           </Table>
         </div>
       </div>
+
+      {selectedNote && (
+  <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40">
+    <div className="bg-white p-4 rounded shadow max-w-lg">
+      <pre className="whitespace-pre-wrap text-sm">{selectedNote}</pre>
+      <button onClick={() => setSelectedNote(null)}>Close</button>
+    </div>
+  </div>
+)}
 
 {/* Pagination Controls */}
 <div className="flex items-center justify-end w-full px-4 py-2 space-x-3 border-t border-[#c8c9cb]">

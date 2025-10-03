@@ -158,6 +158,7 @@ export interface Transaction {
   status: string;
   timestamp: string;
   balanceAfter: number;
+  note?: string;
 }
 
 export interface GetPlayersTransactionHistoryResponse{
@@ -319,6 +320,7 @@ export interface ManagePlayerBalanceDto {
   direction: string;
   playerId: string;
   amount: number;
+  note?: string;
 }
 
 export interface ActionResponse {
