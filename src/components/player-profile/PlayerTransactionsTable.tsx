@@ -709,7 +709,7 @@ const providerName = (gameId: number) => {
                         ? providerName(Number(t.name)) 
                         : t.name}
                     </TableCell>
-                    <TableCell title="Tam halini görmek için tıkla" className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                    <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
                       <NoteCell note={t.note} />
                     </TableCell>
                     <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">

@@ -7,6 +7,7 @@ import { formatDateToDDMMYYYYHHMMSS } from '@/utils/utils';
 import DateRangePickerWithTime from './DateRangePickerWithTime';
 import { getBonuses, givePlayerWheelChance, manageBonus } from '../lib/api';
 import { showToast } from '@/utils/toastUtil';
+import NoteCell from '../tables/NoteCell';
 
 const PlayerBonusTable = ({ playerId, isLoadingData, currentVoucherCount, setCurrentVoucherCount }: { playerId:string, isLoadingData:boolean, currentVoucherCount:number | undefined, setCurrentVoucherCount:(voucherCount:number) => void }) => {
     const [currentPage, setCurrentPage] = useState(1);
@@ -530,6 +531,12 @@ const PlayerBonusTable = ({ playerId, isLoadingData, currentVoucherCount, setCur
                 <TableCell 
                   isHeader 
                   className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400 cursor-pointer" 
+                >
+                  Not
+                </TableCell>
+                <TableCell 
+                  isHeader 
+                  className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400 cursor-pointer" 
                   onClick={() => handleSort("status")}
                 >
                   Durum
@@ -548,7 +555,7 @@ const PlayerBonusTable = ({ playerId, isLoadingData, currentVoucherCount, setCur
               {loading ? (
                 <>
                   {Array.from({ length: rowsPerPage }).map((_, i) => (
-                    <SkeletonRow key={i} columns={8} />
+                    <SkeletonRow key={i} columns={9} />
                   ))}
                 </>
               ) : (
@@ -575,6 +582,9 @@ const PlayerBonusTable = ({ playerId, isLoadingData, currentVoucherCount, setCur
                     </TableCell>
                     <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
                       {t.name}
+                    </TableCell>
+                    <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                      <NoteCell note={t.note} />
                     </TableCell>
                     <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
                       {t.status}
