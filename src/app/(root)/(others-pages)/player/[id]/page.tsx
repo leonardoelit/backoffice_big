@@ -20,7 +20,7 @@ export default function PlayerProfile() {
   const id = params.id; // from /player/[id]
   const tabFromUrl = searchParams.get("tab") || "overview";
 
-  const subTabFromUrl = searchParams.get("subtab") || "Profile"; // default subtab
+  const subTabFromUrl = searchParams.get("subtab") || "Permissions"; // default subtab
   const [activeSubTab, setActiveSubTab] = useState(subTabFromUrl);
   
 
@@ -85,6 +85,8 @@ const renderTabContent = () => {
       return (
         <PlayerSettings
           playerId={id}
+          isLoadingData={isLoading}
+          playerData={playerData}
           activeSubTab={activeSubTab}
           onSubTabChange={(subtab) => handleTabClick("settings", subtab)}
         />

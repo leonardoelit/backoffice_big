@@ -2,17 +2,23 @@
 import React from "react";
 import PlayerBonusSettings from "./settings/PlayerBonusSettings";
 import PlayerIpActivityTable from "../tables/PlayerIpActivityTable";
+import { Player } from "../constants/types";
+import PlayerPermissions from "./settings/PlayerPermissions";
 
 const PlayerSettings = ({
   playerId,
+  playerData,
+  isLoadingData,
   activeSubTab,
   onSubTabChange,
 }: {
   playerId: string;
   activeSubTab: string;
+  playerData?: Player;
+  isLoadingData: boolean;
   onSubTabChange: (subtab: string) => void;
 }) => {
-  const subTabs = ["Profile", "BonusSettings", "Security", "Notifications", "Activity"];
+  const subTabs = ["Permissions", "BonusSettings", "Security", "Notifications", "Activity"];
 
   return (
     <div className="flex h-[600px]">
@@ -35,7 +41,7 @@ const PlayerSettings = ({
 
       {/* Content Area */}
       <div className="flex-1 bg-white dark:bg-gray-800 p-6 ml-4 rounded-md shadow">
-        {activeSubTab === "Profile" && <div>Profile content for player {playerId}</div>}
+        {activeSubTab === "Permissions" && <PlayerPermissions isLoadingData={isLoadingData} playerData={playerData} />}
         {activeSubTab === "BonusSettings" && <PlayerBonusSettings playerId={playerId} />}
         {activeSubTab === "Security" && <div>Security content for player {playerId}</div>}
         {activeSubTab === "Notifications" && <div>Notifications content for player {playerId}</div>}

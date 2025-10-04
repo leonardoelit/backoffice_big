@@ -131,6 +131,8 @@ export interface Player {
   totalSportStakes?: number;
   wheelSpinChance: number;
   isOnline?: boolean;
+  canPlayCasino: boolean;
+  canSportsBet: boolean;
 }
 
 export interface GetAllPlayersResponse {
@@ -790,4 +792,10 @@ export interface AddManualFinancialEventRequest {
   amount: number;
   eventType: ManualFinancialEventType,
   note?: string;
+}
+
+export interface ChangePlayersPermissionsRequest {
+  playerId: number;
+  canPlayCasino?: boolean;
+  canSportsBet?: boolean;
 }
