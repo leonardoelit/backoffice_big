@@ -133,6 +133,8 @@ export interface Player {
   isOnline?: boolean;
   canPlayCasino: boolean;
   canSportsBet: boolean;
+  canDeposit: boolean;
+  canWithdraw: boolean;
 }
 
 export interface GetAllPlayersResponse {
@@ -798,4 +800,6 @@ export interface ChangePlayersPermissionsRequest {
   playerId: number;
   canPlayCasino?: boolean;
   canSportsBet?: boolean;
+  canDeposit?: boolean;
+  canWithdraw?: boolean;
 }

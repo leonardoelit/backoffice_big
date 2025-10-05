@@ -37,47 +37,57 @@ const PlayerPermissions = ({ isLoadingData, playerData }: { isLoadingData: boole
   // State for each permission
   const [canPlayCasino, setCanPlayCasino] = useState(false);
   const [canSportsBet, setCanSportsBet] = useState(false);
+  const [canDeposit, setCanDeposit] = useState(false);
+  const [canWithdraw, setCanWithdraw] = useState(false);
 
   // Individual loading states for API calls
   const [isUpdatingCasino, setIsUpdatingCasino] = useState(false);
   const [isUpdatingSportsBet, setIsUpdatingSportsBet] = useState(false);
+  const [isUpdatingDeposit, setIsUpdatingDeposit] = useState(false);
+  const [isUpdatingWithdraw, setIsUpdatingWithdraw] = useState(false);
 
   // Effect to sync component state with incoming player data
   useEffect(() => {
     if (playerData) {
       setCanPlayCasino(playerData.canPlayCasino);
       setCanSportsBet(playerData.canSportsBet);
+      setCanDeposit(playerData.canDeposit);
+      setCanWithdraw(playerData.canWithdraw);
     }
   }, [playerData]);
 
   // Generic handler for toggling permissions
   const handlePermissionChange = async (
-    permission: 'casino' | 'sports',
+    permission: 'casino' | 'sports' | 'deposit' | 'withdraw',
     newValue: boolean
   ) => {
     if (!playerData) return;
 
     // Set the specific loading state
-    if (permission === 'casino') {
-        setIsUpdatingCasino(true);
-    } else {
-        setIsUpdatingSportsBet(true);
+    switch (permission) {
+        case 'casino': setIsUpdatingCasino(true); break;
+        case 'sports': setIsUpdatingSportsBet(true); break;
+        case 'deposit': setIsUpdatingDeposit(true); break;
+        case 'withdraw': setIsUpdatingWithdraw(true); break;
     }
 
     const requestBody: ChangePlayersPermissionsRequest = {
-      playerId: playerData.playerId, // Corrected from playerId to id to match Player interface
+      playerId: playerData.id,
       ...(permission === 'casino' && { canPlayCasino: newValue }),
       ...(permission === 'sports' && { canSportsBet: newValue }),
+      ...(permission === 'deposit' && { canDeposit: newValue }),
+      ...(permission === 'withdraw' && { canWithdraw: newValue }),
     };
 
     const response = await changePlayersPermissions(requestBody);
 
     if (response.isSuccess) {
       // Update the state only on successful API call
-      if (permission === 'casino') {
-        setCanPlayCasino(newValue);
-      } else {
-        setCanSportsBet(newValue);
+      switch (permission) {
+          case 'casino': setCanPlayCasino(newValue); break;
+          case 'sports': setCanSportsBet(newValue); break;
+          case 'deposit': setCanDeposit(newValue); break;
+          case 'withdraw': setCanWithdraw(newValue); break;
       }
       showToast(response.message || 'Success!', 'success');
     } else {
@@ -85,17 +95,22 @@ const PlayerPermissions = ({ isLoadingData, playerData }: { isLoadingData: boole
     }
     
     // Unset the specific loading state
-    if (permission === 'casino') {
-        setIsUpdatingCasino(false);
-    } else {
-        setIsUpdatingSportsBet(false);
+     switch (permission) {
+        case 'casino': setIsUpdatingCasino(false); break;
+        case 'sports': setIsUpdatingSportsBet(false); break;
+        case 'deposit': setIsUpdatingDeposit(false); break;
+        case 'withdraw': setIsUpdatingWithdraw(false); break;
     }
   };
+
+  const isAnyPermissionUpdating = isUpdatingCasino || isUpdatingSportsBet || isUpdatingDeposit || isUpdatingWithdraw;
 
   if (isLoadingData) {
     return (
       <div className="p-6 bg-gray-50 rounded-xl space-y-4">
         <h3 className="text-lg font-semibold text-gray-800">Player Permissions</h3>
+        <PermissionSkeleton />
+        <PermissionSkeleton />
         <PermissionSkeleton />
         <PermissionSkeleton />
       </div>
@@ -123,11 +138,11 @@ const PlayerPermissions = ({ isLoadingData, playerData }: { isLoadingData: boole
                     </Tooltip>
                 </div>
                 <button
-                    disabled={isUpdatingCasino || isUpdatingSportsBet}
+                    disabled={isAnyPermissionUpdating}
                     onClick={() => handlePermissionChange('casino', !canPlayCasino)}
                     className={`relative inline-flex items-center h-7 w-14 rounded-full transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 ${
                         canPlayCasino ? 'bg-indigo-600' : 'bg-gray-300'
-                    } ${isUpdatingCasino || isUpdatingSportsBet ? 'cursor-not-allowed' : ''}`}
+                    } ${isAnyPermissionUpdating ? 'cursor-not-allowed' : ''}`}
                 >
                     <span className={`inline-block w-6 h-6 transform bg-white rounded-full transition-transform duration-300 ${
                         canPlayCasino ? 'translate-x-8' : 'translate-x-1'
@@ -146,16 +161,62 @@ const PlayerPermissions = ({ isLoadingData, playerData }: { isLoadingData: boole
                     </Tooltip>
                 </div>
                  <button
-                    disabled={isUpdatingCasino || isUpdatingSportsBet}
+                    disabled={isAnyPermissionUpdating}
                     onClick={() => handlePermissionChange('sports', !canSportsBet)}
                     className={`relative inline-flex items-center h-7 w-14 rounded-full transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 ${
                         canSportsBet ? 'bg-green-600' : 'bg-gray-300'
-                    } ${isUpdatingCasino || isUpdatingSportsBet ? 'cursor-not-allowed' : ''}`}
+                    } ${isAnyPermissionUpdating ? 'cursor-not-allowed' : ''}`}
                 >
                     <span className={`inline-block w-6 h-6 transform bg-white rounded-full transition-transform duration-300 ${
                         canSportsBet ? 'translate-x-8' : 'translate-x-1'
                     }`}>
                         {isUpdatingSportsBet && <div className="w-full h-full border-2 border-green-500 border-t-transparent rounded-full animate-spin"></div>}
+                    </span>
+                </button>
+            </div>
+            
+            {/* Deposit Toggle */}
+            <div className="flex items-center justify-between p-4 bg-white rounded-lg shadow-sm">
+                <div className="flex items-center gap-2">
+                    <span className="font-medium text-gray-700">Can Deposit</span>
+                    <Tooltip text="Determines if the player is allowed to make new deposits into their account.">
+                        <InfoIcon />
+                    </Tooltip>
+                </div>
+                 <button
+                    disabled={isAnyPermissionUpdating}
+                    onClick={() => handlePermissionChange('deposit', !canDeposit)}
+                    className={`relative inline-flex items-center h-7 w-14 rounded-full transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${
+                        canDeposit ? 'bg-blue-600' : 'bg-gray-300'
+                    } ${isAnyPermissionUpdating ? 'cursor-not-allowed' : ''}`}
+                >
+                    <span className={`inline-block w-6 h-6 transform bg-white rounded-full transition-transform duration-300 ${
+                        canDeposit ? 'translate-x-8' : 'translate-x-1'
+                    }`}>
+                        {isUpdatingDeposit && <div className="w-full h-full border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>}
+                    </span>
+                </button>
+            </div>
+            
+            {/* Withdraw Toggle */}
+            <div className="flex items-center justify-between p-4 bg-white rounded-lg shadow-sm">
+                <div className="flex items-center gap-2">
+                    <span className="font-medium text-gray-700">Can Withdraw</span>
+                    <Tooltip text="Controls whether the player has the ability to withdraw funds from their account.">
+                        <InfoIcon />
+                    </Tooltip>
+                </div>
+                 <button
+                    disabled={isAnyPermissionUpdating}
+                    onClick={() => handlePermissionChange('withdraw', !canWithdraw)}
+                    className={`relative inline-flex items-center h-7 w-14 rounded-full transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 ${
+                        canWithdraw ? 'bg-purple-600' : 'bg-gray-300'
+                    } ${isAnyPermissionUpdating ? 'cursor-not-allowed' : ''}`}
+                >
+                    <span className={`inline-block w-6 h-6 transform bg-white rounded-full transition-transform duration-300 ${
+                        canWithdraw ? 'translate-x-8' : 'translate-x-1'
+                    }`}>
+                        {isUpdatingWithdraw && <div className="w-full h-full border-2 border-purple-500 border-t-transparent rounded-full animate-spin"></div>}
                     </span>
                 </button>
             </div>

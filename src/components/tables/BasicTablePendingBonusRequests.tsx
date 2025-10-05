@@ -201,8 +201,8 @@ const BasicTablePendingBonusRequests = () => {
             isSubmitting={isSendingResponse}
             action={modalState.action}
           />
-          <div className='relative flex flex-row items-center justify-between' ref={dropdownRef}>
-          <button
+          <div className='relative flex flex-row items-center justify-end' ref={dropdownRef}>
+          {/* <button
             onClick={() => setOpen(!open)}
             className="px-4 py-2 bg-blue-600 text-white text-sm rounded-tl-md hover:bg-blue-700 flex items-center gap-2"
           >
@@ -210,7 +210,7 @@ const BasicTablePendingBonusRequests = () => {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4h18M3 12h18M3 20h18" />
             </svg>
             Filters
-          </button>
+          </button> */}
     
           {/* Dropdown panel */}
         {open && (
