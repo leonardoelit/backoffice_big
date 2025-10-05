@@ -72,7 +72,7 @@ const PlayerPermissions = ({ isLoadingData, playerData }: { isLoadingData: boole
     }
 
     const requestBody: ChangePlayersPermissionsRequest = {
-      playerId: playerData.id,
+      playerId: playerData.playerId,
       ...(permission === 'casino' && { canPlayCasino: newValue }),
       ...(permission === 'sports' && { canSportsBet: newValue }),
       ...(permission === 'deposit' && { canDeposit: newValue }),
