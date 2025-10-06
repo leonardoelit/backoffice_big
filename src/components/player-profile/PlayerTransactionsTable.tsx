@@ -357,7 +357,7 @@ const providerName = (gameId: number) => {
 
       {/* Refresh button */}
       <button
-        onClick={handleRefetch}
+        onClick={() => handleRefetch()}
         title="Refresh Table"
         className="p-2 bg-blue-500 text-white rounded hover:bg-blue-600 flex items-center justify-center"
       >

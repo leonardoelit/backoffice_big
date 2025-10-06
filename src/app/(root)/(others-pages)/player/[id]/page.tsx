@@ -11,6 +11,7 @@ import PlayerBonusTable from "@/components/player-profile/PlayerBonusTable";
 import Link from "next/link";
 import PlayerSettings from "@/components/player-profile/PlayerSettings";
 import PlayerNotes from "@/components/player-profile/PlayerNotes";
+import PlayerCommunications from "@/components/player-profile/PlayerCommunications";
 
 export default function PlayerProfile() {
   const router = useRouter();
@@ -93,6 +94,8 @@ const renderTabContent = () => {
       );
     case "notes": // ✅ lowercase to match your tab key
       return <PlayerNotes playerId={id} />; // ✅ pass id if needed
+    case "communications":
+      return <PlayerCommunications playerId={id} />;
     default:
       return null;
   }

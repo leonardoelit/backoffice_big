@@ -803,3 +803,34 @@ export interface ChangePlayersPermissionsRequest {
   canDeposit?: boolean;
   canWithdraw?: boolean;
 }
+
+export enum MessageType{
+  InApp = 0,
+  Mail = 1,
+  Sms = 2
+}
+
+export interface PlayerMessage{
+  id: number;
+  employeeName: string;
+  playerId: number;
+  type: MessageType;
+  title: string;
+  message: string;
+  isRead: boolean;
+  readAt?: string;
+  createdAt: string;
+}
+
+export interface GetPlayerMessagesResponse {
+  isSuccess: boolean;
+  message?: string;
+  playersMessages?: PlayerMessage[];
+}
+
+export interface SendMessageRequest{
+  playerId: number;
+  type: MessageType;
+  title: string;
+  message: string;
+}
