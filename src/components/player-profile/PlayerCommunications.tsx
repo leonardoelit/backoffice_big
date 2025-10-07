@@ -5,6 +5,7 @@ import { showToast } from "@/utils/toastUtil";
 import NoteCell from "../tables/NoteCell";
 import { Table, TableBody, TableCell, TableHeader, TableRow } from "../ui/table";
 import { SortAscIcon } from "lucide-react";
+import { formatDateToDDMMYYYYHHMMSS } from "@/utils/utils";
 
 const MessageTypeBadge = ({ type }: { type: MessageType }) => {
     const typeMap = {
@@ -163,31 +164,37 @@ const PlayerCommunications = ({ playerId }: { playerId: number }) => {
             <TableRow>
             <TableCell
                 isHeader
-                className="w-[17%] font-semibold text-gray-600 text-left uppercase tracking-wide text-xs py-3"
+                className="w-[15%] font-semibold text-gray-600 text-left uppercase tracking-wide text-xs py-3"
             >
                 Type
             </TableCell>
             <TableCell
                 isHeader
-                className="w-[17%] font-semibold text-gray-600 text-left uppercase tracking-wide text-xs py-3"
+                className="w-[20%] font-semibold text-gray-600 text-left uppercase tracking-wide text-xs py-3"
             >
                 Title
             </TableCell>
             <TableCell
                 isHeader
-                className="w-[22%] font-semibold text-gray-600 text-left uppercase tracking-wide text-xs py-3"
+                className="w-[13%] font-semibold text-gray-600 text-left uppercase tracking-wide text-xs py-3"
             >
                 Message
             </TableCell>
             <TableCell
                 isHeader
-                className="w-[17%] font-semibold text-gray-600 text-left uppercase tracking-wide text-xs py-3"
+                className="w-[15%] font-semibold text-gray-600 text-left uppercase tracking-wide text-xs py-3"
             >
                 Sent By
             </TableCell>
             <TableCell
                 isHeader
-                className="w-[17%] font-semibold text-gray-600 text-left uppercase tracking-wide text-xs py-3 cursor-pointer select-none"
+                className="w-[16%] font-semibold text-gray-600 text-left uppercase tracking-wide text-xs py-3"
+            >
+                Read At
+            </TableCell>
+            <TableCell
+                isHeader
+                className="w-[16%] font-semibold text-gray-600 text-left uppercase tracking-wide text-xs py-3 cursor-pointer select-none"
                 onClick={() => handleSort('createdAt')}
             >
                 <div className="flex items-center gap-1">
@@ -197,7 +204,7 @@ const PlayerCommunications = ({ playerId }: { playerId: number }) => {
             </TableCell>
             <TableCell
                 isHeader
-                className=" w-[10%] font-semibold text-gray-600 text-right uppercase tracking-wide text-xs py-3"
+                className=" w-[5%] font-semibold text-gray-600 text-right uppercase tracking-wide text-xs py-3"
             >
                 Actions
             </TableCell>
@@ -206,7 +213,7 @@ const PlayerCommunications = ({ playerId }: { playerId: number }) => {
 
         <TableBody className="divide-y divide-gray-100">
             {isLoading ? (
-            Array.from({ length: 3 }).map((_, i) => <SkeletonRow key={i} columns={6} />)
+            Array.from({ length: 3 }).map((_, i) => <SkeletonRow key={i} columns={7} />)
             ) : error ? (
             <TableRow>
                 <TableCell colSpan={6} className="text-center py-10 text-red-500">
@@ -253,6 +260,9 @@ const PlayerCommunications = ({ playerId }: { playerId: number }) => {
                 </TableCell>
                 <TableCell className="text-left text-gray-600">
                     {msg.employeeName}
+                </TableCell>
+                <TableCell className="text-left text-gray-500">
+                    {msg.isRead && msg.readAt ? formatDateToDDMMYYYYHHMMSS(msg.readAt) : "-"}
                 </TableCell>
                 <TableCell className="text-left text-gray-500">
                     {new Date(msg.createdAt).toLocaleString()}
