@@ -396,9 +396,15 @@ const BasicTablePendingWithdrawals = () => {
             initialStartDate={dateFrom ? new Date(dateFrom) : undefined}
             initialEndDate={dateTo ? new Date(dateTo) : undefined}
             onChange={({ MinCreatedLocal, MaxCreatedLocal }) => {
-              const formatLocal = (d?: Date) => d 
-                ? `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}` 
-                : undefined;
+              const formatLocal = (d?: string | Date) => {
+                if (!d) return undefined;
+                const date = d instanceof Date ? d : new Date(d);
+                if (isNaN(date.getTime())) return undefined; // handle invalid strings
+
+                const pad = (n: number) => n.toString().padStart(2, "0");
+
+                return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
+              };
             
               setDateFrom(formatLocal(MinCreatedLocal));
               setDateTo(formatLocal(MaxCreatedLocal));
