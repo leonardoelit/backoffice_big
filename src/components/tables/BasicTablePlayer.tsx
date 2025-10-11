@@ -7,11 +7,12 @@ import {
   TableRow,
 } from "../ui/table";
 import Link from "next/link";
-import { Player, PlayerFilter } from "../constants/types";
+import { Player, PlayerCategory, PlayerFilter } from "../constants/types";
 import { usePlayers } from "../hooks/usePlayers";
 import "react-datepicker/dist/react-datepicker.css";
 import DateRangePicker from "../DateRangePicker";
 import { formatDateToDDMMYYYY } from "@/utils/utils";
+import { User, Crown, Gem, Tag } from "lucide-react"
 
 type SortColumn = keyof Player | "registrationDateTime";
 
@@ -46,6 +47,7 @@ export default function PlayerTable({ contentType }: { contentType: string }) {
   const [hasWithdrawal, setHasWithdrawal] = useState<boolean | undefined>(undefined);
   const [hasDeposit, setHasDeposit] = useState<boolean | undefined>(undefined);
   const [isOnline, setIsOnline] = useState<boolean | undefined>(undefined);
+  const [category, setCategory] = useState<PlayerCategory | undefined>(undefined);
 
   const [documentNumber, setDocumentNumber] = useState("");
   const [mobileNumber, setMobileNumber] = useState("");
@@ -128,6 +130,7 @@ export default function PlayerTable({ contentType }: { contentType: string }) {
     email: email || undefined,
     firstName: firstName || undefined,
     lastName: lastName || undefined,
+    category: category || undefined,
   };
 
   // Only include dates that were modified
@@ -165,6 +168,7 @@ export default function PlayerTable({ contentType }: { contentType: string }) {
     Boolean(email) ||
     Boolean(firstName) ||
     Boolean(lastName) ||
+    Boolean(category) ||
     modifiedDates.registration ||
     modifiedDates.firstDeposit ||
     modifiedDates.lastDeposit ||
@@ -182,6 +186,7 @@ const removeFilter = () => {
   setUsernameInput("");
   setPromoCodeInput("");
   setBtagInput("");
+  setCategory(undefined);
   
   // Reset date states
   setRegistrationDateFrom(undefined);
@@ -320,6 +325,17 @@ const removeFilter = () => {
                   <option value="yes">Evet</option>
                   <option value="no">Hayır</option>
                 </select>
+               <select
+                value={category}
+                onChange={(e) => setCategory(Number(e.target.value) as PlayerCategory)}
+                className="w-full border px-3 py-2 rounded text-sm dark:bg-gray-700 dark:text-white"
+              >
+                <option value="">Kategori</option>
+                <option value={PlayerCategory.Regular}>Regular</option>
+                <option value={PlayerCategory.VIP}>VIP</option>
+                <option value={PlayerCategory.HighRoller}>HighRoller</option>
+              </select>
+
                 <div className="flex items-center">
                 <input
                   type="checkbox"
@@ -483,6 +499,13 @@ const removeFilter = () => {
                 <TableCell isHeader className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400 cursor-pointer">
                   BTag
                 </TableCell>
+                <TableCell
+                  isHeader
+                  title="Kategori"
+                  className="px-2 py-2 text-gray-500 text-center text-theme-xs dark:text-gray-400"
+                >
+                  <Tag size={14} />
+                </TableCell>
                 <TableCell isHeader className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400 cursor-pointer">
                   Durum
                 </TableCell>
@@ -496,7 +519,7 @@ const removeFilter = () => {
               {loading ? (
                 <>
                   {Array.from({ length: rowsPerPage }).map((_, i) => (
-                    <SkeletonRow key={i} columns={13} />
+                    <SkeletonRow key={i} columns={14} />
                   ))}
                 </>
               ) : (
@@ -583,6 +606,18 @@ const removeFilter = () => {
                     <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
                         {player.btag ? player.btag : '-'}
                     </TableCell>
+                    <TableCell className="px-2 py-2 text-gray-500">
+                      {player.playerCategory === PlayerCategory.Regular ? (
+                        <User size={18} className="inline text-gray-400" />
+                      ) : player.playerCategory === PlayerCategory.VIP ? (
+                        <Crown size={18} className="inline text-yellow-500" />
+                      ) : player.playerCategory === PlayerCategory.HighRoller ? (
+                        <Gem size={18} className="inline text-purple-500" />
+                      ) : (
+                        "-"
+                      )}
+                    </TableCell>
+
                     <TableCell className="px-4 py-3">
                     <div className="flex items-center">
                       <div
@@ -598,16 +633,16 @@ const removeFilter = () => {
                     </div>
                   </TableCell>
                   <TableCell className="px-4 py-3">
-  <div className="flex items-center">
-    <div
-      className={`relative h-4 w-4 rounded-full
-        ${player.markedAsRisk
-          ? 'bg-purple-600 shadow-[0_0_8px_rgba(147,51,234,0.8)] soft-pulse-purple'
-          : 'bg-purple-300 shadow-[0_0_6px_rgba(192,132,252,0.7)]'
-        }`}
-    ></div>
-  </div>
-</TableCell>
+                    <div className="flex items-center">
+                      <div
+                        className={`relative h-4 w-4 rounded-full
+                          ${player.markedAsRisk
+                            ? 'bg-purple-600 shadow-[0_0_8px_rgba(147,51,234,0.8)] soft-pulse-purple'
+                            : 'bg-purple-300 shadow-[0_0_6px_rgba(192,132,252,0.7)]'
+                          }`}
+                      ></div>
+                    </div>
+                  </TableCell>
 
 
                     {/* <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">

@@ -1,10 +1,11 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { FC, useEffect, useMemo, useState } from "react";
 import { PencilIcon, UserCircleIcon } from "@/icons";
 import { showToast } from "@/utils/toastUtil";
-import { Player, RiskOrFavorite } from "../constants/types";
+import { Player, PlayerCategory, RiskOrFavorite } from "../constants/types";
 import { formatDateToDDMMYYYY } from "@/utils/utils";
-import { loginAsPlayer, markPlayer, updatePlayersData } from "../lib/api";
+import { loginAsPlayer, markPlayer, updatePlayerCategory, updatePlayersData } from "../lib/api";
 import RiskPopUp from "@/components/player-profile/RiskPopUp";
+import { Crown, Gem, Loader2, Star, User, X } from "lucide-react";
 
 // ---------- helpers ----------
 type EditableType = "text" | "email" | "date" | "checkbox";
@@ -248,11 +249,158 @@ const InfoSection2 = ({
   </div>
 );
 
+const categoryConfig = {
+  [PlayerCategory.Regular]: {
+    label: 'Regular',
+    icon: <User className="w-4 h-4" />,
+    badgeClasses: 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300',
+    buttonClasses: 'hover:bg-slate-100 dark:hover:bg-slate-800',
+    selectedClasses: 'ring-2 ring-slate-500 bg-slate-100 dark:bg-slate-800',
+  },
+  [PlayerCategory.VIP]: {
+    label: 'VIP',
+    icon: <Crown className="w-4 h-4" />,
+    badgeClasses: 'bg-amber-100 text-amber-800 dark:bg-amber-900/50 dark:text-amber-400',
+    buttonClasses: 'hover:bg-amber-100 dark:hover:bg-amber-900/50',
+    selectedClasses: 'ring-2 ring-amber-500 bg-amber-100 dark:bg-amber-900/50',
+  },
+  [PlayerCategory.HighRoller]: {
+    label: 'High Roller',
+    icon: <Gem className="w-4 h-4" />,
+    badgeClasses: 'bg-purple-100 text-purple-800 dark:bg-purple-900/50 dark:text-purple-400',
+    buttonClasses: 'hover:bg-purple-100 dark:hover:bg-purple-900/50',
+    selectedClasses: 'ring-2 ring-purple-500 bg-purple-100 dark:bg-purple-900/50',
+  },
+};
+
 // ---------- Main ----------
 interface PlayerInfoCardsProps {
   playerData?: Player;
   isLoadingData: boolean;
 }
+
+interface PlayerCategoryManagerProps {
+  playerData: Player;
+}
+
+const PlayerCategoryManager: FC<PlayerCategoryManagerProps> = ({ playerData }) => {
+  const [currentCategory, setCurrentCategory] = useState<PlayerCategory>(playerData.playerCategory);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<PlayerCategory>(playerData.playerCategory);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleUpdateCategory = async () => {
+    if (selectedCategory === currentCategory) {
+      // MODIFIED: Using your showToast function
+      showToast("No change detected.", "info");
+      return;
+    }
+    setIsLoading(true);
+    const response = await updatePlayerCategory(playerData.playerId, selectedCategory);
+    setIsLoading(false);
+
+    if (response.isSuccess) {
+      // MODIFIED: Using your showToast function
+      showToast(response.message || "Category updated successfully!", "success");
+      setCurrentCategory(selectedCategory);
+      setIsModalOpen(false);
+    } else {
+      // MODIFIED: Using your showToast function
+      showToast(response.message || "Failed to update category.", "error");
+    }
+  };
+
+  return (
+    <>
+      <div
+        onClick={() => setIsModalOpen(true)}
+        className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition-all"
+      >
+        {currentCategory === PlayerCategory.Regular ? (
+          <User size={16} className="text-gray-500" />
+        ) : currentCategory === PlayerCategory.VIP ? (
+          <Crown size={16} className="text-yellow-500" />
+        ) : currentCategory === PlayerCategory.HighRoller ? (
+          <Gem size={16} className="text-purple-500" />
+        ) : (
+          "-"
+        )}
+        <span className="text-sm text-gray-700 dark:text-gray-200 font-medium">
+          {PlayerCategory[currentCategory]}
+        </span>
+      </div>
+
+      {/* Modal */}
+      {isModalOpen && (
+        <div
+          className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/60 backdrop-blur-sm"
+          aria-labelledby="modal-title"
+          role="dialog"
+          aria-modal="true"
+        >
+          <div className="relative w-full max-w-md p-6 bg-white dark:bg-slate-900 rounded-xl shadow-2xl border border-slate-200 dark:border-slate-700 m-4">
+            <div className="flex items-start justify-between">
+                <h2 id="modal-title" className="text-xl font-bold text-slate-800 dark:text-slate-100">
+                Change Player Category
+                </h2>
+                <button
+                    onClick={() => setIsModalOpen(false)}
+                    className="p-1 rounded-full text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800"
+                    aria-label="Close"
+                >
+                    <X className="w-6 h-6" />
+                </button>
+            </div>
+            
+            <p className="mt-2 text-slate-600 dark:text-slate-400">
+              Select a new category for the player. This may affect their perks and access.
+            </p>
+
+            <div className="mt-6 space-y-3">
+              {Object.values(PlayerCategory)
+                .filter(value => typeof value === 'number')
+                .map((catValue) => {
+                  const categoryValue = catValue as PlayerCategory;
+                  const config = categoryConfig[categoryValue];
+                  return (
+                    <button
+                      key={categoryValue}
+                      onClick={() => setSelectedCategory(categoryValue)}
+                      className={`w-full flex items-center gap-3 p-4 rounded-lg border-2 dark:border-slate-700 transition-all duration-200 text-left ${selectedCategory === categoryValue ? config.selectedClasses + ' border-transparent' : 'border-slate-200 ' + config.buttonClasses}`}
+                    >
+                      <div className={`p-2 rounded-full ${config.badgeClasses}`}>
+                        {config.icon}
+                      </div>
+                      <span className="font-semibold text-slate-700 dark:text-slate-200">{config.label}</span>
+                    </button>
+                  );
+                })}
+            </div>
+
+            <div className="mt-8 flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setIsModalOpen(false)}
+                className="px-4 py-2 text-sm font-semibold text-slate-700 bg-slate-100 rounded-md hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleUpdateCategory}
+                disabled={isLoading}
+                className="inline-flex items-center justify-center px-4 py-2 text-sm font-semibold text-white bg-indigo-600 rounded-md hover:bg-indigo-700 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-indigo-400 disabled:cursor-not-allowed dark:focus:ring-offset-slate-900"
+              >
+                {isLoading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                {isLoading ? 'Saving...' : 'Save Changes'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
+};
 
 const PlayerInfoCards: React.FC<PlayerInfoCardsProps> = ({ playerData, isLoadingData }) => {
   const [isRiskOpen, setRiskOpen] = useState(false); // Risk popup state
@@ -436,6 +584,9 @@ const PlayerInfoCards: React.FC<PlayerInfoCardsProps> = ({ playerData, isLoading
       />
   </div>
 
+      <div className="mt-8 max-w-lg">
+        {playerData && <PlayerCategoryManager playerData={playerData} />}
+      </div>
 
       {/* Info Grid (all original info preserved) */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">

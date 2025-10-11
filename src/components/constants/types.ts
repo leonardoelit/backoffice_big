@@ -38,10 +38,10 @@ export interface JwtPayload {
   Permission?: string[]; // optional permissions array
 }
 
-enum PlayerCategory {
-  Regular = "Regular",
-  VIP = "VIP",
-  HighRoller = "HighRoller"
+export enum PlayerCategory {
+  Regular = 0,
+  VIP = 1,
+  HighRoller = 2
 }
 
 export interface PlayerFilter {
@@ -75,6 +75,7 @@ export interface PlayerFilter {
   firstName?: string;
   lastName?: string;
   isOnline?: boolean;
+  category?: PlayerCategory;
 }
 
 export interface Player { 

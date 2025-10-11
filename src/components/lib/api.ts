@@ -1,4 +1,4 @@
-import { ActionResponse, AddManualFinancialEventRequest, BanIpRequest, BonusResponse, CancelOrValidateWithdrawalRequest, ChangePlayersBonusSettingRequest, ChangePlayersPermissionsRequest, CreateBonusRequest, CreatePlayerNoteRequest, CreateUserRequest, CreateWheelPrizeRequest, DashboardStatsRequestDto, DashboardStatsResponseDto, GameStatsResponse, GetAllFinancialTransactionsResponse, GetAllPlayersResponse, GetBlacklistResponse, GetBonusRequestsResponse, GetGameOrProviderStatsRequest, GetPermissionResponse, GetPlayerMessagesResponse, GetPlayerNotesResponse, GetPlayersDataWithIdResponse, GetPlayersTransactionHistoryResponse, GetRoleResponse, GetTaggedPlayersRequest, GetTaggedPlayersResponse, GetUsersResponse, GivePlayerWheelChanceRequest, IpLogResponse, LoginAsUserResponse, ManageBonusRequest, ManagePlayerBalanceDto, MarkPlayerRequest, PaymentResponse, PermissionRequest, PermissionResponse, PlayerBonusRequestFilter, PlayerBonusSettingsResponse, PlayerFilter, PlayerFinancialFilter, PlayerStatsFilterByTimeDto, PlayerStatsFilterByTimeResponseDto, PlayerTransactionFilter, ProviderStatResponse, RolePermissionRequest, RoleRequest, RoleResponse, SendMessageRequest, UpdateBonusRequest, UpdatePlayerNoteRequest, UpdatePlayersDataRequest, UpdateWheelPrizeRequest, UserResponse, UserRoleRequest, WheelArrangementRequest, WheelResponse } from "../constants/types";
+import { ActionResponse, AddManualFinancialEventRequest, BanIpRequest, BonusResponse, CancelOrValidateWithdrawalRequest, ChangePlayersBonusSettingRequest, ChangePlayersPermissionsRequest, CreateBonusRequest, CreatePlayerNoteRequest, CreateUserRequest, CreateWheelPrizeRequest, DashboardStatsRequestDto, DashboardStatsResponseDto, GameStatsResponse, GetAllFinancialTransactionsResponse, GetAllPlayersResponse, GetBlacklistResponse, GetBonusRequestsResponse, GetGameOrProviderStatsRequest, GetPermissionResponse, GetPlayerMessagesResponse, GetPlayerNotesResponse, GetPlayersDataWithIdResponse, GetPlayersTransactionHistoryResponse, GetRoleResponse, GetTaggedPlayersRequest, GetTaggedPlayersResponse, GetUsersResponse, GivePlayerWheelChanceRequest, IpLogResponse, LoginAsUserResponse, ManageBonusRequest, ManagePlayerBalanceDto, MarkPlayerRequest, PaymentResponse, PermissionRequest, PermissionResponse, PlayerBonusRequestFilter, PlayerBonusSettingsResponse, PlayerCategory, PlayerFilter, PlayerFinancialFilter, PlayerStatsFilterByTimeDto, PlayerStatsFilterByTimeResponseDto, PlayerTransactionFilter, ProviderStatResponse, RolePermissionRequest, RoleRequest, RoleResponse, SendMessageRequest, UpdateBonusRequest, UpdatePlayerNoteRequest, UpdatePlayersDataRequest, UpdateWheelPrizeRequest, UserResponse, UserRoleRequest, WheelArrangementRequest, WheelResponse } from "../constants/types";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -161,6 +161,7 @@ export async function getPlayers(
     if (filter.username) queryParams.set('username', filter.username);
     if (filter.btag) queryParams.set('btag', filter.btag);
     if (filter.promoCode) queryParams.set('promoCode', filter.promoCode);
+    if (filter.category) queryParams.set('playerCategory', filter.category.toString());
 
     // New filters
     if (filter.isOnline !== undefined) queryParams.set('isOnline', filter.isOnline.toString());
@@ -249,6 +250,37 @@ export async function getPlayerDataId(
     return {
       isSuccess: false,
       message: error instanceof Error ? error.message : 'Failed to fetch players'
+    };
+  }
+}
+
+export async function updatePlayerCategory(playerId: number, newPlayerCategory: PlayerCategory): Promise<ActionResponse> {
+  try {
+    const token = localStorage.getItem("authToken");
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/api/Client/changePlayerCategory`,
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          playerId: playerId,
+          newPlayerCategory: newPlayerCategory
+        }),
+        cache: 'no-store'
+      }
+    );
+
+    const data: ActionResponse = await response.json();
+
+    return data;
+  } catch (error) {
+    console.error('Error updating player category:', error);
+    return {
+      isSuccess: false,
+      message: "Internal server error"
     };
   }
 }
