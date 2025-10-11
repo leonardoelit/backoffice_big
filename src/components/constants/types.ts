@@ -220,6 +220,7 @@ export interface FinancialTransaction {
   cryptoType?: string;
   createdAt: string;
   updatedAt: string;
+  note?: string;
 }
 
 export interface GetAllFinancialTransactionsResponse{

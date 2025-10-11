@@ -9,6 +9,7 @@ import { cancelOrValidateWithdrawal, managePendingFinancialRequest } from '../li
 import { showToast } from '@/utils/toastUtil';
 import ConfirmationModal from './ConfirmationModal';
 import Link from 'next/link';
+import NoteCell from './NoteCell';
 
 const BasicTablePendingWithdrawals = () => {
     const [currentPage, setCurrentPage] = useState(1);
@@ -507,6 +508,9 @@ const BasicTablePendingWithdrawals = () => {
                 <TableCell isHeader className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400">
                   Hesap Numarası
                 </TableCell>
+                <TableCell isHeader className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400">
+                  Not
+                </TableCell>
                 <TableCell 
                   isHeader 
                   className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400 cursor-pointer" 
@@ -578,6 +582,9 @@ const BasicTablePendingWithdrawals = () => {
                         </span>
                         )}
                       </div>
+                    </TableCell>
+                    <TableCell className="px-4 py-3 text-gray-900 text-start text-theme-sm dark:text-gray-400">
+                      {t.note ? (<NoteCell note={t.note} />) : "-"}
                     </TableCell>
                     <TableCell className={`px-4 py-3 ${t.status === 'Pending' ? 'text-yellow-600' : t.status === 'Success' ? 'text-success-600' : t.status === 'Fail' || t.status === 'Cancel' || t.status === "Rejected" ? 'text-red-600' : 'text-gray-500 dark:text-gray-400'} text-start text-theme-sm`}>
                       {t.status}
