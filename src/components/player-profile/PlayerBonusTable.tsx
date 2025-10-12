@@ -9,11 +9,12 @@ import { getBonuses, givePlayerWheelChance, manageBonus } from '../lib/api';
 import { showToast } from '@/utils/toastUtil';
 import NoteCell from '../tables/NoteCell';
 
-const PlayerBonusTable = ({ playerId, isLoadingData, currentVoucherCount, setCurrentVoucherCount }: { playerId:string, isLoadingData:boolean, currentVoucherCount:number | undefined, setCurrentVoucherCount:(voucherCount:number) => void }) => {
+const PlayerBonusTable = ({ playerId, isLoadingData, currentVoucherCount, setCurrentVoucherCount, currentVipVoucherCount, setCurrentVipVoucherCount, }: { playerId:string, isLoadingData:boolean, currentVoucherCount:number | undefined, setCurrentVoucherCount:(voucherCount:number) => void, currentVipVoucherCount:number | undefined, setCurrentVipVoucherCount:(vipVoucherCount:number) => void }) => {
     const [currentPage, setCurrentPage] = useState(1);
     const [rowsPerPage, setRowsPerPage] = useState(25);
 
     const [isGivingVoucher, setIsGivingVoucher] = useState(false)
+    const [isVipVoucher, setIsVipVoucher] = useState<boolean>(false)
 
     const [dateFrom, setDateFrom] = useState<string | undefined>(undefined);
     const [dateTo, setDateTo] = useState<string | undefined>(undefined);
@@ -199,20 +200,25 @@ const PlayerBonusTable = ({ playerId, isLoadingData, currentVoucherCount, setCur
       }
 
       const handleVoucherWheel = async () => {
-        if(playerId === null || currentVoucherCount === undefined){
+        if(playerId === null || currentVoucherCount === undefined || currentVipVoucherCount === undefined){
           showToast(playerId === null ? "PlayerId cannot be null" : "Please wait, player data's still loading...", "error")
           return;
         }
         setIsGivingVoucher(true);
-        const result = await givePlayerWheelChance({ playerId: playerId, spinAmount: voucherCount < 1 ? 1 : voucherCount });
+        const result = await givePlayerWheelChance({ playerId: playerId, spinAmount: voucherCount < 1 ? 1 : voucherCount, isVipSpin: isVipVoucher });
         if(result.isSuccess){
           showToast(result.message ? result.message : "Oyuncuya çark hakkı eklendi", "success")
-          setCurrentVoucherCount(currentVoucherCount + voucherCount);
+          if(isVipVoucher){
+            setCurrentVipVoucherCount(currentVipVoucherCount + voucherCount)
+          }else{
+            setCurrentVoucherCount(currentVoucherCount + voucherCount);
+          }
           setShowVoucherPopup(false)
         }else{
           showToast(result.message ? result.message : "Oyuncuya çark hakkı eklendirken hata", "error")
         }
         setIsGivingVoucher(false);
+        setIsVipVoucher(false)
       }
 
       const SkeletonRow = ({ columns }: { columns: number }) => (
@@ -240,6 +246,9 @@ const PlayerBonusTable = ({ playerId, isLoadingData, currentVoucherCount, setCur
   </div>
   <div className="w-6 h-6 flex items-center justify-center rounded-full bg-blue-600 text-white text-sm font-semibold">
     {isLoadingData ? "--" : currentVoucherCount}
+  </div>
+  <div className="w-6 h-6 flex items-center justify-center rounded-full bg-yellow-500 text-white text-sm font-semibold">
+    {isLoadingData ? "--" : currentVipVoucherCount}
   </div>
     <button
       onClick={() => setShowVoucherPopup(true)}
@@ -397,10 +406,28 @@ const PlayerBonusTable = ({ playerId, isLoadingData, currentVoucherCount, setCur
             className="w-full mb-4 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm text-gray-700 dark:text-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
 
+          <div className="mb-4">
+            <div className="flex items-center space-x-3">
+              <input
+                id="vipVoucher"
+                type="checkbox"
+                checked={isVipVoucher}
+                onChange={(e) => setIsVipVoucher(e.target.checked)}
+                className="h-5 w-5 accent-blue-600 rounded cursor-pointer border-gray-300 dark:border-gray-600 focus:ring-blue-500"
+              />
+            <label
+              htmlFor="vipVoucher"
+              className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+            >
+              VIP Hak
+            </label>
+            </div>
+          </div>
+
           {/* Buttons */}
           <div className="flex justify-end gap-3">
             <button
-              onClick={() => setShowVoucherPopup(false)}
+              onClick={() => {setShowVoucherPopup(false); setIsVipVoucher(false); setVoucherCount(1) }}
               disabled={isGivingVoucher}
               className="px-4 py-2 bg-gray-300 text-gray-800 dark:bg-gray-600 dark:text-gray-200 text-sm rounded hover:bg-gray-400 disabled:bg-gray-500"
             >

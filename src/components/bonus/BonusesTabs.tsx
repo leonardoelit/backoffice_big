@@ -1,31 +1,40 @@
 "use client";
 
-import { useSearchParams, useRouter } from "next/navigation";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import BasicTableBonuses from "@/components/tables/BasicTableBonuses";
 import BasicTableWheelPrizes from "@/components/tables/BasicTableWheelPrizes";
+import BasicTableVipWheelPrizes from "../tables/BasicTableVipWheelPrizes";
+
+type TabType = "bonuses" | "wheelPrizes" | "vipPrizes";
 
 export default function BonusesTabs() {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const pathname = usePathname();
 
-  const [tab, setTabState] = useState<"bonuses" | "wheelPrizes">("bonuses");
+  const [tab, setTab] = useState<TabType>("bonuses");
 
-  // Initialize tab after hydration
+  // Initialize tab from URL on mount
   useEffect(() => {
     const param = searchParams.get("tab");
-    if (param === "wheelPrizes") setTabState("wheelPrizes");
-    else setTabState("bonuses");
-  }, [searchParams]);
+    if (param === "wheelPrizes" || param === "vipPrizes" || param === "bonuses") {
+      setTab(param as TabType);
+    } else {
+      // if invalid or missing, sync default back to URL
+      const params = new URLSearchParams(searchParams.toString());
+      params.set("tab", "bonuses");
+      router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // only once after hydration
 
-  // Update URL without page reload
-  const setTab = (value: "bonuses" | "wheelPrizes") => {
-    setTabState(value);
-
-    const url = new URL(window.location.href);
-    url.searchParams.set("tab", value);
-
-    router.replace(`${url.pathname}?${url.searchParams.toString()}`);
+  // Sync tab -> URL when changed manually
+  const handleTabChange = (value: TabType) => {
+    setTab(value);
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("tab", value);
+    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
   };
 
   return (
@@ -33,7 +42,7 @@ export default function BonusesTabs() {
       {/* Tabs header */}
       <div className="flex border-b border-gray-200 mb-6">
         <button
-          onClick={() => setTab("bonuses")}
+          onClick={() => handleTabChange("bonuses")}
           className={`px-4 py-2 text-sm font-medium ${
             tab === "bonuses"
               ? "border-b-2 border-blue-600 text-blue-600"
@@ -42,8 +51,9 @@ export default function BonusesTabs() {
         >
           Bonuses
         </button>
+
         <button
-          onClick={() => setTab("wheelPrizes")}
+          onClick={() => handleTabChange("wheelPrizes")}
           className={`px-4 py-2 text-sm font-medium ${
             tab === "wheelPrizes"
               ? "border-b-2 border-blue-600 text-blue-600"
@@ -52,12 +62,24 @@ export default function BonusesTabs() {
         >
           Wheel Prizes
         </button>
+
+        <button
+          onClick={() => handleTabChange("vipPrizes")}
+          className={`px-4 py-2 text-sm font-medium ${
+            tab === "vipPrizes"
+              ? "border-b-2 border-blue-600 text-blue-600"
+              : "text-gray-500 hover:text-gray-700"
+          }`}
+        >
+          VIP Prizes
+        </button>
       </div>
 
       {/* Tab content */}
       <div className="space-y-6">
         {tab === "bonuses" && <BasicTableBonuses />}
         {tab === "wheelPrizes" && <BasicTableWheelPrizes />}
+        {tab === "vipPrizes" && <BasicTableVipWheelPrizes />}
       </div>
     </div>
   );

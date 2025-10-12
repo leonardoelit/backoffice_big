@@ -5,7 +5,7 @@ import PageBreadcrumb from "@/components/common/PageBreadCrumb";
 export default function BonusesPage() {
   return (
     <div>
-      <PageBreadcrumb pageTitle="Bonuses / Wheel Prizes" />
+      <PageBreadcrumb pageTitle="Bonuses / Wheel Prizes / Vip Prizes" />
 
       <Suspense fallback={<div>Loading tabs...</div>}>
         <BonusesTabs />

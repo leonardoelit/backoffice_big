@@ -956,6 +956,7 @@ export async function deleteWheelPrize(prizeId: number): Promise<WheelResponse>{
 export async function getWheelPrizes(): Promise<WheelResponse>{
   try{
     const token = localStorage.getItem("authToken");
+
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_API_URL}/api/Client/getWheelPrizes`,
       {

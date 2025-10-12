@@ -34,6 +34,7 @@ export default function PlayerProfile() {
   const [playerData, setPlayerData] = useState<Player>();
   const [isLoading, setIsLoading] = useState(true);
   const [currentVoucherCount, setCurrentVoucherCount] = useState<number>()
+  const [currentVipVoucherCount, setCurrentVipVoucherCount] = useState<number>()
   
   // Sync tab from URL on mount
   useEffect(() => {
@@ -48,6 +49,7 @@ export default function PlayerProfile() {
         res.playerData.markedAsRisk = Boolean(res.playerData.markedAsRisk);
         setPlayerData(res.playerData);
         setCurrentVoucherCount(res.playerData.wheelSpinChance)
+        setCurrentVipVoucherCount(res.playerData.vipSpinChance)
       }
   
       setIsLoading(false);
@@ -79,7 +81,7 @@ const renderTabContent = () => {
     case "statistics":
       return <Statistic playerData={playerData} isLoadingData={isLoading} />;
     case "bonuses":
-      return <PlayerBonusTable playerId={id} isLoadingData={isLoading} currentVoucherCount={currentVoucherCount} setCurrentVoucherCount={setCurrentVoucherCount} />;
+      return <PlayerBonusTable playerId={id} isLoadingData={isLoading} currentVoucherCount={currentVoucherCount} setCurrentVoucherCount={setCurrentVoucherCount} currentVipVoucherCount={currentVipVoucherCount} setCurrentVipVoucherCount={setCurrentVipVoucherCount} />;
     case "reports":
       return <PlayerTransactionsTable playerId={id} />;
     case "settings":

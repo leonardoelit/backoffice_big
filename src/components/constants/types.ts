@@ -131,6 +131,7 @@ export interface Player {
   totalCasinoStakes?: number;
   totalSportStakes?: number;
   wheelSpinChance: number;
+  vipSpinChance: number;
   isOnline?: boolean;
   canPlayCasino: boolean;
   canSportsBet: boolean;
@@ -625,6 +626,7 @@ export interface PrizeData{
   percentage: number;
   prizeAmount: number;
   orderNumber: number;
+  isVip: boolean;
   active: boolean;
   gameId?: string;
   gameBet?: string;
@@ -644,6 +646,7 @@ export interface CreateWheelPrizeRequest {
   percentage: number;
   gameId?: string;
   gameBet?: string;
+  isVip: false;
 }
 
 export interface UpdateWheelPrizeRequest {
@@ -653,6 +656,7 @@ export interface UpdateWheelPrizeRequest {
   prizeAmount: number;
   percentage: number;
   active: boolean;
+  isVip?: boolean;
   gameId?: string;
   gameBet?: string;
 }
@@ -673,6 +677,7 @@ export interface WheelArrangementRequest {
 export interface GivePlayerWheelChanceRequest{
   playerId: string;
   spinAmount: number;
+  isVipSpin: boolean;
 }
 
 export enum Device {

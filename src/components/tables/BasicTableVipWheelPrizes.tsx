@@ -16,7 +16,7 @@ import { freespinProviders } from "../constants";
 
 type PopupMode = "create" | "update" | "delete";
 
-const BasicTableWheelPrizes = () => {
+const BasicTableVipWheelPrizes = () => {
   const { games } = useAuth();
   const [prizeList, setPrizeList] = useState<PrizeData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -47,6 +47,7 @@ const BasicTableWheelPrizes = () => {
     prizeType: PrizeType.Cash,
     gameId: "",
     gameBet: "",
+    isVip: true,
   });
 
   const [selectedPrize, setSelectedPrize] = useState<PrizeData | null>(null);
@@ -56,7 +57,8 @@ const BasicTableWheelPrizes = () => {
     prizeType: PrizeType.Cash,
     percentage: 0,
     name: "",
-    prizeAmount: 0
+    prizeAmount: 0,
+    isVip: true
   });
 
   const [isPercentageInvalid, setIsPercentageInvalid] = useState(false);
@@ -81,6 +83,7 @@ const BasicTableWheelPrizes = () => {
       percentage: 0,
       gameId: "",
       gameBet: "",
+      isVip: true
     });
     setShowPopup(true);
   };
@@ -177,7 +180,7 @@ const BasicTableWheelPrizes = () => {
         "error"
       );
     } else {
-      setPrizeList(bonusesResponse.prizes?.filter((p) => p.isVip === false) ?? []);
+      setPrizeList(bonusesResponse.prizes?.filter((p) => p.isVip === true) ?? []);
     }
     setIsLoading(false);
   };
@@ -240,6 +243,7 @@ const BasicTableWheelPrizes = () => {
         percentage: 0,
         gameId: "",
         gameBet: "",
+        isVip: true
       });
     setIsCreating(false)
       getWheelPrizeList();
@@ -901,4 +905,4 @@ const BasicTableWheelPrizes = () => {
   );
 };
 
-export default BasicTableWheelPrizes;
+export default BasicTableVipWheelPrizes;
