@@ -475,7 +475,7 @@ const BasicTableVipWheelPrizes = () => {
           >
             {popupMode === "create" && (
               <>
-                <h2 className="text-lg font-semibold mb-4">Create Bonus</h2>
+                <h2 className="text-lg font-semibold mb-4">Create VIP Prize</h2>
                 {/* Bonus Type Select */}
                 <label className="block text-sm mb-2">
                     Type

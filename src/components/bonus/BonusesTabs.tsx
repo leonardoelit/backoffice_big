@@ -21,15 +21,13 @@ export default function BonusesTabs() {
     if (param === "wheelPrizes" || param === "vipPrizes" || param === "bonuses") {
       setTab(param as TabType);
     } else {
-      // if invalid or missing, sync default back to URL
       const params = new URLSearchParams(searchParams.toString());
       params.set("tab", "bonuses");
       router.replace(`${pathname}?${params.toString()}`, { scroll: false });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // only once after hydration
+  }, []); 
 
-  // Sync tab -> URL when changed manually
   const handleTabChange = (value: TabType) => {
     setTab(value);
     const params = new URLSearchParams(searchParams.toString());
