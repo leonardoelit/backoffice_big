@@ -159,7 +159,7 @@ const BasicTableBonusRequests = () => {
           {/* Dropdown panel */}
         {open && (
         <div
-            className="absolute mt-2 w-full md:w-[80vw] max-w-4xl right-0 
+            className="absolute mt-[210px] w-full md:w-[80vw] max-w-4xl right-0 
                     bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 
                     rounded-lg shadow-lg z-50 p-4"
         >
