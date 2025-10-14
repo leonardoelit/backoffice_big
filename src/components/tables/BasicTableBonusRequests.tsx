@@ -16,10 +16,15 @@ const BasicTableBonusRequests = () => {
     const [rowsPerPage, setRowsPerPage] = useState(25);
 
     const today = new Date();
-     const startOfToday = new Date(today.setHours(0, 0, 0, 0)).toISOString();
-     const endOfToday = new Date(today.setHours(23, 59, 59, 999)).toISOString();
+    const pad = (n: number) => n.toString().padStart(2, '0');
 
-  const [isDateModified, setIsDateModified] = useState(true)
+    const startOfToday = `${today.getFullYear()}-${pad(today.getMonth()+1)}-${pad(today.getDate())} 00:00:00`;
+    const endOfToday = `${today.getFullYear()}-${pad(today.getMonth()+1)}-${pad(today.getDate())} 23:59:59`;
+
+    const [dateFrom, setDateFrom] = useState<string | undefined>(startOfToday);
+    const [dateTo, setDateTo] = useState<string | undefined>(endOfToday); 
+    const [isDateModified, setIsDateModified] = useState(true); 
+
     const [updatedAtFrom, setUpdatedAtFrom] = useState<string>(startOfToday);
     const [updatedAtTo, setUpdatedAtTo] = useState<string>(endOfToday);
     const [username, setUsername] = useState<string | undefined>(undefined)
