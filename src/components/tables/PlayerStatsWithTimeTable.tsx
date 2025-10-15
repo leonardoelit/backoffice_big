@@ -145,40 +145,71 @@ export default function PlayerStatsWithTimeTable() {
   );
 
   return (
-    <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">
-      <div className="p-4 border-b border-gray-200 dark:border-white/[0.05] flex flex-col md:flex-row gap-4 items-center">
-        <div className="w-full md:w-auto">
-          <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mr-2">
-            Report Period:
-          </label>
-          <DateRangePicker
-            onChange={handleDateChange}
-            isChanged={!!range.MinCreatedLocal && !!range.MaxCreatedLocal}
-            initialStartDate={new Date(range.MinCreatedLocal)}
-            initialEndDate={new Date(range.MaxCreatedLocal)}
+<div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">
+  <div className="p-4 border-b border-gray-200 dark:border-white/[0.05] flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+    
+    {/* Left side - Filters Dropdown */}
+    <div className="relative w-full md:w-auto order-2 md:order-1" ref={dropdownRef}>
+      <button
+        onClick={() => setOpen(!open)}
+        className="px-4 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 flex items-center gap-2 justify-center w-full md:w-auto"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          className="h-4 w-4"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M3 4h18M3 12h18M3 20h18"
           />
+        </svg>
+        Filters
+      </button>
+      {open && (
+        <div className="absolute mt-2 w-72 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50 p-4">
+          <div className="space-y-3">
+            <input type="text" name="playerId" placeholder="Player ID" value={filters.playerId} onChange={handleFilterChange} className="w-full border px-3 py-2 rounded text-sm dark:bg-gray-700 dark:text-white" />
+            <input type="text" name="username" placeholder="Username" value={filters.username} onChange={handleFilterChange} className="w-full border px-3 py-2 rounded text-sm dark:bg-gray-700 dark:text-white" />
+            <input type="text" name="fullName" placeholder="Full Name" value={filters.fullName} onChange={handleFilterChange} className="w-full border px-3 py-2 rounded text-sm dark:bg-gray-700 dark:text-white" />
+          </div>
+          <div className="flex justify-end gap-3 mt-4">
+            <button onClick={removeFilters} className="px-4 py-2 bg-error-600 text-white text-sm rounded hover:bg-error-700">
+              Remove
+            </button>
+          </div>
         </div>
-        
-        <div className="relative" ref={dropdownRef}>
-          <button onClick={() => setOpen(!open)} className="px-4 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 flex items-center gap-2 w-full justify-center md:w-auto">
-             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4h18M3 12h18M3 20h18" /></svg>
-            Filters
-          </button>
-          {open && (
-            <div className="absolute mt-2 w-72 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50 p-4">
-              <div className="space-y-3">
-                <input type="text" name="playerId" placeholder="Player ID" value={filters.playerId} onChange={handleFilterChange} className="w-full border px-3 py-2 rounded text-sm dark:bg-gray-700 dark:text-white" />
-                <input type="text" name="username" placeholder="Username" value={filters.username} onChange={handleFilterChange} className="w-full border px-3 py-2 rounded text-sm dark:bg-gray-700 dark:text-white" />
-                <input type="text" name="fullName" placeholder="Full Name" value={filters.fullName} onChange={handleFilterChange} className="w-full border px-3 py-2 rounded text-sm dark:bg-gray-700 dark:text-white" />
-              </div>
-              <div className="flex justify-end gap-3 mt-4">
-                  <button onClick={removeFilters} className="px-4 py-2 bg-error-600 text-white text-sm rounded hover:bg-error-700">Remove</button>
-              </div>
-            </div>
-          )}
-        </div>
-        {error && <div className="p-2 text-sm text-red-500 bg-red-100 dark:bg-red-900/20 rounded-md">Error: {error}</div>}
+      )}
+    </div>
+
+    {/* Right side - Report Period */}
+    <div className="flex flex-col w-full md:w-auto order-1 md:order-2 md:ml-auto">
+      <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 text-right md:text-left">
+        Report Period:
+      </label>
+      <div className="flex justify-end md:justify-start">
+        <DateRangePicker
+          onChange={handleDateChange}
+          isChanged={!!range.MinCreatedLocal && !!range.MaxCreatedLocal}
+          initialStartDate={new Date(range.MinCreatedLocal)}
+          initialEndDate={new Date(range.MaxCreatedLocal)}
+        />
       </div>
+
+        </div>
+  
+        {/* Error Display */}
+        {error && (
+          <div className="p-2 text-sm text-red-500 bg-red-100 dark:bg-red-900/20 rounded-md w-full md:w-auto">
+            Error: {error}
+          </div>
+        )}
+      </div>
+  
 
       <div className="w-full overflow-x-auto">
         <div className="min-w-[1200px] min-h-[600px]">
