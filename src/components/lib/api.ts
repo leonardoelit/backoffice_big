@@ -1,4 +1,4 @@
-import { ActionResponse, AddManualFinancialEventRequest, BanIpRequest, BonusResponse, CancelOrValidateWithdrawalRequest, ChangePlayersBonusSettingRequest, ChangePlayersPermissionsRequest, CreateBonusRequest, CreatePlayerNoteRequest, CreateUserRequest, CreateWheelPrizeRequest, DashboardStatsRequestDto, DashboardStatsResponseDto, GameStatsResponse, GetAllFinancialTransactionsResponse, GetAllPlayersResponse, GetBlacklistResponse, GetBonusRequestsResponse, GetGameOrProviderStatsRequest, GetPermissionResponse, GetPlayerMessagesResponse, GetPlayerNotesResponse, GetPlayersDataWithIdResponse, GetPlayersTransactionHistoryResponse, GetRoleResponse, GetTaggedPlayersRequest, GetTaggedPlayersResponse, GetUsersResponse, GivePlayerWheelChanceRequest, IpLogResponse, LoginAsUserResponse, ManageBonusRequest, ManagePlayerBalanceDto, MarkPlayerRequest, PaymentResponse, PermissionRequest, PermissionResponse, PlayerBonusRequestFilter, PlayerBonusSettingsResponse, PlayerCategory, PlayerFilter, PlayerFinancialFilter, PlayerStatsFilterByTimeDto, PlayerStatsFilterByTimeResponseDto, PlayerTransactionFilter, ProviderStatResponse, RolePermissionRequest, RoleRequest, RoleResponse, SendMessageRequest, UpdateBonusRequest, UpdatePlayerNoteRequest, UpdatePlayersDataRequest, UpdateWheelPrizeRequest, UserResponse, UserRoleRequest, WheelArrangementRequest, WheelResponse } from "../constants/types";
+import { ActionResponse, AddManualFinancialEventRequest, BanIpRequest, BonusResponse, CancelOrValidateWithdrawalRequest, ChangePlayersBonusSettingRequest, ChangePlayersPermissionsRequest, ChangeUsersPasswordRequest, ChangeUsersStatusRequest, CreateBonusRequest, CreatePlayerNoteRequest, CreateUserRequest, CreateWheelPrizeRequest, DashboardStatsRequestDto, DashboardStatsResponseDto, GameStatsResponse, GetAllFinancialTransactionsResponse, GetAllPlayersResponse, GetBlacklistResponse, GetBonusRequestsResponse, GetGameOrProviderStatsRequest, GetPermissionResponse, GetPlayerMessagesResponse, GetPlayerNotesResponse, GetPlayersDataWithIdResponse, GetPlayersTransactionHistoryResponse, GetRoleResponse, GetTaggedPlayersRequest, GetTaggedPlayersResponse, GetUsersResponse, GivePlayerWheelChanceRequest, IpLogResponse, LoginAsUserResponse, ManageBonusRequest, ManagePlayerBalanceDto, MarkPlayerRequest, PaymentResponse, PermissionRequest, PermissionResponse, PlayerBonusRequestFilter, PlayerBonusSettingsResponse, PlayerCategory, PlayerFilter, PlayerFinancialFilter, PlayerStatsFilterByTimeDto, PlayerStatsFilterByTimeResponseDto, PlayerTransactionFilter, ProviderStatResponse, RolePermissionRequest, RoleRequest, RoleResponse, SendMessageRequest, UpdateBonusRequest, UpdatePlayerNoteRequest, UpdatePlayersDataRequest, UpdateWheelPrizeRequest, UserResponse, UserRoleRequest, WheelArrangementRequest, WheelResponse } from "../constants/types";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -1175,6 +1175,38 @@ export async function createUser(requestBody: CreateUserRequest): Promise<Action
     return await res.json();
   } catch (error) {
     console.error('Error creating user:', error);
+    return { isSuccess: false, message: 'Internal server error' };
+  }
+}
+
+export async function changeUsersPassword(requestBody: ChangeUsersPasswordRequest): Promise<ActionResponse> {
+  try {
+    const token = await getToken();
+    const res = await fetch(`${API_URL}/api/Client/roles/change-users-password`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify(requestBody),
+      cache: 'no-store'
+    });
+    return await res.json();
+  } catch (error) {
+    console.error('Error changing users password:', error);
+    return { isSuccess: false, message: 'Internal server error' };
+  }
+}
+
+export async function changeUsersStatus(requestBody: ChangeUsersStatusRequest): Promise<ActionResponse> {
+  try {
+    const token = await getToken();
+    const res = await fetch(`${API_URL}/api/Client/roles/change-users-status`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify(requestBody),
+      cache: 'no-store'
+    });
+    return await res.json();
+  } catch (error) {
+    console.error('Error changing users status:', error);
     return { isSuccess: false, message: 'Internal server error' };
   }
 }

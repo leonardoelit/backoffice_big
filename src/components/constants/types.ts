@@ -841,3 +841,13 @@ export interface SendMessageRequest{
   title: string;
   message: string;
 }
+
+export interface ChangeUsersPasswordRequest{
+  userId: string;
+  newPassword: string;
+}
+
+export interface ChangeUsersStatusRequest{
+  userId: string;
+  newStatus: boolean;
+}
