@@ -1211,6 +1211,22 @@ export async function changeUsersStatus(requestBody: ChangeUsersStatusRequest): 
   }
 }
 
+export async function deleteUser(userId: string): Promise<ActionResponse> {
+  try {
+    const token = await getToken();
+    const res = await fetch(`${API_URL}/api/Client/roles/delete-user`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({userId: userId}),
+      cache: 'no-store'
+    });
+    return await res.json();
+  } catch (error) {
+    console.error('Error deleting user:', error);
+    return { isSuccess: false, message: 'Internal server error' };
+  }
+}
+
 export async function markPlayer(requestBody: MarkPlayerRequest): Promise<ActionResponse> {
   try {
     const token = localStorage.getItem("authToken");
