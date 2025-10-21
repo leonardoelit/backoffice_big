@@ -20,20 +20,25 @@ const ProviderReportsTable = () => {
   });
 
   const handleDateChange = (range: { MinCreatedLocal: string; MaxCreatedLocal: string }) => {
-    const toLocalIso = (localStr: string) => {
+    const toIsoLocal = (localStr: string, isEnd = false) => {
       const [datePart, timePart] = localStr.split(' ')
       const [year, month, day] = datePart.split('-').map(Number)
       const [hour, minute, second] = timePart.split(':').map(Number)
 
-      const d = new Date(Date.UTC(year, month - 1, day, hour, minute, second))
+      const localDate = new Date(year, month - 1, day, hour, minute, second)
 
-      const pad = (n: number) => n.toString().padStart(2, '0')
-      return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(hour)}:${pad(minute)}:${pad(second)}`
+      if (isEnd) {
+        return localDate.toISOString()
+      } else {
+        const tzOffsetMs = localDate.getTimezoneOffset() * 60000
+        const corrected = new Date(localDate.getTime() - tzOffsetMs)
+        return corrected.toISOString()
+      }
     }
 
     setRange({
-      MinCreatedLocal: toLocalIso(range.MinCreatedLocal),
-      MaxCreatedLocal: toLocalIso(range.MaxCreatedLocal),
+      MinCreatedLocal: toIsoLocal(range.MinCreatedLocal, false),
+      MaxCreatedLocal: toIsoLocal(range.MaxCreatedLocal, true),
     })
   }
 

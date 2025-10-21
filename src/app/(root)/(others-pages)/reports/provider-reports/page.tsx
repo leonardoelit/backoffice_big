@@ -7,7 +7,7 @@ export default function ProviderReportsPage() {
 
   return (
     <div>
-      <PageBreadcrumb pageTitle="Oyun Raporları" />
+      <PageBreadcrumb pageTitle="Provider Raporları" />
       <div className="space-y-6">
           <ProviderReportsTable />
       </div>
