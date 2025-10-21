@@ -19,7 +19,23 @@ const GameReportsTable = () => {
     MaxCreatedLocal: new Date(today.setHours(23,59,59,999)).toISOString(),
   });
 
-  const handleDateChange = (range: { MinCreatedLocal: string; MaxCreatedLocal: string }) => setRange(range);
+  const handleDateChange = (range: { MinCreatedLocal: string; MaxCreatedLocal: string }) => {
+    const toLocalIso = (localStr: string) => {
+      const [datePart, timePart] = localStr.split(' ')
+      const [year, month, day] = datePart.split('-').map(Number)
+      const [hour, minute, second] = timePart.split(':').map(Number)
+
+      const d = new Date(Date.UTC(year, month - 1, day, hour, minute, second))
+
+      const pad = (n: number) => n.toString().padStart(2, '0')
+      return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(hour)}:${pad(minute)}:${pad(second)}`
+    }
+
+    setRange({
+      MinCreatedLocal: toLocalIso(range.MinCreatedLocal),
+      MaxCreatedLocal: toLocalIso(range.MaxCreatedLocal),
+    })
+  }
 
   // Pagination & Sorting
   const [currentPage, setCurrentPage] = useState(1);
