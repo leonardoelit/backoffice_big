@@ -12,7 +12,7 @@ import { DashboardPlayerData } from "@/components/constants/types";
 import { useAuth } from "@/context/AuthContext";
 
 export default function Ecommerce() {
-  const { token, isAuthenticated } = useAuth();
+  const { token, isAuthenticated, logout } = useAuth();
 
   const [profit, setProfit] = useState<number | undefined>();
   const [prevProfit, setPrevProfit] = useState<number | undefined>();
@@ -45,6 +45,11 @@ export default function Ecommerce() {
     if(!isLoading) setIsLoading(true);
     const result = await getDashboardStats({ from: range.MinCreatedLocal, to: range.MaxCreatedLocal });
     if(!result.isSuccess){
+      if(result.message === "Invalid token" || result.message === "Invalid client id"){
+        setIsLoading(false)
+        logout(true);
+        return;
+      }
       showToast(result.message ? result.message : "Dashboard yüklenirken hata!", "error")
       setIsLoading(false)
       return;

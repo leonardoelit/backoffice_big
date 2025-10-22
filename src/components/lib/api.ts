@@ -36,12 +36,49 @@ export async function getDashboardStats(
       }
     );
 
-    return await response.json();
+    if (response.status === 401) {
+      return { isSuccess: false, message: 'Invalid token' };
+    }
+
+    const res:DashboardStatsResponseDto  = await response.json();
+
+    return res;
   } catch (error) {
     console.error('Error fetching dashboard stats:', error);
     return {
       isSuccess: false,
       message: error instanceof Error ? error.message : 'Failed to fetch dashboard stats',
+    };
+  }
+}
+
+export async function checkIfTokenValid(token: string): Promise<ActionResponse> {
+  try {
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/api/Client/checkIfTokenValid`,
+      {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        cache: 'no-store'
+      }
+    );
+
+    if(response.status === 401){
+      return {
+        isSuccess: false,
+        message: 'Invalid token'
+      }
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Error checking token validity:', error);
+    return {
+      isSuccess: false,
+      message: error instanceof Error ? error.message : 'Failed to check the token',
     };
   }
 }

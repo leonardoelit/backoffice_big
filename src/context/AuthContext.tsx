@@ -14,6 +14,7 @@ import {
 import { deleteCookie } from 'cookies-next';
 import { useRouter } from 'next/navigation';
 import { AuthResponse, GameData, JwtPayload, Player, User } from '@/components/constants/types';
+import { checkIfTokenValid } from '@/components/lib/api';
 
 interface AuthContextType {
   isAuthenticated: boolean;
@@ -27,7 +28,7 @@ interface AuthContextType {
   games: GameData[];
   playerBalanceData: PlayerBalanceResponse;
   login: (response: AuthResponse) => void;
-  logout: () => void;
+  logout: (force?: boolean) => void;
   logoutAdmin: (response: LoginResponse) => void;
 }
 
@@ -150,6 +151,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     // Fetch User Info
     startTransition(async () => {
+      const res = await checkIfTokenValid(storedToken);
+      if(!res.isSuccess){
+        logout(true);
+        return;
+      }
       const nameParts = userDetail.unique_name.trim().split(/\s+/);
       const firstname = nameParts[0] || '';
       const lastname = nameParts.slice(1).join(' ') || '';
@@ -163,10 +169,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           email: userDetail.email,
           role: userDetail.role
         })
-        //if (userDetail.role === 'User') getAllAffiliates(storedToken);
         setIsAuthenticated(true);
         setToken(storedToken);
-        //setIsAdmin(userDetail.role.includes("SuperAdmin"));
       }else{
         logout()
         router.push('/signin')
@@ -216,7 +220,7 @@ const login = useCallback((response: AuthResponse) => {
 }, []);
 
 
-  const logout = useCallback(() => {
+  const logout = useCallback((force?: boolean) => {
     localStorage.removeItem('authToken');
     deleteCookie('authToken');
     setToken(null);
@@ -227,14 +231,13 @@ const login = useCallback((response: AuthResponse) => {
       id: '',
       fullname: '',
       lastname: '',
-      role: '',
+      role: [],
       email: ''
     });
 
     setPlayerBalanceData({ playerCount: 0, balanceList: [] });
-    setAllAffiliateList([]);
-    setAffiliatesListInSelectedTime([]);
     setAllPlayerData([]);
+    if(force !== undefined && force === true) window.location.href = '/';
   }, []);
 
   const logoutAdmin = useCallback((response: LoginResponse) => {
@@ -243,8 +246,6 @@ const login = useCallback((response: AuthResponse) => {
       setIsAdmin(false);
   
       setPlayerBalanceData({ playerCount: 0, balanceList: [] });
-      setAllAffiliateList([]);
-      setAffiliatesListInSelectedTime([]);
       setAllPlayerData([]);
   
       setIsLoadingSignIn(true);
@@ -254,26 +255,7 @@ const login = useCallback((response: AuthResponse) => {
       setToken(response.token);
       setIsAuthenticated(true);
       setIsAdmin(response.role === 'admin');
-  
-      const parsed = parseJwt(response.token);
-
-      console.log(parsed)
-      setUserInfo({
-        username: response.username,
-        fullName: response.fullname,
-        lastName: response.lastname,
-        role: parsed.role,
-        btag: parsed.bTag,
-        telegramLink: response.telegramLink,
-        balance: response.balance,
-        TMTDeposit: response.TMTDeposit,
-        TMTWithdrawal: response.TMTWithdrawal,
-        userCount: response.userCount,
-        pct: response.pct,
-        approved: response.approved
-      });
-  
-      if (response.role === 'user') getAllAffiliates(response.token);
+      
     })
   }, []);
 
