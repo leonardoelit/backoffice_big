@@ -161,13 +161,10 @@ const GameReportsTable = () => {
 
 
   return (
-    <div className="space-y-5 p-4 md:p-6 bg-gray-50 dark:bg-gray-950 min-h-screen"> {/* Added page wrapper for context */}
+    <div className="space-y-5 bg-gray-50 dark:bg-gray-950 min-h-screen"> {/* Added page wrapper for context */}
       
       {/* Header: Title and Controls */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">
-          Game Reports
-        </h2>
+      <div className="flex flex-col md:flex-row md:items-center md:justify-end gap-4">
         <div className="flex items-center gap-2">
           <div className="w-full md:w-auto">
             <DateRangePicker
