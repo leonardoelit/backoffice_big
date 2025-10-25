@@ -61,7 +61,7 @@ export const providers = [
   { id: 19, name: "Endorphina" },
   { id: 252, name: "Eurasian Gaming" },
   { id: 122, name: "Evolution" },
-  { id: 127, name: "Evolution Premium" },
+  { id: 127, name: "Evolution premium" },
   { id: 103, name: "Evoplay" },
   { id: 627, name: "Ezugi" },
   { id: 629, name: "Ezugi Premium" },
